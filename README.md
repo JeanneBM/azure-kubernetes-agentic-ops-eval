@@ -1,6 +1,6 @@
-# Azure Kubernetes Agentic Ops PoC
+# Azure Kubernetes Agentic Ops — Evaluation
 
-[![Tests](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-poc/actions/workflows/test.yml/badge.svg)](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-poc/actions/workflows/test.yml)
+[![Tests](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/test.yml/badge.svg)](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/test.yml)
 
 **Code-defined agent orchestration on Azure Kubernetes Service (AKS), with LLM-assisted diagnosis and deterministic remediation.** The PoC coordinates a diagnostic agent and a remediation agent, deployed as two independently authenticated workloads with separate responsibilities and permissions.
 
