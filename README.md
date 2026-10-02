@@ -8,8 +8,6 @@
 
 The PoC demonstrates one narrowly scoped recovery scenario: correcting an image-reference typo in a Kubernetes Deployment whose images are stored in Azure Container Registry (ACR), such as `paymnets-api:1.4.2` instead of `payments-api:1.4.2`. Cases outside this policy are escalated with evidence and a reason for human review.
 
-[Watch the demo recording](./agentic_ops_demo_en_v6_final.mp4) · [Project solution PDF](./Azure_Kubernetes_Agentic_Ops_Project_Solution_public.pdf)
-
 ## Proof of concept objective: demonstrate agent response speed
 
 The goal of this proof of concept (PoC) is to demonstrate how an agent can shorten the time between detecting a Kubernetes failure and completing a verified remediation. The watcher initiates the diagnostic and remediation workflow without waiting for a human to notice the incident, collect evidence, and perform the permitted correction manually.

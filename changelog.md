@@ -34,6 +34,7 @@ The package version alone does not establish a release date.
 
 ### Removed
 
+- README links to the demo recording and project solution PDF.
 - Redundant S01 smoke test, covered by the stronger repeated scenario checks.
   The reorganized suite contains 84 tests, including 15 S01/S02 cases. ([#2])
 
