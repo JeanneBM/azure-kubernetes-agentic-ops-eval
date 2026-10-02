@@ -8,11 +8,11 @@ executor against an in-memory Kubernetes fixture and scripted HTTP responses.
 Run after installing the constrained development dependencies:
 
 ```sh
-python -m pytest tests/test_end_to_end.py -k s01_s02 -v
+python -m pytest tests/scenarios/ -v
 python -m pytest
 ```
 
-The scenario test makes five independent trials with fresh state for each case:
+The scenario files in `tests/scenarios/` make five independent trials with fresh state for each case:
 
 | Case | Fault and ground truth | Assertions |
 | --- | --- | --- |
@@ -34,7 +34,8 @@ On 2026-10-02, based on repository commit
 
 - S01: 5/5 functional checks passed.
 - S02: 5/5 passed in each container ordering (10 checks total).
-- Full test suite: 85 passed, pytest reported 1.47 seconds.
+- Full test suite: 85 passed, pytest reported 1.47 seconds (before the directory reorganization).
+  The reorganization removes one redundant S01 smoke test; the current suite has 84 tests.
 - Python 3.12; dependencies installed with `constraints.txt` and `.[dev]`.
 
 The suite duration is not incident recovery latency. These results are mocked
