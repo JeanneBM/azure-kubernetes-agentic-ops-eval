@@ -11,6 +11,10 @@ The package version alone does not establish a release date.
 
 ### Added
 
+- `eval/evidence/` for redacted live PoC logs, resource snapshots and screenshots,
+  organized by scenario and UTC run ID, with a run evidence template and manual
+  collection guidance. No live results or automatic log collection are introduced.
+
 - S05 two-container pull failures and S06 stale-diagnosis scenario modules
   (20 new checks). S05 covers both container orders and rejects before registry
   lookup. S06 injects a synchronized external image update after policy

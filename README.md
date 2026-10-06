@@ -111,6 +111,12 @@ python -m coverage report -m
 
 Coverage measures which code the tests execute; it does not establish live AKS integration correctness or test assertion quality.
 
+## Live PoC evidence
+
+Store logs, Deployment snapshots and screenshots for each actual run in
+[`eval/evidence/`](eval/evidence/README.md). Use the run template to connect
+observed outcomes to timestamped evidence and preserve unsuccessful attempts.
+
 ## Deployment prerequisites
 
 - AKS with OIDC issuer and Workload Identity enabled.
