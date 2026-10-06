@@ -11,6 +11,11 @@ The package version alone does not establish a release date.
 
 ### Added
 
+- `scripts/start-agentic-ops.ps1` for clean Azure provisioning and healthy PoC
+  deployment, with quota checks, resumable names, separate kubeconfig, setup
+  snapshots and a setup guide. It runs no tests and injects no faults.
+- Git/build exclusions for local setup state and credentials.
+
 - `eval/evidence/` for redacted live PoC logs, resource snapshots and screenshots,
   organized by scenario and UTC run ID, with a run evidence template and manual
   collection guidance. No live results or automatic log collection are introduced.
