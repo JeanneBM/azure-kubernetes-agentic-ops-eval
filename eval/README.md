@@ -92,3 +92,11 @@ pre-execution stale-image guard; it does not establish atomic protection against
 a concurrent change after the executor reads the Deployment and before patching.
 These are mocked checks; live AKS and real-inference evaluation remain pending.
 Runtime application code is unchanged.
+
+## Live PoC evidence
+
+Actual AKS trial logs, snapshots and screenshots belong in
+[`evidence/`](evidence/README.md), grouped by scenario and UTC run ID.
+Copy [`evidence/TEMPLATE.md`](evidence/TEMPLATE.md) into each run as `evidence.md`.
+This scaffold records no live result; keep mocked results above separate from
+observations captured in AKS.
