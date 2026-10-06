@@ -308,7 +308,7 @@ Every request must include `X-Webhook-Token`. The diagnostic NetworkPolicy permi
 After downloading evidence, delete the complete PoC resource group:
 
 ~~~powershell
-./scripts/full-clear-environment.ps1 -ResourceGroup "rg-agentic-ops-lab"
+./scripts/delete-environment-resource-group.ps1 -ResourceGroup "rg-agentic-ops-lab"
 ~~~
 
 The script displays the active subscription and group, requires you to type the
