@@ -1,6 +1,6 @@
 """Cross-component rejection checks using mocked external services.
 
-Catalogued S01-S04 recovery and escalation checks live in tests/scenarios/.
+Catalogued S01-S06 recovery and escalation checks live in tests/scenarios/.
 """
 from scenarios.support import NEW, OLD, pod, wire
 

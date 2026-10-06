@@ -11,6 +11,12 @@ The package version alone does not establish a release date.
 
 ### Added
 
+- S05 two-container pull failures and S06 stale-diagnosis scenario modules
+  (20 new checks). S05 covers both container orders and rejects before registry
+  lookup. S06 injects a synchronized external image update after policy
+  authorization, rejects the stale action, and preserves the external change
+  without an agent patch. Full constrained suite: 124 passed.
+
 - S03 missing-image and S04 pod pull-authentication scenario modules, with five
   fresh trials per input case (20 new checks). Both assert evidence-backed
   escalation, no attempted patch, and an unchanged Deployment. S03 covers

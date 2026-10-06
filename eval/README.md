@@ -1,6 +1,6 @@
-# S01-S04 development checks
+# S01-S06 development checks
 
-These checks implement the functional assertions for the first four core scenarios
+These checks implement the functional assertions for the first six core scenarios
 in `evaluation-scenarios.md`. They run the production watcher, Kubernetes diagnostic
 adapter, Foundry response parser, ACR existence adapter, policy, orchestrator and
 executor against an in-memory Kubernetes fixture and scripted HTTP responses.
@@ -23,6 +23,10 @@ The scenario files in `tests/scenarios/` make five independent trials with fresh
 | S03, model abstains | Missing current image; empty registry; model returns no action | Explicit escalation with evidence, no patch attempt, entire Deployment unchanged. |
 | S03, absent correction | Same registry; model proposes a nearby image that also does not exist | Policy rejects absent correction; explicit escalation; no patch attempt; entire Deployment unchanged. |
 | S04, both pull reasons | Current and nearby image exist; Pod reports an authentication failure | Reject typo repair after a successful authenticated read of the current image; preserve authentication evidence; escalate without a patch or Deployment changes. |
+
+| S05, both container orders | Application and sidecar both fail to pull | Two structured failures; escalation before registry lookup; no attempted patch; entire Deployment unchanged. |
+| S06, operator fixes typo | External update to the intended image before executor reads Deployment | Stale action rejected; no agent patch; preserve the separately recorded external update. |
+| S06, operator deploys newer release | External update to `payments-api:1.4.3` before executor reads Deployment | Same rejection and preservation assertions, including all unrelated fields. |
 
 For S01/S02, the registry fixture contains the intended image and returns 404 for the injected
 image. The scripted model proposes the intended image and is checked to have
@@ -48,7 +52,7 @@ or live fault-injection results. No deterministic baseline was evaluated. No
 real registry digests, inference cost, cluster timestamps, Workload Identity,
 networking, image pulls, or workload readiness were measured.
 
-Live S01-S04 evaluation remains pending: this execution environment has no
+Live S01-S06 evaluation remains pending: this execution environment has no
 `kubectl`, Azure CLI, Docker, or configured AKS/inference endpoint. Run the
 protocol in `evaluation-scenarios.md` in an isolated configured environment,
 with independently recorded image digests and five repetitions per A/C variant,
@@ -72,3 +76,19 @@ Based on main commit `9c134940f42564a11b9940d65792b84ed3c66ccb` plus the S03/S04
 All 35 S01-S04 scenario cases use fresh mocked state. These checks establish
 functional behavior for scripted inputs, not live authentication handling or
 real-model accuracy. Runtime application code is unchanged.
+
+## S05/S06 validation — 2026-10-06
+
+Based on main commit `49740a62fc53e5fec08fe27a37841f5ff27f4c43` plus these changes:
+
+- S05: 10/10 passed (five fresh trials per container order).
+- S06: 10/10 passed (five fresh trials per external image update).
+- Full constrained Python 3.12 test suite: 124 passed, including 55 S01-S06 cases.
+
+S06 uses a controlled fixture hook at the executor's Deployment read, after real
+policy authorization. The external update is recorded separately from agent
+patch attempts, and its complete snapshot is preserved. This checks the existing
+pre-execution stale-image guard; it does not establish atomic protection against
+a concurrent change after the executor reads the Deployment and before patching.
+These are mocked checks; live AKS and real-inference evaluation remain pending.
+Runtime application code is unchanged.
