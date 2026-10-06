@@ -125,6 +125,13 @@ build and deploy both agents, and prepare a healthy demo workload. No tests or
 faults are run. See the [setup guide](docs/clean-environment-setup.md) for defaults,
 resume, output, costs and cleanup. Existing manual labs are not adopted.
 
+## Run live S01 separately
+
+Use [`scripts/test-s01.ps1`](scripts/test-s01.ps1) with
+`-AcrLoginServer '<YOUR_ACR_LOGIN_SERVER>'` after preparing the healthy lab.
+It injects the repository typo, captures evidence and checks the agent outcome;
+see [the live S01 guide](docs/live-s01.md). Environment setup runs no tests.
+
 ## Deployment prerequisites
 
 - AKS with OIDC issuer and Workload Identity enabled.

@@ -11,6 +11,10 @@ The package version alone does not establish a release date.
 
 ### Added
 
+- `scripts/test-s01.ps1` for one separate live S01 trial, with fault injection,
+  bounded observation, audit/rollout/spec validation, failure evidence and ZIP
+  export. No automatic manual repair after injection.
+
 - `scripts/setup-environment.ps1` for clean Azure provisioning and healthy PoC
   deployment, with quota checks, resumable names, separate kubeconfig, setup
   snapshots and a setup guide. It runs no tests and injects no faults.

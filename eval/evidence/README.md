@@ -27,6 +27,13 @@ Create only files actually collected. Mark unavailable evidence explicitly.
 Preserve the injected faulty image and the fault-injection command/output too;
 the healthy before snapshot alone does not prove the failure occurred.
 
+## Automatic capture for one S01 trial
+
+[`scripts/test-s01.ps1`](../../scripts/test-s01.ps1) captures a live S01 run in
+this layout, including unsuccessful attempts; see [usage](../../docs/live-s01.md).
+Other scenarios can use the manual collection guidance below. Review captured
+files before publishing. Script presence alone establishes no live result.
+
 ## Start a run (PowerShell, from the repository root)
 
 ~~~powershell
@@ -66,5 +73,6 @@ missing log is an evidence gap, not proof that no action occurred.
   Secret exports, environment dumps or unreviewed terminal transcripts.
   Mark redactions consistently, preserving timestamps and relevant decisions.
 
-No live results are asserted by this scaffold. Log capture is manual; creating
-this directory does not enable automatic collection by the agents.
+No live results are asserted by this scaffold. Creating this directory does not
+enable automatic collection by the agents. The separate S01 script explicitly
+collects evidence when an operator runs it; other collection remains manual.
