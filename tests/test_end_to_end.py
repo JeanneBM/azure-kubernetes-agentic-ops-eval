@@ -1,6 +1,6 @@
 """Cross-component rejection checks using mocked external services.
 
-Catalogued S01/S02 recovery checks live in tests/scenarios/.
+Catalogued S01-S04 recovery and escalation checks live in tests/scenarios/.
 """
 from scenarios.support import NEW, OLD, pod, wire
 
@@ -18,3 +18,4 @@ def test_image_that_exists_but_fails_to_pull_is_not_touched():
     watcher.process_pod(pod())
     assert results[0].incident.status.value == "escalated"
     assert cluster.patches == []
+

@@ -4,7 +4,9 @@
 | --- | --- |
 | `scenarios/test_s01_repository_transposition.py` | S01: repair the intended repository image; five fresh mocked trials. |
 | `scenarios/test_s02_healthy_sidecar.py` | S02: preserve the healthy sidecar and unrelated fields; five fresh trials per container order. |
-| `scenarios/support.py` | Shared image-typo fixture, mocked HTTP wiring, and recovery assertions. Not a test module. |
+| `scenarios/test_s03_missing_image.py` | S03: no eligible correction; five fresh trials each for model abstention and an absent proposed image. |
+| `scenarios/test_s04_pull_authentication.py` | S04: pod authentication failure with successful remediation ACR reads; five fresh trials per pull reason. |
+| `scenarios/support.py` | Shared image-typo fixture, mocked HTTP wiring, and recovery/escalation assertions. Not a test module. |
 | `test_end_to_end.py` | Existing cross-component rejection checks: absent proposed image and existing image that fails to pull. |
 | Other `test_*.py` files | Component and contract checks for policy, adapters, orchestration, transport, and watcher. |
 | `conftest.py` | Existing shared component-test helpers. |
@@ -14,6 +16,8 @@
 ```sh
 python -m pytest tests/scenarios/test_s01_repository_transposition.py -v
 python -m pytest tests/scenarios/test_s02_healthy_sidecar.py -v
+python -m pytest tests/scenarios/test_s03_missing_image.py -v
+python -m pytest tests/scenarios/test_s04_pull_authentication.py -v
 python -m pytest tests/scenarios/ -v
 python -m pytest
 ```
@@ -25,7 +29,7 @@ needed to select a scenario.
 ## Growing the catalog
 
 Use one `test_<lowercase-id>_<description>.py` file per implemented catalog item
-(S01, S02, later S03; K01/P01 when appropriate). Keep scenario-specific setup and
+(S01-S04; K01/P01 when appropriate). Keep scenario-specific setup and
 expected outcomes in that file; reuse the support functions where the fixture
 contract matches. Add separate support modules if new failure classes need
 different fixtures rather than growing one factory with many boolean switches.
@@ -51,3 +55,4 @@ checks as completion of those evaluations. See `eval/README.md` for results and
 After reorganization on 2026-10-02: 84 tests passed in 1.20 seconds, including all
 15 S01/S02 cases. One redundant S01 smoke test was removed; its assertions are
 covered by the stronger repeated S01 checks.
+

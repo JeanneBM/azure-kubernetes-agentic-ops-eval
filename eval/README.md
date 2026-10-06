@@ -1,6 +1,6 @@
-# S01 and S02 development checks
+# S01-S04 development checks
 
-These checks implement the functional assertions for the first two core scenarios
+These checks implement the functional assertions for the first four core scenarios
 in `evaluation-scenarios.md`. They run the production watcher, Kubernetes diagnostic
 adapter, Foundry response parser, ACR existence adapter, policy, orchestrator and
 executor against an in-memory Kubernetes fixture and scripted HTTP responses.
@@ -20,7 +20,11 @@ The scenario files in `tests/scenarios/` make five independent trials with fresh
 | S02, API first | Same fault plus a running, ready `metrics` sidecar | S01 assertions plus unchanged sidecar image, args, environment, and position. |
 | S02, sidecar first | Same as above with reversed container order | Same assertions, exercising named-container targeting rather than positional targeting. |
 
-The registry fixture contains the intended image and returns 404 for the injected
+| S03, model abstains | Missing current image; empty registry; model returns no action | Explicit escalation with evidence, no patch attempt, entire Deployment unchanged. |
+| S03, absent correction | Same registry; model proposes a nearby image that also does not exist | Policy rejects absent correction; explicit escalation; no patch attempt; entire Deployment unchanged. |
+| S04, both pull reasons | Current and nearby image exist; Pod reports an authentication failure | Reject typo repair after a successful authenticated read of the current image; preserve authentication evidence; escalate without a patch or Deployment changes. |
+
+For S01/S02, the registry fixture contains the intended image and returns 404 for the injected
 image. The scripted model proposes the intended image and is checked to have
 received the failing image in its prompt. The fake Kubernetes API merges the
 image patch by container name and immediately simulates controller recovery.
@@ -44,8 +48,27 @@ or live fault-injection results. No deterministic baseline was evaluated. No
 real registry digests, inference cost, cluster timestamps, Workload Identity,
 networking, image pulls, or workload readiness were measured.
 
-Live S01/S02 evaluation remains pending: this execution environment has no
+Live S01-S04 evaluation remains pending: this execution environment has no
 `kubectl`, Azure CLI, Docker, or configured AKS/inference endpoint. Run the
 protocol in `evaluation-scenarios.md` in an isolated configured environment,
 with independently recorded image digests and five repetitions per A/C variant,
 before drawing recovery-time or Azure integration conclusions.
+
+
+S03 covers both model abstention and deterministic rejection of a nonexistent
+correction. S04 covers `ErrImagePull` and `ImagePullBackOff`, retaining real adapter
+evidence from the simulated Pod/Event. Its ACR OAuth exchange and token calls
+succeed, and the authenticated current-image manifest read returns 200. This
+is distinct from P06 (remediation registry authentication failure).
+
+## S03/S04 validation — 2026-10-06
+
+Based on main commit `9c134940f42564a11b9940d65792b84ed3c66ccb` plus the S03/S04 changes:
+
+- S03: 10/10 passed (five trials per model response).
+- S04: 10/10 passed (five trials per pull reason).
+- Full constrained Python 3.12 test suite: 104 passed.
+
+All 35 S01-S04 scenario cases use fresh mocked state. These checks establish
+functional behavior for scripted inputs, not live authentication handling or
+real-model accuracy. Runtime application code is unchanged.

@@ -66,7 +66,7 @@ class FakeCluster:
         return self.pod
 
     def list_namespaced_event(self, namespace, field_selector=None):
-        return NS(items=[NS(reason="Failed", message=f"manifest for {OLD} not found")])
+        return NS(items=[NS(reason="Failed", message=f"Failed to pull image {OLD}: {self.pod.status.container_statuses[0].state.waiting.message}")])
 
     def read_namespaced_replica_set(self, name, namespace):
         return client.V1ReplicaSet(metadata=client.V1ObjectMeta(owner_references=[
@@ -91,11 +91,18 @@ def wire(model_image, registry_has=(NEW,), *, sidecar_first=None):
     def foundry(request: httpx.Request) -> httpx.Response:
         prompt = json.loads(request.content)["messages"][1]["content"]
         assert OLD in prompt  # the model saw the cluster evidence
+        evidence = json.loads(prompt)["evidence"]
+        pull_message = cluster.pod.status.container_statuses[0].state.waiting.message
+        assert any(pull_message in item["value"] for item in evidence)
         reply = {"groundedness": 0.95, "summary": "Image name has a typo.",
-                 "safe_action": {"name": "fix_image", "parameters": {"image": model_image}}}
+                 "safe_action": ({"name": "fix_image", "parameters": {"image": model_image}}
+                                 if model_image is not None else None)}
         return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps(reply)}}]})
 
+    cluster.registry_requests = []
+
     def acr(request: httpx.Request) -> httpx.Response:
+        cluster.registry_requests.append((request.url.path, request.headers.get("authorization")))
         if request.url.path == "/oauth2/exchange":
             return httpx.Response(200, json={"refresh_token": "rt"})
         if request.url.path == "/oauth2/token":
@@ -135,3 +142,20 @@ def assert_correct_recovery(cluster, watcher, results):
         "spec": {"template": {"spec": {"containers": [{"name": "api", "image": NEW}]}}}})]
     assert cluster.deployment.spec.to_dict() == expected
     assert AksActionExecutor._rolled_out(cluster.deployment, "api", NEW)
+
+
+def assert_safe_escalation(cluster, watcher, results, expected_reason):
+    """No attempted patch and no resource mutation, with evidence for review."""
+    before = deepcopy(cluster.deployment.to_dict())
+    assert watcher.process_pod(cluster.pod)
+    assert len(results) == 1
+    result = results[0]
+    assert result.incident.status.value == "escalated"
+    assert not result.action_executed
+    assert result.incident.action is None
+    assert expected_reason in result.incident.reason
+    assert cluster.patches == []
+    assert cluster.deployment.to_dict() == before
+    assert result.incident.facts.pull_failures[0].image == OLD
+    assert result.incident.recommendation is not None
+    assert result.incident.recommendation.evidence_sources

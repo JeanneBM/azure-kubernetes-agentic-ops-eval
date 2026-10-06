@@ -11,6 +11,12 @@ The package version alone does not establish a release date.
 
 ### Added
 
+- S03 missing-image and S04 pod pull-authentication scenario modules, with five
+  fresh trials per input case (20 new checks). Both assert evidence-backed
+  escalation, no attempted patch, and an unchanged Deployment. S03 covers
+  model abstention and an absent proposed correction; S04 covers both watcher
+  pull reasons while remediation registry authentication succeeds.
+
 - Functional development checks for S01 repository transposition and S02 a
   failing application container with a healthy sidecar. Each case uses five
   fresh mocked trials; S02 covers both container orderings. Checks assert the
@@ -61,3 +67,4 @@ in `eval/`; the full evaluation protocol is in `evaluation-scenarios.md`.
 [Unreleased]: https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/compare/0c627fa5884471e93356c8c5c90b900ed82a35f7...main
 [#1]: https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/pull/1
 [#2]: https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/pull/2
+
