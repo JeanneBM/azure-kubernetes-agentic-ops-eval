@@ -14,6 +14,13 @@ The package version alone does not establish a release date.
 - Replace `stop-agentic-ops.ps1` with `delete-environment-resource-group.ps1` for complete
   PoC resource-group deletion, typed confirmation and a completion check.
 
+### Fixed
+
+- Environment deletion now captures and verifies AKS node groups, cleans unused
+  regional Network Watcher leftovers and empty NetworkWatcherRG, and retains
+  shared/nonempty watchers with an explicit report. Cleanup inventory supports
+  retries without guessing resource ownership after group deletion.
+
 ### Added
 
 - `scripts/test-s01.ps1` for one separate live S01 trial, with fault injection,

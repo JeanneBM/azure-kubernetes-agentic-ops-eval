@@ -312,7 +312,9 @@ After downloading evidence, delete the complete PoC resource group:
 ~~~
 
 The script displays the active subscription and group, requires you to type the
-group name, waits for deletion and checks that the group is gone. Preview with
+group name, waits for deletion, checks the AKS node groups, and cleans unused
+regional Network Watcher resources plus an empty NetworkWatcherRG. Watchers
+with other VNets or diagnostic children are preserved and reported. Preview with
 `-WhatIf`. It deletes the entire specified group, not only agents; it does not
-clear the Azure subscription, other resource groups, local files or evidence.
+clear the Azure subscription, unrelated resource groups, local files or evidence.
 For a manually provisioned lab, supply its actual resource-group name.

@@ -103,3 +103,26 @@ Secret manifests.
 - [AKS CLI and disk constraints](https://learn.microsoft.com/cli/azure/aks)
 - [AKS system pool constraints](https://learn.microsoft.com/azure/aks/use-system-pools)
 - [Model deployment CLI](https://learn.microsoft.com/cli/azure/cognitiveservices/account/deployment)
+
+
+### Regional leftovers
+
+Cleanup records the AKS node groups and regional Network Watcher IDs before
+removing the lab. It verifies both the PoC group and node groups are gone, then
+removes empty watchers only when no VNet remains in their region and no flow
+logs, connection monitors or packet captures exist. Shared/nonempty watchers are
+reported and preserved. An empty conventional NetworkWatcherRG is removed too.
+RAG and other unrelated resources are outside the deletion scope. Azure can
+recreate a regional watcher when a new VNet is created; cleanup does not disable
+this subscription-wide feature.
+
+Inventory is kept in .local/<resource-group>-cleanup.json so cleanup can resume
+after the main group is gone. If a legacy group has already been removed without
+inventory, the script refuses to guess which leftovers belonged to it. Failed
+inventory/API calls stop cleanup; no complete-cleanup claim is made on failure.
+Use -WhatIf to preview without writing inventory or deleting resources. Group
+name confirmation explicitly covers eligible unused regional watchers outside
+the main group. This does not purge soft-deleted services or subscription-level
+registrations, nor delete local evidence.
+
+Reference: [Network Watcher automatic enablement and deletion](https://learn.microsoft.com/azure/network-watcher/network-watcher-create).
