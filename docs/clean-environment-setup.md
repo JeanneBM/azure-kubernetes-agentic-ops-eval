@@ -90,7 +90,7 @@ the first separate live test.
 After saving evidence, delete the dedicated lab resource group:
 
 ```powershell
-./scripts/stop-agentic-ops.ps1 -ResourceGroup 'rg-agentic-ops-lab' -DeleteResourceGroup
+./scripts/full-clear-environment.ps1 -ResourceGroup 'rg-agentic-ops-lab'
 ```
 
 The cleanup script asks you to type the group name. Deleting only workloads

@@ -9,6 +9,11 @@ The package version alone does not establish a release date.
 
 ## [Unreleased]
 
+### Changed
+
+- Replace `stop-agentic-ops.ps1` with `full-clear-environment.ps1` for complete
+  PoC resource-group deletion, typed confirmation and a completion check.
+
 ### Added
 
 - `scripts/test-s01.ps1` for one separate live S01 trial, with fault injection,

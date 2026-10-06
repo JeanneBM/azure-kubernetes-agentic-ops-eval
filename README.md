@@ -305,16 +305,14 @@ Every request must include `X-Webhook-Token`. The diagnostic NetworkPolicy permi
 
 ## Cleanup
 
-To remove only the application from the existing cluster:
+After downloading evidence, delete the complete PoC resource group:
 
 ~~~powershell
-.\scripts\stop-agentic-ops.ps1 -ResourceGroup "rg-agentic-ops" -AksName "aks-agentic-ops"
+./scripts/full-clear-environment.ps1 -ResourceGroup "rg-agentic-ops-lab"
 ~~~
 
-To delete the complete resource group and all resources in it:
-
-~~~powershell
-.\scripts\stop-agentic-ops.ps1 -ResourceGroup "rg-agentic-ops" -DeleteResourceGroup
-~~~
-
-Resource-group deletion is destructive. Review the script's confirmation and `-WhatIf` options before using it.
+The script displays the active subscription and group, requires you to type the
+group name, waits for deletion and checks that the group is gone. Preview with
+`-WhatIf`. It deletes the entire specified group, not only agents; it does not
+clear the Azure subscription, other resource groups, local files or evidence.
+For a manually provisioned lab, supply its actual resource-group name.

@@ -200,5 +200,5 @@ Invoke-Kube @('get','pods','-n','payments') | Out-Host
 Write-Host "READY FOR TESTS. No fault was injected. Configuration: $statePath"
 Write-Host "Setup snapshots: $setupDir (review before publishing). Take a screenshot of the pod tables."
 Write-Host "For manual kubectl commands in this shell: `$env:KUBECONFIG = '$kubeconfig'"
-Write-Host "After saving test evidence, delete the lab to stop charges: ./scripts/stop-agentic-ops.ps1 -ResourceGroup '$ResourceGroup' -DeleteResourceGroup"
+Write-Host "After saving test evidence, delete the lab to stop charges: ./scripts/full-clear-environment.ps1 -ResourceGroup '$ResourceGroup'"
 Write-Host 'Ready means Kubernetes rollout readiness. Model inference, ACR validation and agent handoff are verified by separate live tests.'
