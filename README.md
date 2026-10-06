@@ -119,7 +119,7 @@ observed outcomes to timestamped evidence and preserve unsuccessful attempts.
 
 ## Provision a clean test environment
 
-Run [`scripts/start-agentic-ops.ps1`](scripts/start-agentic-ops.ps1) in PowerShell 7
+Run [`scripts/setup-environment.ps1`](scripts/setup-environment.ps1) in PowerShell 7
 with `-SubscriptionId '<YOUR_SUBSCRIPTION_ID>'` to provision Azure resources,
 build and deploy both agents, and prepare a healthy demo workload. No tests or
 faults are run. See the [setup guide](docs/clean-environment-setup.md) for defaults,
