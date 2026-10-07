@@ -4,6 +4,12 @@ Store redacted logs, resource snapshots and screenshots from actual PoC trials h
 Scenario IDs follow [the evaluation protocol](../../evaluation-scenarios.md).
 This directory is separate from the mocked checks in `tests/scenarios/`.
 
+## Recorded S01 screenshot
+
+The [S01 terminal screenshot](S01.png) contains Polish operator labels.
+See the [English translation](S01.en.md) alongside the original evidence.
+The recorded agent decision and Kubernetes output are already in English.
+
 ## Layout
 
 Use `eval/evidence/<scenario-id>/<UTC-run-id>/`, for example
