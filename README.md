@@ -119,11 +119,49 @@ observed outcomes to timestamped evidence and preserve unsuccessful attempts.
 
 ## Provision a clean test environment
 
-Run [`scripts/setup-environment.ps1`](scripts/setup-environment.ps1) in PowerShell 7
-with `-SubscriptionId '<YOUR_SUBSCRIPTION_ID>'` to provision Azure resources,
-build and deploy both agents, and prepare a healthy demo workload. No tests or
-faults are run. See the [setup guide](docs/clean-environment-setup.md) for defaults,
-resume, output, costs and cleanup. Existing manual labs are not adopted.
+Use **PowerShell 7** with Azure CLI, kubectl and git installed (Azure Cloud
+Shell in PowerShell mode is suitable). The signed-in account needs permission
+to create resources, register providers and assign roles in the subscription.
+No local Docker installation is required.
+
+For a new checkout, run each command separately:
+
+~~~powershell
+az login
+az account list --query "[].{Name:name,SubscriptionId:id}" -o table
+git clone https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval.git
+Set-Location azure-kubernetes-agentic-ops-eval
+./scripts/setup-environment.ps1 -SubscriptionId '<YOUR_SUBSCRIPTION_ID>'
+~~~
+
+Replace `<YOUR_SUBSCRIPTION_ID>` with the ID from the account list.
+For an existing checkout, open the repository directory, run
+`git pull --ff-only`, then run the same setup command.
+
+The script creates the dedicated `rg-agentic-ops-lab` resource group, AKS,
+ACR, Azure OpenAI model deployment and separate agent identities. It builds
+and deploys both agents and prepares a healthy `payments-api` demo.
+Setup finishes with `READY FOR TESTS`; scenarios and fault injection are
+run separately. Kubernetes readiness alone does not verify model inference
+or the complete remediation flow.
+
+To inspect the environment after setup, load its saved configuration:
+
+~~~powershell
+$config = Get-Content ./.local/rg-agentic-ops-lab.json -Raw | ConvertFrom-Json
+$env:KUBECONFIG = $config.kubeconfig
+kubectl get pods -n agentic-ops
+kubectl get pods -n payments
+~~~
+
+To resume an interrupted setup, rerun the setup command with the same
+parameters and keep `.local/rg-agentic-ops-lab.json`. Resuming resets the
+demo to a healthy baseline; save existing evidence first. Existing manual
+labs without matching setup state are not adopted.
+
+See the [setup guide](docs/clean-environment-setup.md) for defaults, costs,
+output and cleanup. After saving evidence, use the [cleanup command](#cleanup)
+to remove the lab resources.
 
 ## Run live S01 separately
 
