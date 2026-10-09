@@ -4,24 +4,14 @@ Use PowerShell 7 with kubectl connected to the isolated PoC cluster. Setup and
 test execution are separate: this script provisions no Azure resources.
 
 ```powershell
-./scripts/test-s01.ps1 -AcrLoginServer '<YOUR_ACR_LOGIN_SERVER>'
+./scripts/test-s01.ps1
 ```
 
-For the environment created by setup-environment.ps1:
+The script automatically reads the registry and kubeconfig from
+`.local/rg-agentic-ops-lab.json` created by environment setup. Explicit
+`-AcrLoginServer` and `-Kubeconfig` parameters remain available for other labs.
 
-```powershell
-$config = Get-Content ./.local/rg-agentic-ops-lab.json -Raw | ConvertFrom-Json
-$registry = ($config.demoImage -split '/')[0]
-./scripts/test-s01.ps1 -AcrLoginServer $registry -Kubeconfig $config.kubeconfig
-```
-
-For the manually deployed lab used on 2026-10-06:
-
-```powershell
-./scripts/test-s01.ps1 -AcrLoginServer 'acragentevalfe8616e8d7.azurecr.io'
-```
-
-Review your current kubectl context before using the last command. The script
+The script
 targets payments/payments-api and api, and requires the healthy starting image
 payments-api:1.4.2 in the supplied registry. It preserves diagnostic logs and
 restarts the diagnostic Deployment to clear its in-memory incident cooldown.
