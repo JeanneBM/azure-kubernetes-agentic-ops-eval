@@ -64,16 +64,34 @@ try {
         throw 'S02 requires api plus exactly one metrics sidecar; unrelated containers will not be replaced.'
     }
     Kube @('rollout','status','deployment/payments-api','-n','payments','--timeout=180s') | Out-Host
-    Save-Json 'pods-before.json' @('get','pods','-n','payments','-l','app=payments-api')
-    $baselinePods = Get-Content (Join-Path $dir 'pods-before.json') -Raw | ConvertFrom-Json
-    if (@($baselinePods.items).Count -eq 0) { throw 'No baseline payments-api Pods found.' }
-    foreach ($pod in $baselinePods.items) {
-        $metrics = @($pod.status.containerStatuses | Where-Object name -EQ 'metrics')
-        if ($metrics.Count -ne 1 -or -not $metrics[0].ready -or -not $metrics[0].state.running) { throw 'The metrics sidecar must be running and ready before injection.' }
-    }
     $beforeText = Kube @('get','deployment','payments-api','-n','payments','-o','json') | Out-String
     $beforeText | Set-Content (Join-Path $dir 'deployment-before.json')
     $before = $beforeText | ConvertFrom-Json
+    Save-Json 'replicasets-before.json' @('get','replicasets','-n','payments','-l','app=payments-api')
+    $replicaSets = Get-Content (Join-Path $dir 'replicasets-before.json') -Raw | ConvertFrom-Json
+    $deploymentRevision = $before.metadata.annotations.'deployment.kubernetes.io/revision'
+    $currentReplicaSets = @($replicaSets.items | Where-Object {
+        $_.metadata.annotations.'deployment.kubernetes.io/revision' -eq $deploymentRevision -and
+        @($_.metadata.ownerReferences | Where-Object { $_.kind -eq 'Deployment' -and $_.uid -eq $before.metadata.uid }).Count -eq 1
+    })
+    if ($currentReplicaSets.Count -ne 1) { throw 'Cannot identify the current payments-api ReplicaSet before injection.' }
+    Save-Json 'pods-before.json' @('get','pods','-n','payments','-l','app=payments-api')
+    $baselinePods = Get-Content (Join-Path $dir 'pods-before.json') -Raw | ConvertFrom-Json
+    # Old or terminating Pods may remain visible after rollout status succeeds.
+    $activePods = @($baselinePods.items | Where-Object {
+        -not $_.metadata.deletionTimestamp -and
+        @($_.metadata.ownerReferences | Where-Object { $_.kind -eq 'ReplicaSet' -and $_.uid -eq $currentReplicaSets[0].metadata.uid }).Count -eq 1
+    })
+    ConvertTo-Json -InputObject @($activePods) -Depth 100 | Set-Content (Join-Path $dir 'pods-baseline-active.json')
+    if ($before.spec.replicas -lt 1 -or $activePods.Count -ne $before.spec.replicas) {
+        throw "Expected $($before.spec.replicas) active current-revision Pods before injection; found $($activePods.Count)."
+    }
+    foreach ($pod in $activePods) {
+        $metrics = @($pod.status.containerStatuses | Where-Object name -EQ 'metrics')
+        if ($metrics.Count -ne 1 -or -not $metrics[0].ready -or -not $metrics[0].state.running) {
+            throw "The metrics sidecar must be running and ready before injection (Pod: $($pod.metadata.name))."
+        }
+    }
     $api = @($before.spec.template.spec.containers | Where-Object name -EQ 'api')
     if ($api.Count -ne 1 -or $api[0].image -ne $goodImage) { throw "Start from a healthy api container with image $goodImage. This script does not manually reset the workload." }
     # Preserve diagnostic logs before resetting its in-memory incident deduplication.
@@ -131,6 +149,7 @@ try {
     $errorText = $_.Exception.Message
     if ($injected) { $outcome = 'collection_or_execution_error' }
     $errorText | Set-Content (Join-Path $dir 'error.txt')
+    Write-Warning $errorText
 } finally {
     # Capture on failed attempts too. No manual repair is performed after injection.
     foreach ($entry in @(@('deployment-after.json',@('get','deployment','payments-api','-n','payments')),@('pods-after.json',@('get','pods','-n','payments')),@('events.json',@('get','events','-n','payments')),@('agents-after.json',@('get','pods','-n','agentic-ops')))) {
