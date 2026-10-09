@@ -28,6 +28,10 @@ The package version alone does not establish a release date.
 
 ### Added
 
+- Add `scripts/test-s03.ps1` for a live missing-image escalation trial, with ACR
+  repository inventory, post-injection spec/generation preservation checks and
+  evidence ZIP capture. Transport/model errors do not count as a scenario pass.
+
 - Add `scripts/test-s02.ps1` and a live S02 guide for healthy-sidecar preparation,
   API-only fault injection, verified recovery and preservation checks, and evidence ZIP capture.
 
