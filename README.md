@@ -89,6 +89,16 @@ first. For defaults, parameter overrides and implementation details, read the
 
 ## Run scenarios and collect evidence
 
+For live S02 (one faulty API container alongside a healthy sidecar), run after setup:
+
+~~~powershell
+./scripts/test-s02.ps1
+~~~
+
+The script prepares the sidecar, injects the API image typo and captures recovery
+and preservation evidence. See the [live S02 guide](docs/live-s02.md).
+
+
 The automated live S01 trial injects `paymnets-api:1.4.2` instead of
 `payments-api:1.4.2`, waits for the agent outcome and saves logs and snapshots:
 

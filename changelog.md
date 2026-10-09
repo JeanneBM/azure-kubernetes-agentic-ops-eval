@@ -23,6 +23,9 @@ The package version alone does not establish a release date.
 
 ### Added
 
+- Add `scripts/test-s02.ps1` and a live S02 guide for healthy-sidecar preparation,
+  API-only fault injection, verified recovery and preservation checks, and evidence ZIP capture.
+
 - `scripts/test-s01.ps1` for one separate live S01 trial, with fault injection,
   bounded observation, audit/rollout/spec validation, failure evidence and ZIP
   export. No automatic manual repair after injection.
