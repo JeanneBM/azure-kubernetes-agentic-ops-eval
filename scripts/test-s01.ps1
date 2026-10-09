@@ -5,7 +5,7 @@ Run one live S01 trial: inject an image repository typo and capture agent recove
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory)][ValidatePattern('^[a-zA-Z0-9.-]+$')][string]$AcrLoginServer,
+    [ValidatePattern('^[a-zA-Z0-9.-]+$')][string]$AcrLoginServer,
     [string]$Kubeconfig,
     [ValidateRange(30,900)][int]$TimeoutSeconds = 180,
     [string]$EvidenceRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) 'eval/evidence/S01')
@@ -15,6 +15,13 @@ $PSNativeCommandUseErrorActionPreference = $false
 $kubeArgs = @()
 if ($Kubeconfig) { $kubeArgs = @('--kubeconfig',$Kubeconfig) }
 if (-not (Get-Command kubectl -ErrorAction SilentlyContinue)) { throw 'kubectl is required.' }
+if (-not $AcrLoginServer) {
+    $configPath = Join-Path (Split-Path $PSScriptRoot -Parent) '.local/rg-agentic-ops-lab.json'
+    if (-not (Test-Path $configPath)) { throw 'Supply -AcrLoginServer and optionally -Kubeconfig, or run environment setup first.' }
+    $config = Get-Content $configPath -Raw | ConvertFrom-Json
+    $AcrLoginServer = ($config.demoImage -split '/')[0]
+    if (-not $Kubeconfig) { $Kubeconfig = $config.kubeconfig; $kubeArgs = @('--kubeconfig',$Kubeconfig) }
+}
 $goodImage = "$AcrLoginServer/payments-api:1.4.2"
 $badImage = "$AcrLoginServer/paymnets-api:1.4.2"
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
@@ -102,6 +109,7 @@ try {
     $errorText = $_.Exception.Message
     if ($injected) { $outcome = 'collection_or_execution_error' }
     $errorText | Set-Content (Join-Path $dir 'error.txt')
+    Write-Warning $errorText
 } finally {
     # Capture on failed attempts too. No manual repair is performed after injection.
     foreach ($entry in @(@('deployment-after.json',@('get','deployment','payments-api','-n','payments')),@('pods-after.json',@('get','pods','-n','payments')),@('events.json',@('get','events','-n','payments')),@('agents-after.json',@('get','pods','-n','agentic-ops')))) {
@@ -136,7 +144,7 @@ Review all files for credentials and personal identifiers before publication.
 "@ | Set-Content (Join-Path $dir 'evidence.md')
     Write-Host "`n=== S01: $verdict; outcome: $outcome ==="
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
-    try { Kube @('get','deployment','payments-api','-n','payments','-o','jsonpath={.spec.template.spec.containers[0].image}') | Out-Host; Kube @('get','pods','-n','payments') | Out-Host } catch { Write-Warning $_ }
+    try { Kube @('get','deployment','payments-api','-n','payments','-o','jsonpath={.spec.template.spec.containers[?(@.name=="api")].image}') | Out-Host; Kube @('get','pods','-n','payments') | Out-Host } catch { Write-Warning $_ }
     Write-Host "Evidence: $dir. Take a screenshot of the decision, image and pods."
     try { Compress-Archive -Path (Join-Path $dir '*') -DestinationPath "$dir.zip" -Force; Write-Host "Download before an ephemeral Cloud Shell session ends: $dir.zip" } catch { Write-Warning "Could not create ZIP: $_" }
 }
