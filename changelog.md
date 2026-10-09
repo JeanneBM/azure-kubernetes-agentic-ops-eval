@@ -19,6 +19,15 @@ The package version alone does not establish a release date.
 
 ### Fixed
 
+- Remove eligible Network Watchers with the Cloud Shell-confirmed `az resource
+  delete --resource-group ... --name ... --resource-type Microsoft.Network/networkWatchers`
+  command, using discovered names/groups and verifying absence afterwards.
+
+- Cleanup resolves one native Azure CLI executable, bypassing `az` functions or
+  aliases and duplicate PATH matches. Remaining AKS node groups no longer stop
+  regional watcher checks, but still fail completion; retained shared watchers
+  and the retry inventory path are reported explicitly.
+
 - S02 pre-injection readiness checks now inspect only active Pods owned by the
   current Deployment revision, excluding old or terminating rollout Pods. Require
   the desired replica count and running, ready metrics sidecars; capture selected
