@@ -93,7 +93,9 @@ foreach ($watcherId in $inventory.watcherIds) {
         Write-Host "PRESERVED watcher with diagnostic child resources: $watcherId"
         continue
     }
-    Invoke-AzureCli (@('resource','delete','--ids',$watcherId)+$base) | Out-Host
+    # Same native resource-delete command used successfully in Cloud Shell.
+    Invoke-AzureCli (@('resource','delete','--resource-group',$watcher.resourceGroup,
+        '--name',$watcher.name,'--resource-type','Microsoft.Network/networkWatchers')+$base) | Out-Host
     $remaining = @(Read-AzureJson (@('resource','list','--resource-type','Microsoft.Network/networkWatchers')+$base) | Where-Object id -EQ $watcherId)
     if ($remaining.Count -gt 0) { throw "Watcher remains: $watcherId" }
     Write-Host "Removed unused watcher: $watcherId"
