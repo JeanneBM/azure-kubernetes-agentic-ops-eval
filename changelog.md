@@ -16,6 +16,11 @@ The package version alone does not establish a release date.
 
 ### Fixed
 
+- S02 pre-injection readiness checks now inspect only active Pods owned by the
+  current Deployment revision, excluding old or terminating rollout Pods. Require
+  the desired replica count and running, ready metrics sidecars; capture selected
+  Pods and report setup errors directly in the console.
+
 - Environment deletion now captures and verifies AKS node groups, cleans unused
   regional Network Watcher leftovers and empty NetworkWatcherRG, and retains
   shared/nonempty watchers with an explicit report. Cleanup inventory supports
