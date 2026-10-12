@@ -3,7 +3,7 @@
 From PowerShell 7 at the repository root:
 
 ```powershell
-./scripts/run-all-tests.ps1
+./scripts/S01-S06-tests.ps1
 ```
 
 The script checks the recorded subscription and provisions the default isolated lab
