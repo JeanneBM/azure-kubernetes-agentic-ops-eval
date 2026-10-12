@@ -13,7 +13,7 @@ param(
     [string]$ModelName = 'gpt-4.1-nano',
     [string]$ModelVersion = '2025-04-14',
     [string]$ModelDeployment = 'diagnostic-gpt41nano',
-    [ValidateRange(1,100)][int]$ModelCapacity = 1
+    [ValidateRange(1,100)][int]$ModelCapacity = 10
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -72,7 +72,7 @@ New-Item -ItemType Directory -Force $local | Out-Null
 $statePath = Join-Path $local "$ResourceGroup.json"
 if (Test-Path $statePath) {
     $state = Get-Content $statePath -Raw | ConvertFrom-Json
-    if ($state.subscriptionId -ne $SubscriptionId -or $state.location -ne $Location -or $state.aiLocation -ne $AiLocation -or $state.nodeVmSize -ne $NodeVmSize -or $state.modelName -ne $ModelName -or $state.modelVersion -ne $ModelVersion -or $state.modelDeployment -ne $ModelDeployment -or $state.modelCapacity -ne $ModelCapacity) {
+    if ($state.subscriptionId -ne $SubscriptionId -or $state.location -ne $Location -or $state.aiLocation -ne $AiLocation -or $state.nodeVmSize -ne $NodeVmSize -or $state.modelName -ne $ModelName -or $state.modelVersion -ne $ModelVersion -or $state.modelDeployment -ne $ModelDeployment) {
         throw 'Existing local state uses different parameters. Reuse the original parameters or choose a new ResourceGroup.'
     }
 } else {
@@ -144,6 +144,8 @@ Write-Host '[5/7] Build agents and import the healthy demo image'
 # Docker is not required locally: the build runs in ACR.
 Invoke-Az @('acr','build','--registry',$state.acrName,'--image',"agentic-ops:$($state.imageTag)",$root) | Out-Host
 Invoke-Az @('acr','import','--name',$state.acrName,'--source','docker.io/library/nginx:1.27','--image','payments-api:1.4.2','--force','-o','none') | Out-Null
+$state.modelCapacity = $ModelCapacity
+$state | ConvertTo-Json | Set-Content $statePath -Encoding utf8
 $agentImage = "$($acr.loginServer)/agentic-ops:$($state.imageTag)"
 $demoImage = "$($acr.loginServer)/payments-api:1.4.2"
 $values = @{
