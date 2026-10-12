@@ -18,7 +18,11 @@ through that identity before injection and during the observed authentication fa
 
 It keeps the image reference and sets imagePullPolicy=Always with a fresh pod-template
 annotation. Azure RBAC propagation and cached tokens can delay or prevent the fault:
-setup deadline defaults to 900 seconds. A confirmed authentication failure starts
+setup deadline defaults to 300 seconds. During setup, the script deletes only already-running
+Pods belonging to this trial at most every 30 seconds to force a fresh pull. It stops these
+retries on a confirmed authentication failure or terminal agent decision. Pending/failing
+Pods are preserved. Deletions are recorded separately in setup-pull-retries.jsonl and do
+not change Deployment spec/generation. A confirmed authentication failure starts
 a separate 180-second decision deadline. No observed fault is inconclusive.
 
 A pass requires authentication evidence on the new trial's Pod, explicit scenario
