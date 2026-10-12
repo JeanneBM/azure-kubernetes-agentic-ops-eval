@@ -59,7 +59,7 @@ function Save-BatchSummary {
     $markdown+=@('','Scenarios run sequentially against one isolated lab. Each prepares a healthy baseline.',
         'S06 defaults to a scripted proposal; it tests live stale-action protection, not LLM diagnosis.',
         'Failed/inconclusive results remain recorded. This is one functional repetition per scenario.',
-        'Per-scenario archives contain raw evidence; inspect and anonymize before publication.',
+        'Archives are anonymized automatically before packaging.',
         'The lab is retained after the batch. Remove it with the existing cleanup script after downloading evidence.')
     $markdown | Set-Content (Join-Path $script:batchDirectory 'summary.md')
 }
@@ -107,7 +107,7 @@ try {
     $rows | Format-Table scenario,verdict,outcome,durationSeconds -AutoSize | Out-Host
     $bundle=Join-Path (Split-Path $batchDirectory -Parent) ($batchId+'.zip')
     try {
-        Compress-Archive -Path (Join-Path $batchDirectory '*') -DestinationPath $bundle -Force
+        & (Join-Path $PSScriptRoot 'package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle
         Write-Host "Download: $bundle"
     } catch { Write-Warning "Batch ZIP could not be created: $_" }
     Write-Host "Summary: $(Join-Path $batchDirectory 'summary.md')"
