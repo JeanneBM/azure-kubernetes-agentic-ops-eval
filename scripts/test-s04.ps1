@@ -215,6 +215,6 @@ Review evidence for identifiers before publishing. This is one trial, not a benc
     Write-Host "S04: $verdict; outcome: $outcome; kubelet access restored: $restored"
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
     Write-Host "Evidence: $dir"
-    try { Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $zipPath -Force; Write-Host "Download: $zipPath" } catch { Write-Warning "ZIP creation failed: $_" }
+    try { & (Join-Path $PSScriptRoot 'package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning "ZIP creation failed: $_" }
 }
 if ($verdict -ne 'pass') { throw "S04 did not pass ($outcome). Evidence: $dir" }
