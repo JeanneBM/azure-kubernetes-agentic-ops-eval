@@ -14,6 +14,10 @@ class PolicyViolation(Exception):
     """The proposed action is outside the self-cure contract. Leads to escalation."""
 
 
+class StaleActionError(RuntimeError):
+    """The workload changed after diagnosis; execution must abstain."""
+
+
 class OutOfScope(Exception):
     """The trigger targets a namespace this instance is not allowed to manage."""
 
