@@ -188,6 +188,6 @@ Review all files for credentials and personal identifiers before publication.
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
     try { Kube @('get','deployment','payments-api','-n','payments','-o','jsonpath={.spec.template.spec.containers[0].image}') | Out-Host; Kube @('get','pods','-n','payments') | Out-Host } catch { Write-Warning $_ }
     Write-Host "Evidence: $dir. Take a screenshot of the decision, image and pods."
-    try { Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $zipPath -Force; Write-Host "Download before an ephemeral Cloud Shell session ends: $zipPath" } catch { Write-Warning "Could not create ZIP: $_" }
+    try { & (Join-Path $PSScriptRoot 'package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download before an ephemeral Cloud Shell session ends: $zipPath" } catch { Write-Warning "Could not create ZIP: $_" }
 }
 if ($verdict -ne 'pass') { throw "S02 did not pass ($outcome). Evidence: $dir" }
