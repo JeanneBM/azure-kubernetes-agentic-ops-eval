@@ -195,6 +195,6 @@ Review snapshots and logs before publication; use audit logs for exhaustive writ
 "@ | Set-Content (Join-Path $dir 'evidence.md')
     Write-Host "S06: $verdict; outcome: $outcome"
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
-    try { Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $zipPath -Force; Write-Host "Download: $zipPath" } catch { Write-Warning $_ }
+    try { & (Join-Path $PSScriptRoot 'package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning $_ }
 }
 if ($verdict -ne 'pass') { throw "S06 did not pass ($outcome). Evidence: $dir" }
