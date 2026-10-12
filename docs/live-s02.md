@@ -36,3 +36,5 @@ so preserving the sidecar configuration does not mean preserving its Pod identit
 One execution is one live C-variant trial, not an evaluation batch. Logs captured
 via Deployment may omit older containers after restarts; missing failure captures
 are evidence gaps. Readiness is not business-function verification.
+
+Evidence ZIP names start with the scenario ID: `S02-<UTC-run-id>-C-01.zip`.

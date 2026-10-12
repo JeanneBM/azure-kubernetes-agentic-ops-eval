@@ -39,3 +39,5 @@ If the process is forcibly terminated, execute the saved restore-kubelet-access.
 command immediately. Download evidence before leaving an ephemeral Cloud Shell.
 
 This script has not established a live S04 result until it is run on AKS.
+
+Evidence ZIP names start with the scenario ID: `S04-<UTC-run-id>-C-01.zip`.

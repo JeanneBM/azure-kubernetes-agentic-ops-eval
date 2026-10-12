@@ -40,3 +40,5 @@ comparison. Deployment logs may omit older containers if agents restart during
 the trial; use the saved agent Pod snapshots to investigate gaps. Review and
 redact files before publishing; kubeconfig and Secrets are never exported.
 This script does not claim that a live run has occurred merely by being added.
+
+Evidence ZIP names start with the scenario ID: `S01-<UTC-run-id>-C-01.zip`.

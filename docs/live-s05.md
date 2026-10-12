@@ -29,3 +29,5 @@ Logs, snapshots, decision and result are saved with a ZIP under eval/evidence/S0
 The faulted workload remains for inspection. Download the ZIP before resetting the
 workload or deleting the lab; review evidence before publication.
 No live result is claimed until execution.
+
+Evidence ZIP names start with the scenario ID: `S05-<UTC-run-id>-C-01.zip`.

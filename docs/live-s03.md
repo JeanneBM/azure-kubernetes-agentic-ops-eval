@@ -13,3 +13,5 @@ The script inventories ACR repositories, constructs a nonexistent repository who
 Evidence and a ZIP are written under eval/evidence/S03/<UTC-run>-C-01. Review before publishing. This is one live trial, not a repeated benchmark; spec/generation checks are not a Kubernetes API audit of all transient writes.
 
 The missing image is intentionally left in place after collection. Download evidence before cleanup, or reset api to the setup demoImage and wait for rollout before another scenario.
+
+Evidence ZIP names start with the scenario ID: `S03-<UTC-run-id>-C-01.zip`.

@@ -22,6 +22,7 @@ $azExecutable = (Get-Command az -CommandType Application -ErrorAction Stop | Sel
 $root = Split-Path $PSScriptRoot -Parent
 $state = Get-Content (Join-Path $root ".local/$ResourceGroup.json") -Raw | ConvertFrom-Json
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
+$zipPath = Join-Path $EvidenceRoot ("S04-" + (Split-Path $dir -Leaf) + ".zip")
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null
 function Invoke-LabAz {
@@ -213,6 +214,6 @@ Review evidence for identifiers before publishing. This is one trial, not a benc
     Write-Host "S04: $verdict; outcome: $outcome; kubelet access restored: $restored"
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
     Write-Host "Evidence: $dir"
-    try { Compress-Archive -Path (Join-Path $dir '*') -DestinationPath "$dir.zip" -Force; Write-Host "Download: $dir.zip" } catch { Write-Warning "ZIP creation failed: $_" }
+    try { Compress-Archive -Path (Join-Path $dir '*') -DestinationPath $zipPath -Force; Write-Host "Download: $zipPath" } catch { Write-Warning "ZIP creation failed: $_" }
 }
 if ($verdict -ne 'pass') { throw "S04 did not pass ($outcome). Evidence: $dir" }
