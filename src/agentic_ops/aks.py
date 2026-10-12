@@ -7,6 +7,8 @@ from kubernetes import client, config
 
 from .contracts import ActionRequest, Evidence, Facts, IncidentTrigger, PullFailure
 
+from .safety import StaleActionError
+
 PULL_REASONS = frozenset({"ImagePullBackOff", "ErrImagePull"})
 
 
@@ -145,7 +147,7 @@ class AksActionExecutor:
         if container is None:
             raise RuntimeError(f"Container {p['container']!r} not found in deployment")
         if container.image != p["old_image"]:
-            raise RuntimeError("Deployment image changed since diagnosis; refusing to overwrite it")
+            raise StaleActionError("Deployment image changed since diagnosis; refusing to overwrite it")
         patch = {"spec": {"template": {"spec": {"containers": [
             {"name": p["container"], "image": p["new_image"]}
         ]}}}}
