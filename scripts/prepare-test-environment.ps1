@@ -59,12 +59,36 @@ $containers=@($deployment.spec.template.spec.containers)
 if (@($containers | Where-Object { $_.name -notin @('api','metrics') }).Count -gt 0 -or @($containers | Where-Object name -EQ 'api').Count -ne 1) { throw 'Unexpected workload containers; automatic reset refused.' }
 $diagnostic=Invoke-PrepareKube @('get','deployment/agentic-ops-diagnostic','-n','agentic-ops','-o','json') | Out-String | ConvertFrom-Json
 if ($diagnostic.spec.replicas -gt 1) { throw 'Expected isolated single-replica diagnostic agent.' }
+# Build only when application inputs changed; documentation edits do not rebuild agents.
+$inputs=@(Get-ChildItem (Join-Path $root 'src') -Recurse -File -Filter '*.py')
+$inputs+=@(Get-Item (Join-Path $root 'Dockerfile'),(Join-Path $root 'pyproject.toml'),(Join-Path $root 'constraints.txt'))
+$fingerprint=($inputs | Sort-Object FullName | ForEach-Object {
+    $_.FullName.Substring($root.Length) + ':' + (Get-FileHash $_.FullName -Algorithm SHA256).Hash
+}) -join '|'
+$hashBytes=[Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($fingerprint))
+$imageTag='trial-'+([Convert]::ToHexString($hashBytes).ToLower().Substring(0,16))
+$desiredAgentImage="$($acr.loginServer)/agentic-ops:$imageTag"
+$rebuild=$lab.agentImage -ne $desiredAgentImage
+if ($rebuild) {
+    Write-Host "PREPARE: application changed; building agent image $imageTag once."
+    $buildArgs=@('acr','build','--registry',$lab.acrName,'--image',"agentic-ops:$imageTag",$root,'--subscription',$lab.subscriptionId,'--only-show-errors')
+    & $azProgram @buildArgs | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw 'Agent image build failed; no test fault injected.' }
+}
 $paused=$false
 try {
     # Reset before observation resumes; this also clears incident deduplication.
     $paused=$true
     Invoke-PrepareKube @('scale','deployment/agentic-ops-diagnostic','-n','agentic-ops','--replicas=0') | Out-Host
     Invoke-PrepareKube @('wait','--for=delete','pods','-n','agentic-ops','-l','app=agentic-ops,role=diagnostic','--timeout=60s') | Out-Host
+    if ($rebuild) {
+        foreach ($agentRole in 'diagnostic','remediation') {
+            $agentDeployment=Invoke-PrepareKube @('get',"deployment/agentic-ops-$agentRole",'-n','agentic-ops','-o','json') | Out-String | ConvertFrom-Json
+            $agentContainers=@($agentDeployment.spec.template.spec.containers)
+            if ($agentContainers.Count -ne 1) { throw 'Expected a single container in each agent Deployment.' }
+            Invoke-PrepareKube @('set','image',"deployment/agentic-ops-$agentRole","$($agentContainers[0].name)=$desiredAgentImage",'-n','agentic-ops') | Out-Host
+        }
+    }
     $resetContainers=@(@{name='api';image=$lab.demoImage;imagePullPolicy='Always'})
     if (@($containers | Where-Object name -EQ 'metrics').Count -gt 0) { $resetContainers+=@{name='metrics';'$patch'='delete'} }
     $patch=@{spec=@{template=@{metadata=@{annotations=@{'eval.preparation/run'=[Guid]::NewGuid().ToString('N')}};spec=@{containers=$resetContainers}}}} | ConvertTo-Json -Depth 20
@@ -79,4 +103,9 @@ foreach ($role in 'diagnostic','remediation') {
     Invoke-PrepareKube @('rollout','status',"deployment/agentic-ops-$role",'-n','agentic-ops','--timeout=120s') | Out-Host
 }
 Invoke-PrepareKube @('get','deployment/payments-api','-n','payments','-o','json') | Set-Content (Join-Path $prep 'deployment-healthy.json')
+if ($rebuild) {
+    $lab.agentImage=$desiredAgentImage
+    $lab.imageTag=$imageTag
+    $lab | ConvertTo-Json -Depth 30 | Set-Content $statePath
+}
 Write-Host 'PREPARE COMPLETE: healthy single-container baseline; test can inject its fault.'
