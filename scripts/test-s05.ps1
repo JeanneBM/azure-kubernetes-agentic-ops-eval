@@ -44,37 +44,11 @@ $outcome = 'setup_error'; $verdict = 'inconclusive'; $errorText = $null
 $injected = $false; $start = $null; $decision = $null
 $watcherPaused = $false; $diagnosticReplicas = $null; $bothObserved = $false; $failureUtc = $null
 try {
+    if ($config) { & (Join-Path $PSScriptRoot 'prepare-test-environment.ps1') -ResourceGroup $config.resourceGroup -EvidenceDirectory $dir }
     Kube @('config','current-context') | Set-Content (Join-Path $dir 'context.txt')
     if (Get-Command git -ErrorAction SilentlyContinue) {
         $revision = & git -C (Split-Path $PSScriptRoot -Parent) rev-parse HEAD
         if ($LASTEXITCODE -eq 0) { $revision | Set-Content (Join-Path $dir 'source-commit.txt') }
-    }
-    # Reconcile the known lab's model capacity before fault injection.
-    # 10 is the lab default, not a guarantee against every 429.
-    if ($config) {
-        $azPath = (Get-Command az -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
-        $modelArgs = @('cognitiveservices','account','deployment','show','-g',$config.resourceGroup,'-n',$config.aiName,'--deployment-name',$config.modelDeployment,'--subscription',$config.subscriptionId,'--only-show-errors','-o','json')
-        $modelText = & $azPath @modelArgs
-        if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect model capacity; no S05 fault injected.' }
-        $model = $modelText | Out-String | ConvertFrom-Json
-        $model | ConvertTo-Json -Depth 30 | Set-Content (Join-Path $dir 'model-before.json')
-        if ($model.properties.model.name -ne $config.modelName -or $model.properties.model.version -ne $config.modelVersion -or $model.sku.name -ne 'GlobalStandard') {
-            throw 'Model differs from lab state; automatic capacity adjustment refused.'
-        }
-        $targetCapacity = [Math]::Max(10,[int]$model.sku.capacity)
-        if ([int]$model.sku.capacity -lt $targetCapacity) {
-            Write-Host "S05 preflight: increasing model capacity to $targetCapacity."
-            $updateArgs = @('cognitiveservices','account','deployment','create','-g',$config.resourceGroup,'-n',$config.aiName,'--deployment-name',$config.modelDeployment,'--model-name',$config.modelName,'--model-version',$config.modelVersion,'--model-format','OpenAI','--sku-name','GlobalStandard','--sku-capacity',"$targetCapacity",'--subscription',$config.subscriptionId,'--only-show-errors','-o','json')
-            $updatedText = & $azPath @updateArgs
-            if ($LASTEXITCODE -ne 0) { throw 'Model capacity adjustment failed (check quota/permissions); no S05 fault injected.' }
-            $model = $updatedText | Out-String | ConvertFrom-Json
-        }
-        if ($model.properties.provisioningState -ne 'Succeeded' -or [int]$model.sku.capacity -lt 10) { throw 'Model capacity is not ready; no S05 fault injected.' }
-        $model | ConvertTo-Json -Depth 30 | Set-Content (Join-Path $dir 'model-ready.json')
-        $config.modelCapacity = [int]$model.sku.capacity
-        $config | ConvertTo-Json -Depth 30 | Set-Content $configPath -Encoding utf8
-    } else {
-        Write-Warning 'External configuration: model capacity is not automatically managed.'
     }
     Write-Host "S05 target: payments/payments-api; evidence: $dir"
     Kube @('rollout','status','deployment/payments-api','-n','payments','--timeout=60s') | Out-Host
