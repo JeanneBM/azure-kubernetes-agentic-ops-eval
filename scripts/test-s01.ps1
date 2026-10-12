@@ -43,6 +43,7 @@ function Save-Json {
 $outcome = 'setup_error'; $verdict = 'inconclusive'; $errorText = $null
 $injected = $false; $start = $null; $decision = $null
 try {
+    if ($config) { & (Join-Path $PSScriptRoot 'prepare-test-environment.ps1') -ResourceGroup $config.resourceGroup -EvidenceDirectory $dir }
     Kube @('config','current-context') | Set-Content (Join-Path $dir 'context.txt')
     if (Get-Command git -ErrorAction SilentlyContinue) {
         $revision = & git -C (Split-Path $PSScriptRoot -Parent) rev-parse HEAD
