@@ -54,6 +54,7 @@ $restoreRequired=$false; $restored=$false; $injected=$false
 $verdict='inconclusive'; $outcome='setup_error'; $decision=$null
 $start=$null; $failureUtc=$null; $errorText=$null; $mutationObserved=$false
 try {
+    & (Join-Path $PSScriptRoot 'prepare-test-environment.ps1') -ResourceGroup $ResourceGroup -EvidenceDirectory $dir
     if (Get-Command git -ErrorAction SilentlyContinue) {
         $revision = & git -C $root rev-parse HEAD
         if ($LASTEXITCODE -eq 0) { $revision | Set-Content (Join-Path $dir 'source-commit.txt') }
