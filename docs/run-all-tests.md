@@ -28,5 +28,5 @@ does not measure model diagnosis quality.
 
 The lab remains active after the batch so results can be inspected. Download the
 evidence and run delete-environment-resource-group.ps1 when finished.
-Raw archives can contain Azure identifiers and personal metadata; they are local
-outputs, not automatically committed or published by this script.
+Archives are anonymized automatically before packaging. Unsupported content prevents
+archive creation. Local source evidence remains unchanged.
