@@ -18,14 +18,15 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 foreach ($tool in 'az','kubectl') { if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool is required." } }
+$azExecutable = (Get-Command az -CommandType Application -ErrorAction Stop).Source
 $root = Split-Path $PSScriptRoot -Parent
 $state = Get-Content (Join-Path $root ".local/$ResourceGroup.json") -Raw | ConvertFrom-Json
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null
-function Az {
+function Invoke-LabAz {
     param([string[]]$Arguments)
-    $output = & az @Arguments --subscription $script:state.subscriptionId --only-show-errors -o json
+    $output = & $script:azExecutable @Arguments --subscription $script:state.subscriptionId --only-show-errors -o json
     if ($LASTEXITCODE -ne 0) { throw "Azure CLI failed: $($Arguments[0..2] -join ' ')" }
     if ($output) { $output | Out-String | ConvertFrom-Json }
 }
@@ -56,15 +57,15 @@ try {
         $revision = & git -C $root rev-parse HEAD
         if ($LASTEXITCODE -eq 0) { $revision | Set-Content (Join-Path $dir 'source-commit.txt') }
     }
-    $aks = Az @('aks','show','-g',$ResourceGroup,'-n',$state.aksName)
-    $acr = Az @('acr','show','-g',$ResourceGroup,'-n',$state.acrName)
+    $aks = Invoke-LabAz @('aks','show','-g',$ResourceGroup,'-n',$state.aksName)
+    $acr = Invoke-LabAz @('acr','show','-g',$ResourceGroup,'-n',$state.acrName)
     $server = (Kube @('config','view','--minify','-o','jsonpath={.clusters[0].cluster.server}') | Out-String).Trim()
     if (([uri]$server).Host -notin @($aks.fqdn,$aks.privateFqdn)) { throw 'Kubeconfig does not target the recorded lab.' }
     if (($state.demoImage -split '/')[0] -ne $acr.loginServer) { throw 'Image does not belong to lab ACR.' }
     $principal = $aks.identityProfile.kubeletidentity.objectId
-    $remediation = Az @('identity','show','-g',$ResourceGroup,'-n',$state.remediationIdentity)
+    $remediation = Invoke-LabAz @('identity','show','-g',$ResourceGroup,'-n',$state.remediationIdentity)
     if (-not $principal -or $principal -eq $remediation.principalId) { throw 'Kubelet and remediation identities must differ.' }
-    $roles = @(Az @('role','assignment','list','--assignee',$principal,'--scope',$acr.id,'--include-inherited'))
+    $roles = @(Invoke-LabAz @('role','assignment','list','--assignee',$principal,'--scope',$acr.id,'--include-inherited'))
     $pull = @($roles | Where-Object { $_.roleDefinitionName -eq 'AcrPull' -and $_.scope -eq $acr.id })
     if ($pull.Count -ne 1 -or $pull[0].condition) { throw 'Expected one unconditional registry-scoped kubelet AcrPull role.' }
     $role = $pull[0]
@@ -82,7 +83,7 @@ try {
     Write-Host "S04: temporarily removing lab kubelet AcrPull. Evidence: $dir"
     $start = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
     $restoreRequired=$true
-    Az @('role','assignment','delete','--ids',$role.id) | Out-Null
+    Invoke-LabAz @('role','assignment','delete','--ids',$role.id) | Out-Null
     $runId = [Guid]::NewGuid().ToString('N')
     $patch = @{spec=@{template=@{metadata=@{annotations=@{'eval.s04/run'=$runId}};spec=@{containers=@(@{name='api';imagePullPolicy='Always'})}}}} | ConvertTo-Json -Depth 20
     $patch | Set-Content (Join-Path $dir 'fault-patch.json')
@@ -150,8 +151,8 @@ try {
     if ($restoreRequired) {
         for ($attempt=1; $attempt -le 6; $attempt++) {
             try {
-                Az $restoreArgs | Out-Null
-                $check = @(Az @('role','assignment','list','--assignee',$principal,'--scope',$acr.id))
+                Invoke-LabAz $restoreArgs | Out-Null
+                $check = @(Invoke-LabAz @('role','assignment','list','--assignee',$principal,'--scope',$acr.id))
                 if (@($check | Where-Object { $_.id -eq $role.id }).Count -ne 1) { throw 'Role restoration not verified.' }
                 $restored=$true; break
             }
