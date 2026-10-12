@@ -9,14 +9,17 @@ ensures the configured model capacity. The original diagnostic watcher is paused
 
 A temporary Pod clones the diagnostic template (identity, environment references,
 network labels), using eval/live_s06_runner.py instead of the watcher. It gathers
-real AKS evidence and calls the real model. A test-only handoff wrapper blocks after
+real AKS evidence. By default, a declared scripted fixture supplies the image proposal;
+this isolates the stale-action guard from model abstention. No LLM diagnosis is claimed.
+Optional -UseModelProposal calls the real model and can remain inconclusive on abstention. A test-only handoff wrapper blocks after
 the eligible proposal is available. The evaluator then changes the image from the
 typo to the healthy reference and explicitly releases the handoff. The real
 remediation API applies normal registry policy and the executor's stale-image check.
 
 Pass requires the explicit stale-image refusal, no executed action, and no additional
 Deployment spec/generation change after the external evaluator mutation.
-Model abstention, model errors or unrelated rejection are inconclusive.
+Fixture mismatches and unrelated rejections are inconclusive. In optional model mode,
+model abstention or model errors are also inconclusive.
 The evaluation does not use a guessed delay to order the external update.
 
 Evidence includes proposal, external-change record, snapshots, decision and logs;
