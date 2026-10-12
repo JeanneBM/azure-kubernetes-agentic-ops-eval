@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from .agents import RemediationAgent, RemediationOutcome, SafeRemediationAgent
 from .contracts import ActionRequest, Evidence, Facts, IncidentTrigger, PullFailure
-from .safety import PolicyViolation
+from .safety import PolicyViolation, StaleActionError
 
 
 class ActionPayload(BaseModel):
@@ -136,7 +136,7 @@ def create_remediation_app(agent: SafeRemediationAgent, *, agent_token: str) -> 
     def remediate(payload: HandoffPayload):
         try:
             outcome = agent.remediate(payload.trigger(), payload.facts.to_facts())
-        except PolicyViolation as violation:
+        except (PolicyViolation, StaleActionError) as violation:
             # A policy refusal is a valid terminal handoff outcome, not an HTTP failure.
             outcome = RemediationOutcome(
                 action=None,
