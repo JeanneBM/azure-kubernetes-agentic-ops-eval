@@ -18,7 +18,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 foreach ($tool in 'az','kubectl') { if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool is required." } }
-$azExecutable = (Get-Command az -CommandType Application -ErrorAction Stop).Source
+$azExecutable = (Get-Command az -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 $root = Split-Path $PSScriptRoot -Parent
 $state = Get-Content (Join-Path $root ".local/$ResourceGroup.json") -Raw | ConvertFrom-Json
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
