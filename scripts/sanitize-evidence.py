@@ -29,11 +29,29 @@ SECRET_KEYS = {
 SECRET_ENV = re.compile(r"(?i)(?:TOKEN|PASSWORD|SECRET|API_KEY|APIKEY|CONNECTION_STRING)")
 SECRET_ASSIGNMENT = re.compile(
     r"""(?ix)
-    ((?:api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token|password|
-       x-agent-token|x-webhook-token)\s*[=:]\s*["']?)
-    ([^\s"',}]+)
+    (?P<prefix>
+      (?<![\w-])
+      (?:[a-z0-9_-]*?(?:api[_-]?key|client[_-]?secret|access[_-]?token|
+         refresh[_-]?token|password|passwd|authorization|token|secret|connection[_-]?string))
+      (?:\\?["'])? \s* [=:] \s*
+    )
+    (?:
+      (?P<quote>\\?["']) (?P<quoted>.*?) (?P=quote)
+      | (?P<bare>[^\s"',}\\]+)
+    )
     """
 )
+
+def redact_assignment(match):
+    quote = match.group("quote") or ""
+    return match.group("prefix") + quote + "REDACTED_SECRET" + quote
+
+def unredacted_assignment(value):
+    for match in SECRET_ASSIGNMENT.finditer(value):
+        captured = match.group("quoted") if match.group("quote") else match.group("bare")
+        if captured and captured not in ("REDACTED_SECRET", "REDACTED_TOKEN"):
+            return True
+    return False
 
 class Sanitizer:
     def __init__(self):
@@ -84,7 +102,7 @@ class Sanitizer:
         value = JWT.sub("REDACTED_TOKEN", value)
         value = re.sub(r"(?i)(Bearer\s+)[A-Za-z0-9_./+=-]{8,}", r"\1REDACTED_TOKEN", value)
         value = re.sub(r"(?i)([?&](?:sig|token|access_token|code)=)[^\s&\"']+", r"\1REDACTED_SECRET", value)
-        value = SECRET_ASSIGNMENT.sub(lambda m: m.group(1) + "REDACTED_SECRET", value)
+        value = SECRET_ASSIGNMENT.sub(redact_assignment, value)
         value = EMAIL.sub(lambda m: self.alias("EMAIL", m.group()), value)
         value = UUID.sub(lambda m: self.alias("UUID", m.group().lower()), value)
         value = USER_PATH.sub(lambda m: m.group(1) + "ANON_USER", value)
@@ -142,7 +160,7 @@ class Sanitizer:
         else:
             result = json.dumps(self.json_value(parsed), ensure_ascii=False, indent=2) + "\n"
         # Post-check known secret/identifier patterns; fail closed on leftovers.
-        if UUID.search(result) or EMAIL.search(result) or JWT.search(result) or PRIVATE_KEY.search(result):
+        if UUID.search(result) or EMAIL.search(result) or JWT.search(result) or PRIVATE_KEY.search(result) or unredacted_assignment(result):
             raise ValueError(f"Unredacted identifier or secret in {name}; archive was not created")
         self.files += 1
         return result.encode("utf-8")

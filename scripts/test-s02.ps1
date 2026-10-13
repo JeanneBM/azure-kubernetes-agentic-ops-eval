@@ -7,21 +7,23 @@ Run one live S02 trial: prepare a healthy sidecar, inject an API image typo and 
 param(
     [ValidatePattern('^[a-zA-Z0-9.-]+$')][string]$AcrLoginServer,
     [string]$Kubeconfig,
+    [string]$ResourceGroup = 'rg-agentic-ops-lab',
     [ValidateRange(30,900)][int]$TimeoutSeconds = 180,
     [string]$EvidenceRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) 'eval/evidence/S02')
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
-$kubeArgs = @()
-if ($Kubeconfig) { $kubeArgs = @('--kubeconfig',$Kubeconfig) }
-if (-not (Get-Command kubectl -ErrorAction SilentlyContinue)) { throw 'kubectl is required.' }
-if (-not $AcrLoginServer) {
-    $configPath = Join-Path (Split-Path $PSScriptRoot -Parent) '.local/rg-agentic-ops-lab.json'
-    if (-not (Test-Path $configPath)) { throw 'Supply -AcrLoginServer and optionally -Kubeconfig, or run environment setup first.' }
-    $config = Get-Content $configPath -Raw | ConvertFrom-Json
-    $AcrLoginServer = ($config.demoImage -split '/')[0]
-    if (-not $Kubeconfig) { $Kubeconfig = $config.kubeconfig; $kubeArgs = @('--kubeconfig',$Kubeconfig) }
-}
+# Script-local state; never inherit configuration from a calling PowerShell scope.
+$config = $null
+$configPath = Join-Path (Split-Path $PSScriptRoot -Parent) ".local/$ResourceGroup.json"
+if (-not (Test-Path $configPath)) { throw 'Recorded lab state is required. Run setup-environment.ps1 first.' }
+$config = Get-Content $configPath -Raw | ConvertFrom-Json
+$recordedRegistry = ($config.demoImage -split '/')[0]
+if ($AcrLoginServer -and $AcrLoginServer -ine $recordedRegistry) { throw 'Registry differs from the recorded lab; no changes made.' }
+$AcrLoginServer = $recordedRegistry
+if (-not $Kubeconfig) { $Kubeconfig = $config.kubeconfig }
+$kubeArgs = @('--kubeconfig',$Kubeconfig)
+if (-not (Get-Command kubectl -CommandType Application -ErrorAction SilentlyContinue)) { throw 'kubectl is required.' }
 $goodImage = "$AcrLoginServer/payments-api:1.4.2"
 $badImage = "$AcrLoginServer/paymnets-api:1.4.2"
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
@@ -43,7 +45,7 @@ function Save-Json {
 $outcome = 'setup_error'; $verdict = 'inconclusive'; $errorText = $null
 $injected = $false; $start = $null; $decision = $null
 try {
-    if ($config) { & (Join-Path $PSScriptRoot 'prepare-test-environment.ps1') -ResourceGroup $config.resourceGroup -EvidenceDirectory $dir }
+    if ($config) { & (Join-Path $PSScriptRoot 'prepare-test-environment.ps1') -ResourceGroup $config.resourceGroup -Kubeconfig $Kubeconfig -EvidenceDirectory $dir }
     Kube @('config','current-context') | Set-Content (Join-Path $dir 'context.txt')
     if (Get-Command git -ErrorAction SilentlyContinue) {
         $revision = & git -C (Split-Path $PSScriptRoot -Parent) rev-parse HEAD

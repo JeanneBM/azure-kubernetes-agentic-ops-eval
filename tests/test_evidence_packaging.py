@@ -56,3 +56,25 @@ def test_unsupported_input_does_not_leave_an_archive(tmp_path):
     with pytest.raises(ValueError):
         module.package(source, destination)
     assert not destination.exists()
+
+
+@pytest.mark.parametrize("sample", [
+    'INFO {"password": "sample-private", "api_key": "sample-private"}',
+    'AGENTIC_OPS_REMEDIATION_TOKEN=sample-private',
+    'token=sample-private',
+    "secret: 'sample private value'",
+    r'INFO {\"password\": \"sample-private\"}',
+    'client_secret: sample-private',
+])
+def test_log_variants_are_processed(sample):
+    result = module.Sanitizer().content("run.log", sample.encode()).decode()
+    assert "sample-private" not in result
+    assert "sample private value" not in result
+    assert "REDACTED_SECRET" in result
+
+
+def test_final_check_rejects_unprocessed_assignments(monkeypatch):
+    sanitizer = module.Sanitizer()
+    monkeypatch.setattr(sanitizer, "text", lambda value: value)
+    with pytest.raises(ValueError):
+        sanitizer.content("run.log", b'INFO {"password": "sample-private"}')

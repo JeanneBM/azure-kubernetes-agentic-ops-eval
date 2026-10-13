@@ -6,6 +6,7 @@ Prepare the isolated lab for the next functional trial; prior evidence is preser
 [CmdletBinding()]
 param(
     [string]$ResourceGroup='rg-agentic-ops-lab',
+    [string]$Kubeconfig,
     [Parameter(Mandatory)][string]$EvidenceDirectory,
     [ValidateRange(1,100)][int]$MinimumModelCapacity=10
 )
@@ -14,6 +15,8 @@ $PSNativeCommandUseErrorActionPreference=$false
 $root=Split-Path $PSScriptRoot -Parent
 $statePath=Join-Path $root ".local/$ResourceGroup.json"
 $lab=Get-Content $statePath -Raw | ConvertFrom-Json
+if ($Kubeconfig) { $lab.kubeconfig = $Kubeconfig }
+if (-not $lab.kubeconfig) { throw 'Explicit lab kubeconfig is required.' }
 $azProgram=(Get-Command az -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 $kubectlProgram=(Get-Command kubectl -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 function Invoke-PrepareAz {
