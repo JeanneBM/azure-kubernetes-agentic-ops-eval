@@ -9,13 +9,13 @@ param(
     [string]$Kubeconfig,
     [string]$ResourceGroup = 'rg-agentic-ops-lab',
     [ValidateRange(30,900)][int]$TimeoutSeconds = 180,
-    [string]$EvidenceRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) 'eval/evidence/S01')
+    [string]$EvidenceRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence/S01')
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 # Script-local state; never inherit configuration from a calling PowerShell scope.
 $config = $null
-$configPath = Join-Path (Split-Path $PSScriptRoot -Parent) ".local/$ResourceGroup.json"
+$configPath = Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) ".local/$ResourceGroup.json"
 if (-not (Test-Path $configPath)) { throw 'Recorded lab state is required. Run setup-environment.ps1 first.' }
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
 $recordedRegistry = ($config.demoImage -split '/')[0]
@@ -45,10 +45,10 @@ function Save-Json {
 $outcome = 'setup_error'; $verdict = 'inconclusive'; $errorText = $null
 $injected = $false; $start = $null; $decision = $null
 try {
-    if ($config) { & (Join-Path $PSScriptRoot 'prepare-test-environment.ps1') -ResourceGroup $config.resourceGroup -Kubeconfig $Kubeconfig -EvidenceDirectory $dir }
+    if ($config) { & (Join-Path $PSScriptRoot '../environment/prepare-test-environment.ps1') -ResourceGroup $config.resourceGroup -Kubeconfig $Kubeconfig -EvidenceDirectory $dir }
     Kube @('config','current-context') | Set-Content (Join-Path $dir 'context.txt')
     if (Get-Command git -ErrorAction SilentlyContinue) {
-        $revision = & git -C (Split-Path $PSScriptRoot -Parent) rev-parse HEAD
+        $revision = & git -C (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) rev-parse HEAD
         if ($LASTEXITCODE -eq 0) { $revision | Set-Content (Join-Path $dir 'source-commit.txt') }
     }
     Write-Host "S01 target: payments/payments-api; evidence: $dir"
@@ -150,6 +150,6 @@ Review all files for credentials and personal identifiers before publication.
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
     try { Kube @('get','deployment','payments-api','-n','payments','-o','jsonpath={.spec.template.spec.containers[?(@.name=="api")].image}') | Out-Host; Kube @('get','pods','-n','payments') | Out-Host } catch { Write-Warning $_ }
     Write-Host "Evidence: $dir. Take a screenshot of the decision, image and pods."
-    try { & (Join-Path $PSScriptRoot 'package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download before an ephemeral Cloud Shell session ends: $zipPath" } catch { Write-Warning "Could not create ZIP: $_" }
+    try { & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download before an ephemeral Cloud Shell session ends: $zipPath" } catch { Write-Warning "Could not create ZIP: $_" }
 }
 if ($verdict -ne 'pass') { throw "S01 did not pass ($outcome). Evidence: $dir" }

@@ -19,7 +19,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 # Native command exit codes are checked explicitly, including commands captured as JSON.
 $PSNativeCommandUseErrorActionPreference = $false
-$root = Split-Path $PSScriptRoot -Parent
+$root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 foreach ($command in 'az','kubectl','git') {
     if (-not (Get-Command $command -ErrorAction SilentlyContinue)) { throw "Install $command first (Azure Cloud Shell PowerShell includes these tools)." }
 }
@@ -209,5 +209,5 @@ Invoke-Kube @('get','pods','-n','payments') | Out-Host
 Write-Host "READY FOR TESTS. No fault was injected. Configuration: $statePath"
 Write-Host "Setup snapshots: $setupDir (review before publishing). Take a screenshot of the pod tables."
 Write-Host "For manual kubectl commands in this shell: `$env:KUBECONFIG = '$kubeconfig'"
-Write-Host "After saving test evidence, delete the lab to stop charges: ./scripts/delete-environment-resource-group.ps1 -ResourceGroup '$ResourceGroup'"
+Write-Host "After saving test evidence, delete the lab to stop charges: ./scripts/environment/delete-environment-resource-group.ps1 -ResourceGroup '$ResourceGroup'"
 Write-Host 'Ready means Kubernetes rollout readiness. Model inference, ACR validation and agent handoff are verified by separate live tests.'

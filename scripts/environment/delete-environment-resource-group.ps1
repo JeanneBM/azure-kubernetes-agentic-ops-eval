@@ -9,9 +9,9 @@ resources. Never delete unrelated groups, local evidence or subscription setting
 Keep .local/<ResourceGroup>-cleanup.json for retries after the lab group is gone.
 A missing group without that inventory is an error: ownership is not guessed.
 .EXAMPLE
-./scripts/delete-environment-resource-group.ps1 -ResourceGroup rg-agentic-ops-lab -WhatIf
+./scripts/environment/delete-environment-resource-group.ps1 -ResourceGroup rg-agentic-ops-lab -WhatIf
 .EXAMPLE
-./scripts/delete-environment-resource-group.ps1 -ResourceGroup rg-agentic-ops-lab
+./scripts/environment/delete-environment-resource-group.ps1 -ResourceGroup rg-agentic-ops-lab
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param([Parameter(Mandatory)][ValidatePattern('^[a-zA-Z0-9_-]{1,80}$')][string]$ResourceGroup)
@@ -35,7 +35,7 @@ function Read-AzureJson {
 $account = Read-AzureJson @('account','show')
 $subscription = $account.id
 $base = @('--subscription',$subscription)
-$local = Join-Path (Split-Path $PSScriptRoot -Parent) '.local'
+$local = Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) '.local'
 $inventoryPath = Join-Path $local "$ResourceGroup-cleanup.json"
 $exists = (Invoke-AzureCli (@('group','exists','-n',$ResourceGroup,'-o','tsv')+$base) | Out-String).Trim() -eq 'true'
 if ($exists) {

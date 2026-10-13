@@ -12,7 +12,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 $PSNativeCommandUseErrorActionPreference=$false
-$root=Split-Path $PSScriptRoot -Parent
+$root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $statePath=Join-Path $root ".local/$ResourceGroup.json"
 $lab=Get-Content $statePath -Raw | ConvertFrom-Json
 if ($Kubeconfig) { $lab.kubeconfig = $Kubeconfig }

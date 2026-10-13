@@ -2,7 +2,7 @@
 $ErrorActionPreference='Stop'
 $repo=Split-Path $PSScriptRoot -Parent
 $temp=Join-Path ([IO.Path]::GetTempPath()) ('lab-check-'+[Guid]::NewGuid().ToString('N'))
-New-Item -ItemType Directory -Path (Join-Path $temp 'scripts'),(Join-Path $temp '.local'),(Join-Path $temp 'bin') -Force | Out-Null
+New-Item -ItemType Directory -Path (Join-Path $temp 'scripts/tests'),(Join-Path $temp 'scripts/environment'),(Join-Path $temp '.local'),(Join-Path $temp 'bin') -Force | Out-Null
 $pwsh=Join-Path $PSHOME 'pwsh'
 $oldPath=$env:PATH
 $passed=0
@@ -14,14 +14,14 @@ try {
     @{subscriptionId='offline-subscription';resourceGroup='rg-agentic-ops-lab';demoImage='example.azurecr.io/payments-api:1.4.2';kubeconfig='recorded-config'} |
         ConvertTo-Json | Set-Content (Join-Path $temp '.local/rg-agentic-ops-lab.json')
     foreach ($id in '01','02','03','05','06') {
-        $original=Get-Content (Join-Path $repo "scripts/test-s$id.ps1") -Raw
+        $original=Get-Content (Join-Path $repo "scripts/tests/test-s$id.ps1") -Raw
         $head=$original.Substring(0,$original.IndexOf('$goodImage ='))
         $check=@'
 if ($config.subscriptionId -ne 'offline-subscription') { throw 'State not loaded.' }
 if ($AcrLoginServer -ne 'example.azurecr.io') { throw 'Registry not loaded.' }
 if ($Kubeconfig -ne 'explicit-config') { throw 'Explicit kubeconfig not retained.' }
 '@
-        $fixture=Join-Path $temp "scripts/test-s$id.ps1"
+        $fixture=Join-Path $temp "scripts/tests/test-s$id.ps1"
         ($head+$check) | Set-Content $fixture
         & $pwsh -NoProfile -File $fixture -AcrLoginServer example.azurecr.io -Kubeconfig explicit-config
         if ($LASTEXITCODE -ne 0) { throw "S$id initialization failed." }
@@ -44,17 +44,17 @@ echo 'https://different.example:443'
     $azFake | Set-Content $azProgram
     $kubeFake | Set-Content $kubeProgram
     & chmod +x $azProgram $kubeProgram
-    Copy-Item (Join-Path $repo 'scripts/prepare-test-environment.ps1') (Join-Path $temp 'scripts/prepare-test-environment.ps1')
+    Copy-Item (Join-Path $repo 'scripts/environment/prepare-test-environment.ps1') (Join-Path $temp 'scripts/environment/prepare-test-environment.ps1')
     @{subscriptionId='offline-subscription';resourceGroup='rg-agentic-ops-lab';aksName='offline-aks';kubeconfig='recorded-config'} |
         ConvertTo-Json | Set-Content (Join-Path $temp '.local/rg-agentic-ops-lab.json')
-    $preflight=@(& $pwsh -NoProfile -File (Join-Path $temp 'scripts/prepare-test-environment.ps1') -EvidenceDirectory (Join-Path $temp 'evidence') -Kubeconfig explicit-config 2>&1)
+    $preflight=@(& $pwsh -NoProfile -File (Join-Path $temp 'scripts/environment/prepare-test-environment.ps1') -EvidenceDirectory (Join-Path $temp 'evidence') -Kubeconfig explicit-config 2>&1)
     if ($LASTEXITCODE -eq 0 -or ($preflight -join ' ') -notmatch 'kubeconfig differs from recorded lab') { throw 'Mismatched cluster preflight failed.' }
     $passed++
 
-    $s03=Get-Content (Join-Path $repo 'scripts/test-s03.ps1') -Raw
+    $s03=Get-Content (Join-Path $repo 'scripts/tests/test-s03.ps1') -Raw
     if (-not $s03.Contains("-split '\.'") -or ('example.azurecr.io' -split '\.')[0] -ne 'example') { throw 'S03 registry expression failed.' }
     $passed++
-    $setup=Get-Content (Join-Path $repo 'scripts/setup-environment.ps1') -Raw
+    $setup=Get-Content (Join-Path $repo 'scripts/environment/setup-environment.ps1') -Raw
     $begin=$setup.IndexOf('$local ='); $end=$setup.IndexOf('$work =',$begin)
     $block=$setup.Substring($begin,$end-$begin)
     foreach ($exists in $false,$true) {
@@ -80,7 +80,7 @@ echo 'https://different.example:443'
         if (-not $exists -and @(Get-ChildItem (Join-Path $case '.local/retired') -File).Count -ne 1) { throw 'Retired state missing.' }
         $passed++
     }
-    foreach ($file in Get-ChildItem (Join-Path $repo 'scripts') -Filter '*.ps1') {
+    foreach ($file in Get-ChildItem (Join-Path $repo 'scripts') -Recurse -Filter '*.ps1') {
         $tokens=$null; $errors=$null
         [Management.Automation.Language.Parser]::ParseFile($file.FullName,[ref]$tokens,[ref]$errors) | Out-Null
         if ($errors.Count -gt 0) { throw "Parse errors in $($file.Name): $($errors.Message -join '; ')" }

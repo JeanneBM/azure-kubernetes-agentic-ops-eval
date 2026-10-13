@@ -1,7 +1,7 @@
 # Live S06: stale diagnosis
 
 ```powershell
-git pull; if ($LASTEXITCODE -eq 0) { ./scripts/test-s06.ps1 }
+git pull; if ($LASTEXITCODE -eq 0) { ./scripts/tests/test-s06.ps1 }
 ```
 
 Automatic preparation resets the prior scenario, updates changed agent images, and

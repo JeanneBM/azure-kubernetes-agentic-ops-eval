@@ -10,13 +10,13 @@ param(
     [string]$ResourceGroup = 'rg-agentic-ops-lab',
     [switch]$UseModelProposal,
     [ValidateRange(30,900)][int]$TimeoutSeconds = 180,
-    [string]$EvidenceRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) 'eval/evidence/S06')
+    [string]$EvidenceRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence/S06')
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 # Script-local state; never inherit configuration from a calling PowerShell scope.
 $config = $null
-$configPath = Join-Path (Split-Path $PSScriptRoot -Parent) ".local/$ResourceGroup.json"
+$configPath = Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) ".local/$ResourceGroup.json"
 if (-not (Test-Path $configPath)) { throw 'Recorded lab state is required. Run setup-environment.ps1 first.' }
 $config = Get-Content $configPath -Raw | ConvertFrom-Json
 $recordedRegistry = ($config.demoImage -split '/')[0]
@@ -57,7 +57,7 @@ function RunnerRecords {
 }
 try {
     if (-not $config) { throw 'S06 requires the recorded lab setup state.' }
-    & (Join-Path $PSScriptRoot 'prepare-test-environment.ps1') -ResourceGroup $config.resourceGroup -Kubeconfig $Kubeconfig -EvidenceDirectory $dir
+    & (Join-Path $PSScriptRoot '../environment/prepare-test-environment.ps1') -ResourceGroup $config.resourceGroup -Kubeconfig $Kubeconfig -EvidenceDirectory $dir
     $badImage="$AcrLoginServer/paymnets-api:1.4.2"
     $checkCode='from agentic_ops.acr import AcrRegistry; from agentic_ops.safety import parse_image; import sys; r=AcrRegistry(); assert r.exists(parse_image(sys.argv[1])); assert not r.exists(parse_image(sys.argv[2])); print("healthy_exists=true; typo_exists=false")'
     Kube @('exec','deployment/agentic-ops-remediation','-n','agentic-ops','--','python','-c',$checkCode,$goodImage,$badImage) | Set-Content (Join-Path $dir 'registry-check.txt')
@@ -96,7 +96,7 @@ try {
     $spec | Add-Member -NotePropertyName restartPolicy -NotePropertyValue 'Never' -Force
     if ($spec.containers.Count -ne 1) { throw 'Expected one diagnostic container.' }
     $container=$spec.containers[0]
-    $code=Get-Content (Join-Path (Split-Path $PSScriptRoot -Parent) 'eval/live_s06_runner.py') -Raw
+    $code=Get-Content (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/live_s06_runner.py') -Raw
     $container | Add-Member -NotePropertyName command -NotePropertyValue @('python','-u','-c',$code) -Force
     $container | Add-Member -NotePropertyName args -NotePropertyValue @() -Force
     foreach ($field in 'livenessProbe','readinessProbe','startupProbe') { $container.PSObject.Properties.Remove($field) }
@@ -197,6 +197,6 @@ Review snapshots and logs before publication; use audit logs for exhaustive writ
 "@ | Set-Content (Join-Path $dir 'evidence.md')
     Write-Host "S06: $verdict; outcome: $outcome"
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
-    try { & (Join-Path $PSScriptRoot 'package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning $_ }
+    try { & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning $_ }
 }
 if ($verdict -ne 'pass') { throw "S06 did not pass ($outcome). Evidence: $dir" }

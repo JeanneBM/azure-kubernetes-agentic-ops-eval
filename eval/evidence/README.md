@@ -35,7 +35,7 @@ the healthy before snapshot alone does not prove the failure occurred.
 
 ## Automatic capture for one S01 trial
 
-[`scripts/test-s01.ps1`](../../scripts/test-s01.ps1) captures a live S01 run in
+[`scripts/tests/test-s01.ps1`](../../scripts/tests/test-s01.ps1) captures a live S01 run in
 this layout, including unsuccessful attempts; see [usage](../../docs/live-s01.md).
 Other scenarios can use the manual collection guidance below. Review captured
 files before publishing. Script presence alone establishes no live result.

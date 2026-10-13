@@ -4,7 +4,7 @@ From PowerShell 7 in the repository directory, after S04 access restoration and 
 healthy payments-api rollout:
 
 ```powershell
-git pull; ./scripts/test-s05.ps1
+git pull; ./scripts/tests/test-s05.ps1
 ```
 
 Requires the single-container healthy lab baseline with api using

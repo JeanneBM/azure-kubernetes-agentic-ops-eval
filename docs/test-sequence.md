@@ -1,15 +1,15 @@
 # Sequential functional tests
 
-Provision once with scripts/setup-environment.ps1 (default ModelCapacity: 10).
+Provision once with scripts/environment/setup-environment.ps1 (default ModelCapacity: 10).
 From the repository root in PowerShell 7:
 
 ```powershell
 git pull
-./scripts/test-s01.ps1
-./scripts/test-s02.ps1
-./scripts/test-s03.ps1
-./scripts/test-s04.ps1
-./scripts/test-s05.ps1
+./scripts/tests/test-s01.ps1
+./scripts/tests/test-s02.ps1
+./scripts/tests/test-s03.ps1
+./scripts/tests/test-s04.ps1
+./scripts/tests/test-s05.ps1
 ```
 
 Each known-lab trial automatically runs prepare-test-environment.ps1 before fault

@@ -1,6 +1,6 @@
 # Prepare a clean Azure environment
 
-`scripts/setup-environment.ps1` provisions the infrastructure and a **healthy**
+`scripts/environment/setup-environment.ps1` provisions the infrastructure and a **healthy**
 PoC. It does not run pytest, inject faults, or execute S01–S06. Run scenarios
 separately after setup. Kubernetes readiness is not proof of successful live
 inference, ACR validation, or agent handoff.
@@ -18,7 +18,7 @@ az login
 # Clone only when you do not already have the repository:
 git clone https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval.git
 Set-Location azure-kubernetes-agentic-ops-eval
-./scripts/setup-environment.ps1 -SubscriptionId '<YOUR_SUBSCRIPTION_ID>'
+./scripts/environment/setup-environment.ps1 -SubscriptionId '<YOUR_SUBSCRIPTION_ID>'
 ```
 
 For an existing checkout, use `git pull --ff-only` then run the same script.
@@ -90,7 +90,7 @@ the first separate live test.
 After saving evidence, delete the dedicated lab resource group:
 
 ```powershell
-./scripts/delete-environment-resource-group.ps1 -ResourceGroup 'rg-agentic-ops-lab'
+./scripts/environment/delete-environment-resource-group.ps1 -ResourceGroup 'rg-agentic-ops-lab'
 ```
 
 The cleanup script asks you to type the group name. Deleting only workloads

@@ -3,7 +3,7 @@
 From the repository root after environment setup:
 
 ```powershell
-./scripts/test-s03.ps1
+./scripts/tests/test-s03.ps1
 ```
 
 Requires PowerShell 7, kubectl, Azure CLI registry-read access, and a healthy payments-api Deployment. Setup configuration supplies the registry and kubeconfig; both can also be passed explicitly.

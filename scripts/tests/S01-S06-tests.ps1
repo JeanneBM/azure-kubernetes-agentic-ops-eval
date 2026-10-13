@@ -15,7 +15,7 @@ param(
 )
 $ErrorActionPreference='Stop'
 $PSNativeCommandUseErrorActionPreference=$false
-$root=Split-Path $PSScriptRoot -Parent
+$root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $scenarios=@('S01','S02','S03','S04','S05','S06')
 foreach ($scenario in $scenarios) {
     $scriptPath=Join-Path $PSScriptRoot ("test-"+$scenario.ToLower()+".ps1")
@@ -37,7 +37,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Cannot determine lab status.' }
 if (-not $state -and $exists -eq 'true') { throw 'Lab group exists without setup state; automatic adoption refused.' }
 if ($exists -eq 'false') {
     Write-Host 'Lab is absent. Running environment setup once before the six scenarios.'
-    & (Join-Path $PSScriptRoot 'setup-environment.ps1') -SubscriptionId $SubscriptionId -ModelCapacity 10
+    & (Join-Path $PSScriptRoot '../environment/setup-environment.ps1') -SubscriptionId $SubscriptionId -ModelCapacity 10
     $state=Get-Content $statePath -Raw | ConvertFrom-Json
 }
 $batchId='S01-S06-'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')
@@ -107,11 +107,11 @@ try {
     $rows | Format-Table scenario,verdict,outcome,durationSeconds -AutoSize | Out-Host
     $bundle=Join-Path (Split-Path $batchDirectory -Parent) ($batchId+'.zip')
     try {
-        & (Join-Path $PSScriptRoot 'package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle
+        & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle
         Write-Host "Download: $bundle"
     } catch { Write-Warning "Batch ZIP could not be created: $_" }
     Write-Host "Summary: $(Join-Path $batchDirectory 'summary.md')"
-    Write-Host 'Lab remains active. After downloading evidence: ./scripts/delete-environment-resource-group.ps1 -ResourceGroup rg-agentic-ops-lab'
+    Write-Host 'Lab remains active. After downloading evidence: ./scripts/environment/delete-environment-resource-group.ps1 -ResourceGroup rg-agentic-ops-lab'
 }
 if ($rows.Count -ne 6 -or @($rows | Where-Object verdict -NE 'pass').Count -gt 0) {
     throw "Batch contains failed, inconclusive, or unrun scenarios. Read summary.md in $batchDirectory."

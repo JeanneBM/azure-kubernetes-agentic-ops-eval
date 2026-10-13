@@ -40,18 +40,18 @@ The package version alone does not establish a release date.
 
 ### Added
 
-- Add `scripts/test-s03.ps1` for a live missing-image escalation trial, with ACR
+- Add `scripts/tests/test-s03.ps1` for a live missing-image escalation trial, with ACR
   repository inventory, post-injection spec/generation preservation checks and
   evidence ZIP capture. Transport/model errors do not count as a scenario pass.
 
-- Add `scripts/test-s02.ps1` and a live S02 guide for healthy-sidecar preparation,
+- Add `scripts/tests/test-s02.ps1` and a live S02 guide for healthy-sidecar preparation,
   API-only fault injection, verified recovery and preservation checks, and evidence ZIP capture.
 
-- `scripts/test-s01.ps1` for one separate live S01 trial, with fault injection,
+- `scripts/tests/test-s01.ps1` for one separate live S01 trial, with fault injection,
   bounded observation, audit/rollout/spec validation, failure evidence and ZIP
   export. No automatic manual repair after injection.
 
-- `scripts/setup-environment.ps1` for clean Azure provisioning and healthy PoC
+- `scripts/environment/setup-environment.ps1` for clean Azure provisioning and healthy PoC
   deployment, with quota checks, resumable names, separate kubeconfig, setup
   snapshots and a setup guide. It runs no tests and injects no faults.
 - Git/build exclusions for local setup state and credentials.

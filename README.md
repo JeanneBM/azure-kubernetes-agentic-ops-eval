@@ -57,7 +57,7 @@ az login
 az account list --query "[].{Name:name,SubscriptionId:id}" -o table
 git clone https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval.git
 Set-Location azure-kubernetes-agentic-ops-eval
-./scripts/setup-environment.ps1 -SubscriptionId '<YOUR_SUBSCRIPTION_ID>'
+./scripts/environment/setup-environment.ps1 -SubscriptionId '<YOUR_SUBSCRIPTION_ID>'
 ~~~
 
 Replace the placeholder with your subscription ID. For an existing checkout,
@@ -85,14 +85,14 @@ kubectl get pods -n payments
 To resume interrupted setup, keep the local state and rerun with the same
 parameters. Resuming restores the healthy demo baseline; save existing evidence
 first. For defaults, parameter overrides and implementation details, read the
-[setup script](scripts/setup-environment.ps1) or [setup guide](docs/clean-environment-setup.md).
+[setup script](scripts/environment/setup-environment.ps1) or [setup guide](docs/clean-environment-setup.md).
 
 ## Run scenarios and collect evidence
 
 For live S02 (one faulty API container alongside a healthy sidecar), run after setup:
 
 ~~~powershell
-./scripts/test-s02.ps1
+./scripts/tests/test-s02.ps1
 ~~~
 
 The script prepares the sidecar, injects the API image typo and captures recovery
@@ -104,7 +104,7 @@ The automated live S01 trial injects `paymnets-api:1.4.2` instead of
 
 ~~~powershell
 $registry = ($config.demoImage -split '/')[0]
-./scripts/test-s01.ps1 -AcrLoginServer $registry -Kubeconfig $config.kubeconfig
+./scripts/tests/test-s01.ps1 -AcrLoginServer $registry -Kubeconfig $config.kubeconfig
 ~~~
 
 Run this after loading the setup configuration above. One execution is one
@@ -137,14 +137,14 @@ Save and download evidence, then delete the lab:
 
 ~~~powershell
 az account set --subscription $config.subscriptionId
-./scripts/delete-environment-resource-group.ps1 -ResourceGroup 'rg-agentic-ops-lab'
+./scripts/environment/delete-environment-resource-group.ps1 -ResourceGroup 'rg-agentic-ops-lab'
 ~~~
 
 The script requires the group name as confirmation, waits for deletion, verifies
 AKS node groups and removes eligible unused regional Network Watchers plus an
 empty NetworkWatcherRG. Shared watchers are preserved. Use your actual group
 name if setup used a different one; local files and evidence remain.
-See the [cleanup script](scripts/delete-environment-resource-group.ps1).
+See the [cleanup script](scripts/environment/delete-environment-resource-group.ps1).
 
 ## Scope and limitations
 

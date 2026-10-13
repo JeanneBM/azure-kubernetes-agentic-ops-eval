@@ -13,13 +13,13 @@ param(
     [string]$ResourceGroup = 'rg-agentic-ops-lab',
     [ValidateRange(60,1800)][int]$SetupTimeoutSeconds = 300,
     [ValidateRange(30,900)][int]$TimeoutSeconds = 180,
-    [string]$EvidenceRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) 'eval/evidence/S04')
+    [string]$EvidenceRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence/S04')
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 foreach ($tool in 'az','kubectl') { if (-not (Get-Command $tool -ErrorAction SilentlyContinue)) { throw "$tool is required." } }
 $azExecutable = (Get-Command az -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
-$root = Split-Path $PSScriptRoot -Parent
+$root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $state = Get-Content (Join-Path $root ".local/$ResourceGroup.json") -Raw | ConvertFrom-Json
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
 $zipPath = Join-Path $EvidenceRoot ("S04-" + (Split-Path $dir -Leaf) + ".zip")
@@ -54,7 +54,7 @@ $restoreRequired=$false; $restored=$false; $injected=$false
 $verdict='inconclusive'; $outcome='setup_error'; $decision=$null
 $start=$null; $failureUtc=$null; $errorText=$null; $mutationObserved=$false
 try {
-    & (Join-Path $PSScriptRoot 'prepare-test-environment.ps1') -ResourceGroup $ResourceGroup -EvidenceDirectory $dir
+    & (Join-Path $PSScriptRoot '../environment/prepare-test-environment.ps1') -ResourceGroup $ResourceGroup -EvidenceDirectory $dir
     if (Get-Command git -ErrorAction SilentlyContinue) {
         $revision = & git -C $root rev-parse HEAD
         if ($LASTEXITCODE -eq 0) { $revision | Set-Content (Join-Path $dir 'source-commit.txt') }
@@ -215,6 +215,6 @@ Review evidence for identifiers before publishing. This is one trial, not a benc
     Write-Host "S04: $verdict; outcome: $outcome; kubelet access restored: $restored"
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
     Write-Host "Evidence: $dir"
-    try { & (Join-Path $PSScriptRoot 'package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning "ZIP creation failed: $_" }
+    try { & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning "ZIP creation failed: $_" }
 }
 if ($verdict -ne 'pass') { throw "S04 did not pass ($outcome). Evidence: $dir" }

@@ -7,7 +7,7 @@ import zipfile
 import pytest
 
 spec = importlib.util.spec_from_file_location("evidence_packager",
-    Path(__file__).resolve().parents[1] / "scripts" / "sanitize-evidence.py")
+    Path(__file__).resolve().parents[1] / "scripts" / "packaging" / "sanitize-evidence.py")
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
