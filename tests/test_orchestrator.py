@@ -127,3 +127,21 @@ def test_concurrent_signals_execute_the_action_once():
     first.join(5)
     assert second.deduplicated
     assert len(executor.actions) == 1
+
+
+def test_policy_refusal_audit_preserves_original_proposal(caplog):
+    import json
+    import logging
+
+    facts = make_facts(params={"image": NEW, "namespace": "kube-system"})
+    orchestrator, _, executor = build(facts)
+    with caplog.at_level(logging.INFO, logger="agentic_ops.audit"):
+        orchestrator.handle(make_trigger())
+    event = next(json.loads(r.message) for r in caplog.records
+                 if r.message.startswith('{'))
+    assert event['action'] is None
+    assert event['action_executed'] is False
+    assert event['proposed_action'] == {
+        'name': facts.safe_action.name, 'parameters': dict(facts.safe_action.parameters)
+    }
+    assert executor.actions == []
