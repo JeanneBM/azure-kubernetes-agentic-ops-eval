@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,7 @@ import pytest
 PWSH = os.environ.get('PWSH_BIN') or shutil.which('pwsh')
 pytestmark = pytest.mark.skipif(not PWSH, reason='PowerShell 7 is required for offline CLI checks')
 
-FAKE = r'''#!/tmp/eval-venv/bin/python
+FAKE = '#!' + sys.executable + r'''
 import json,os,sys,pathlib
 root=pathlib.Path(os.environ['OFFLINE_ROOT']); statepath=root/'state.json'
 s=json.loads(statepath.read_text()); name=pathlib.Path(sys.argv[0]).name; a=sys.argv[1:]
