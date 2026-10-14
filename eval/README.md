@@ -16,6 +16,19 @@ Quick reference: what each test checks and what its evidence should show.
 S01–S06 have mocked development checks in [`tests/scenarios/`](../tests/scenarios/).
 S07–S08 are protocol scenarios; this README does not assert that they are implemented or passed.
 
+## Status
+
+One recorded current live trial per scenario S01–S06 (n=1 each), plus historical S01 v1 evidence without a recorded verdict. This is not a benchmark or evidence of repeatability.
+S03–S05 passed through model abstention; these runs do not establish rejection of an unsafe model proposal by the remediation policy.
+S06 used a scripted proposal, not LLM diagnosis. S07–S08 have no recorded live runs.
+See the [decision ledger](ledger.md), including background triggers, transport failures and one API call with an unknown outcome.
+
+Regenerate from ZIP archives or extracted run folders; manual comments are preserved:
+
+```sh
+python scripts/build_ledger.py eval/evidence eval/ledger.md
+```
+
 ## Find the evidence
 
 Live runs: `eval/evidence/<scenario-id>/<UTC-run-id>/`.
