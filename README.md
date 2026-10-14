@@ -133,6 +133,9 @@ recorded separately. See [test organization](tests/README.md) and
 
 ## Cleanup
 
+Cleanup refuses an active subscription that differs from the saved lab state.
+Keep `.local/` through deletion and retries.
+
 Save and download evidence, then delete the lab:
 
 ~~~powershell
