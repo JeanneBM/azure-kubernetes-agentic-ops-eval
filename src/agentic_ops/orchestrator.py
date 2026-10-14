@@ -165,6 +165,11 @@ class IncidentOrchestrator:
                 {"name": incident.action.name, "parameters": dict(incident.action.parameters)}
                 if incident.action else None
             ),
+            "proposed_action": (
+                {"name": incident.facts.safe_action.name,
+                 "parameters": dict(incident.facts.safe_action.parameters)}
+                if incident.facts.safe_action else None
+            ),
             "action_executed": executed,
             "evidence_sources": [item.source for item in incident.facts.items],
         }))
