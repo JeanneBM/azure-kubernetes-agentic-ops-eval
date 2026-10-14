@@ -60,3 +60,7 @@ After reorganization on 2026-10-02: 84 tests passed in 1.20 seconds, including a
 15 S01/S02 cases. One redundant S01 smoke test was removed; its assertions are
 covered by the stronger repeated S01 checks.
 
+
+## Prepared S07–S10 runners
+
+`test_security_runner.py` checks proposal fixtures, scoring, model-input capture and controlled duplicate delivery locally. `test_security_scripts.py` checks all four PowerShell entry points with fake native commands when PowerShell 7 is available (otherwise skipped). No test creates Azure resources. See [live prerequisites and scope](../docs/live-s07-s10.md).
