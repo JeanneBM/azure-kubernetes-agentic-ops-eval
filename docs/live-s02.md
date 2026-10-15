@@ -9,16 +9,16 @@ Run from the repository root in PowerShell 7 after environment setup:
 By default, registry and kubeconfig are loaded from `.local/rg-agentic-ops-lab.json`.
 For another lab, supply `-AcrLoginServer '<REGISTRY>' -Kubeconfig '<PATH>'`.
 When a registry is explicitly supplied without a kubeconfig, the active kubectl
-context is used. The target is `payments/payments-api`, container `api`.
+context is used. The target is `test-app/test-app`, container `api`.
 
-The script requires a healthy API image `payments-api:1.4.2`. If no sidecar exists,
+The script requires a healthy API image `test-app:1.4.2`. If no sidecar exists,
 it adds `metrics` using that image with a sleeping shell loop (no extra port).
 If `metrics` already exists, its configuration is preserved. Other sidecar layouts
 are refused. It waits for rollout and verifies the sidecar is running and ready.
 Preparation is saved separately from the pre-injection baseline.
 
 Next it preserves diagnostic logs, restarts diagnosis to clear incident cooldown,
-injects `paymnets-api:1.4.2` into `api` only, and waits up to 180 seconds.
+injects `tset-app:1.4.2` into `api` only, and waits up to 180 seconds.
 Pass requires a matching resolved fix_image decision with action_executed=true,
 correct old/new images and container, a healthy rollout, and full Deployment spec
 equality with the healthy pre-injection baseline, including the sidecar.

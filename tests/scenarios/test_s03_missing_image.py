@@ -14,4 +14,4 @@ def test_s03_escalates_without_mutation(repetition, model_image):
     if model_image is None:
         assert manifests == []
     else:
-        assert manifests == ["/v2/paymnets-api/manifests/1.4.2", "/v2/payments-api/manifests/1.4.2"]
+        assert manifests == ["/v2/tset-app/manifests/1.4.2", "/v2/test-app/manifests/1.4.2"]

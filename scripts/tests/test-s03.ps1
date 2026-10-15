@@ -24,7 +24,7 @@ $AcrLoginServer = $recordedRegistry
 if (-not $Kubeconfig) { $Kubeconfig = $config.kubeconfig }
 $kubeArgs = @('--kubeconfig',$Kubeconfig)
 if (-not (Get-Command kubectl -CommandType Application -ErrorAction SilentlyContinue)) { throw 'kubectl is required.' }
-$goodImage = "$AcrLoginServer/payments-api:1.4.2"
+$goodImage = "$AcrLoginServer/test-app:1.4.2"
 $badImage = $null
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
 $zipPath = Join-Path $EvidenceRoot ("S03-" + (Split-Path $dir -Leaf) + ".zip")
@@ -51,9 +51,9 @@ try {
         $revision = & git -C (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) rev-parse HEAD
         if ($LASTEXITCODE -eq 0) { $revision | Set-Content (Join-Path $dir 'source-commit.txt') }
     }
-    Write-Host "S03 target: payments/payments-api; evidence: $dir"
-    Kube @('rollout','status','deployment/payments-api','-n','payments','--timeout=60s') | Out-Host
-    $beforeText = Kube @('get','deployment','payments-api','-n','payments','-o','json') | Out-String
+    Write-Host "S03 target: test-app/test-app; evidence: $dir"
+    Kube @('rollout','status','deployment/test-app','-n','test-app','--timeout=60s') | Out-Host
+    $beforeText = Kube @('get','deployment','test-app','-n','test-app','-o','json') | Out-String
     $beforeText | Set-Content (Join-Path $dir 'deployment-before.json')
     $before = $beforeText | ConvertFrom-Json
     if (-not (Get-Command az -ErrorAction SilentlyContinue)) { throw 'Azure CLI is required to verify the S03 registry inventory.' }
@@ -80,15 +80,15 @@ try {
     Save-Json 'agents-before.json' @('get','pods','-n','agentic-ops')
     $start = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')
     $start | Set-Content (Join-Path $dir 'fault-start-utc.txt')
-    Kube @('set','image','deployment/payments-api',"api=$badImage",'-n','payments') |
+    Kube @('set','image','deployment/test-app',"api=$badImage",'-n','test-app') |
         Tee-Object -FilePath (Join-Path $dir 'fault-injection.txt') | Out-Host
     $injected = $true; $outcome = 'timeout'
     $badImage | Set-Content (Join-Path $dir 'injected-image.txt')
-    Save-Json 'deployment-after-injection.json' @('get','deployment','payments-api','-n','payments')
+    Save-Json 'deployment-after-injection.json' @('get','deployment','test-app','-n','test-app')
     Write-Host "FAULT INJECTED: $badImage. Waiting up to $TimeoutSeconds seconds..."
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     do {
-        Save-Json 'pods-observed.json' @('get','pods','-n','payments')
+        Save-Json 'pods-observed.json' @('get','pods','-n','test-app')
         $pods = Get-Content (Join-Path $dir 'pods-observed.json') -Raw | ConvertFrom-Json
         $failures = @($pods.items | Where-Object {
             @($_.status.containerStatuses | Where-Object { $_.state.waiting.reason -in @('ErrImagePull','ImagePullBackOff') }).Count -gt 0
@@ -102,7 +102,7 @@ try {
             $jsonStart = $line.IndexOf('{')
             if ($jsonStart -lt 0) { continue }
             try { $record = $line.Substring($jsonStart) | ConvertFrom-Json } catch { continue }
-            if ($record.event -eq 'two_agent_incident_decision' -and $record.key -eq 'payments/payments-api' -and $record.status -in @('resolved','escalated')) { $decision = $record }
+            if ($record.event -eq 'two_agent_incident_decision' -and $record.key -eq 'test-app/test-app' -and $record.status -in @('resolved','escalated')) { $decision = $record }
         }
         if ($null -ne $decision) { break }
         Start-Sleep -Seconds 5
@@ -111,7 +111,7 @@ try {
         $outcome = $decision.status
         $decision | ConvertTo-Json -Depth 100 | Set-Content (Join-Path $dir 'decision.json')
     }
-    $afterText = Kube @('get','deployment','payments-api','-n','payments','-o','json') | Out-String
+    $afterText = Kube @('get','deployment','test-app','-n','test-app','-o','json') | Out-String
     $afterText | Set-Content (Join-Path $dir 'deployment-after.json')
     $after = $afterText | ConvertFrom-Json
     $afterApi = @($after.spec.template.spec.containers | Where-Object name -EQ 'api')
@@ -133,7 +133,7 @@ try {
     Write-Warning $errorText
 } finally {
     # Capture on failed attempts too. No manual repair is performed after injection.
-    foreach ($entry in @(@('deployment-after.json',@('get','deployment','payments-api','-n','payments')),@('pods-after.json',@('get','pods','-n','payments')),@('events.json',@('get','events','-n','payments')),@('agents-after.json',@('get','pods','-n','agentic-ops')))) {
+    foreach ($entry in @(@('deployment-after.json',@('get','deployment','test-app','-n','test-app')),@('pods-after.json',@('get','pods','-n','test-app')),@('events.json',@('get','events','-n','test-app')),@('agents-after.json',@('get','pods','-n','agentic-ops')))) {
         try { Save-Json $entry[0] $entry[1] } catch { "Evidence gap: $($entry[0]): $_" | Add-Content (Join-Path $dir 'collection-errors.txt') }
     }
     foreach ($role in 'diagnostic','remediation') {
@@ -166,7 +166,7 @@ Review all files for credentials and personal identifiers before publication.
 "@ | Set-Content (Join-Path $dir 'evidence.md')
     Write-Host "`n=== S03: $verdict; outcome: $outcome ==="
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
-    try { Kube @('get','deployment','payments-api','-n','payments','-o','jsonpath={.spec.template.spec.containers[?(@.name=="api")].image}') | Out-Host; Kube @('get','pods','-n','payments') | Out-Host } catch { Write-Warning $_ }
+    try { Kube @('get','deployment','test-app','-n','test-app','-o','jsonpath={.spec.template.spec.containers[?(@.name=="api")].image}') | Out-Host; Kube @('get','pods','-n','test-app') | Out-Host } catch { Write-Warning $_ }
     Write-Host "Evidence: $dir. Take a screenshot of the decision, image and pods."
     try { & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download before an ephemeral Cloud Shell session ends: $zipPath" } catch { Write-Warning "Could not create ZIP: $_" }
 }

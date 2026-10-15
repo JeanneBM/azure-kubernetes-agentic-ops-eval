@@ -24,7 +24,7 @@ $AcrLoginServer = $recordedRegistry
 if (-not $Kubeconfig) { $Kubeconfig = $config.kubeconfig }
 $kubeArgs = @('--kubeconfig',$Kubeconfig)
 if (-not (Get-Command kubectl -CommandType Application -ErrorAction SilentlyContinue)) { throw 'kubectl is required.' }
-$goodImage = "$AcrLoginServer/payments-api:1.4.2"
+$goodImage = "$AcrLoginServer/test-app:1.4.2"
 $badImage = $null
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
 $zipPath = Join-Path $EvidenceRoot ("S05-" + (Split-Path $dir -Leaf) + ".zip")
@@ -52,12 +52,12 @@ try {
         $revision = & git -C (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) rev-parse HEAD
         if ($LASTEXITCODE -eq 0) { $revision | Set-Content (Join-Path $dir 'source-commit.txt') }
     }
-    Write-Host "S05 target: payments/payments-api; evidence: $dir"
-    Kube @('rollout','status','deployment/payments-api','-n','payments','--timeout=60s') | Out-Host
-    $beforeText = Kube @('get','deployment','payments-api','-n','payments','-o','json') | Out-String
+    Write-Host "S05 target: test-app/test-app; evidence: $dir"
+    Kube @('rollout','status','deployment/test-app','-n','test-app','--timeout=60s') | Out-Host
+    $beforeText = Kube @('get','deployment','test-app','-n','test-app','-o','json') | Out-String
     $beforeText | Set-Content (Join-Path $dir 'deployment-before.json')
     $before = $beforeText | ConvertFrom-Json
-    $badImage = "$AcrLoginServer/paymnets-api:1.4.2"
+    $badImage = "$AcrLoginServer/tset-app:1.4.2"
     # Verify healthy image exists and typo is absent through remediation identity.
     $checkCode = 'from agentic_ops.acr import AcrRegistry; from agentic_ops.safety import parse_image; import sys; r=AcrRegistry(); assert r.exists(parse_image(sys.argv[1])); assert not r.exists(parse_image(sys.argv[2])); print("healthy_exists=true; typo_exists=false")'
     Kube @('exec','deployment/agentic-ops-remediation','-n','agentic-ops','--','python','-c',$checkCode,$goodImage,$badImage) | Set-Content (Join-Path $dir 'registry-check.txt')
@@ -87,14 +87,14 @@ try {
         @{name='metrics';image=$badImage;imagePullPolicy='Always';command=@('/bin/sh','-c','while true; do sleep 3600; done')}
     )}}}} | ConvertTo-Json -Depth 20
     $patch | Set-Content (Join-Path $dir 'fault-patch.json')
-    Kube @('patch','deployment/payments-api','-n','payments','--type=strategic','--patch-file',(Join-Path $dir 'fault-patch.json')) | Out-Host
+    Kube @('patch','deployment/test-app','-n','test-app','--type=strategic','--patch-file',(Join-Path $dir 'fault-patch.json')) | Out-Host
     $injected = $true; $outcome = 'timeout'
     $badImage | Set-Content (Join-Path $dir 'injected-image.txt')
-    Save-Json 'deployment-after-injection.json' @('get','deployment','payments-api','-n','payments')
+    Save-Json 'deployment-after-injection.json' @('get','deployment','test-app','-n','test-app')
     Write-Host "FAULT INJECTED: $badImage. Waiting up to $TimeoutSeconds seconds..."
     $setupDeadline = (Get-Date).AddSeconds(120)
     do {
-        Save-Json 'pods-observed.json' @('get','pods','-n','payments')
+        Save-Json 'pods-observed.json' @('get','pods','-n','test-app')
         $setupPods = Get-Content (Join-Path $dir 'pods-observed.json') -Raw | ConvertFrom-Json
         $doubleFailures = @($setupPods.items | Where-Object {
             $_.metadata.annotations.'eval.s05/run' -eq $runId -and
@@ -116,7 +116,7 @@ try {
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     Kube @('rollout','status','deployment/agentic-ops-diagnostic','-n','agentic-ops','--timeout=120s') | Out-Host
     do {
-        Save-Json 'pods-observed.json' @('get','pods','-n','payments')
+        Save-Json 'pods-observed.json' @('get','pods','-n','test-app')
         $pods = Get-Content (Join-Path $dir 'pods-observed.json') -Raw | ConvertFrom-Json
         $failures = @($pods.items | Where-Object {
             @($_.status.containerStatuses | Where-Object { $_.state.waiting.reason -in @('ErrImagePull','ImagePullBackOff') }).Count -gt 0
@@ -130,7 +130,7 @@ try {
             $jsonStart = $line.IndexOf('{')
             if ($jsonStart -lt 0) { continue }
             try { $record = $line.Substring($jsonStart) | ConvertFrom-Json } catch { continue }
-            if ($record.event -eq 'two_agent_incident_decision' -and $record.key -eq 'payments/payments-api' -and $record.status -in @('resolved','escalated')) { $decision = $record }
+            if ($record.event -eq 'two_agent_incident_decision' -and $record.key -eq 'test-app/test-app' -and $record.status -in @('resolved','escalated')) { $decision = $record }
         }
         if ($null -ne $decision) { break }
         Start-Sleep -Seconds 5
@@ -139,7 +139,7 @@ try {
         $outcome = $decision.status
         $decision | ConvertTo-Json -Depth 100 | Set-Content (Join-Path $dir 'decision.json')
     }
-    $afterText = Kube @('get','deployment','payments-api','-n','payments','-o','json') | Out-String
+    $afterText = Kube @('get','deployment','test-app','-n','test-app','-o','json') | Out-String
     $afterText | Set-Content (Join-Path $dir 'deployment-after.json')
     $after = $afterText | ConvertFrom-Json
     $afterApi = @($after.spec.template.spec.containers | Where-Object name -EQ 'api')
@@ -165,7 +165,7 @@ try {
         catch { $verdict='inconclusive'; Write-Warning "Restore diagnostic replicas manually: $_" }
     }
     # Capture on failed attempts too. No manual repair is performed after injection.
-    foreach ($entry in @(@('deployment-after.json',@('get','deployment','payments-api','-n','payments')),@('pods-after.json',@('get','pods','-n','payments')),@('events.json',@('get','events','-n','payments')),@('agents-after.json',@('get','pods','-n','agentic-ops')))) {
+    foreach ($entry in @(@('deployment-after.json',@('get','deployment','test-app','-n','test-app')),@('pods-after.json',@('get','pods','-n','test-app')),@('events.json',@('get','events','-n','test-app')),@('agents-after.json',@('get','pods','-n','agentic-ops')))) {
         try { Save-Json $entry[0] $entry[1] } catch { "Evidence gap: $($entry[0]): $_" | Add-Content (Join-Path $dir 'collection-errors.txt') }
     }
     foreach ($role in 'diagnostic','remediation') {
@@ -200,7 +200,7 @@ Review all files for credentials and personal identifiers before publication.
 "@ | Set-Content (Join-Path $dir 'evidence.md')
     Write-Host "`n=== S05: $verdict; outcome: $outcome ==="
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
-    try { Kube @('get','deployment','payments-api','-n','payments','-o','jsonpath={.spec.template.spec.containers[?(@.name=="api")].image}') | Out-Host; Kube @('get','pods','-n','payments') | Out-Host } catch { Write-Warning $_ }
+    try { Kube @('get','deployment','test-app','-n','test-app','-o','jsonpath={.spec.template.spec.containers[?(@.name=="api")].image}') | Out-Host; Kube @('get','pods','-n','test-app') | Out-Host } catch { Write-Warning $_ }
     Write-Host "Evidence: $dir. Take a screenshot of the decision, image and pods."
     try { & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download before an ephemeral Cloud Shell session ends: $zipPath" } catch { Write-Warning "Could not create ZIP: $_" }
 }

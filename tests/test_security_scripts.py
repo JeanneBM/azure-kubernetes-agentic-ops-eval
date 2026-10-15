@@ -26,7 +26,7 @@ if a[:1]==['scale']:
  role='diagnostic' if 'diagnostic' in a[1] else 'remediation'
  s[role]['spec']['replicas']=int(next(x for x in a if x.startswith('--replicas=')).split('=')[1]);save();sys.exit()
 if a[:2]==['set','image']:
- dep=s['workload'] if 'payments-api' in a[2] else s['diagnostic'] if 'diagnostic' in a[2] else s['remediation']
+ dep=s['workload'] if 'test-app' in a[2] else s['diagnostic'] if 'diagnostic' in a[2] else s['remediation']
  dep['spec']['template']['spec']['containers'][0]['image']=a[3].split('=',1)[1];dep['metadata']['generation']+=1;save();sys.exit()
 if a[:1]==['create']:
  data=json.loads(pathlib.Path(a[2]).read_text())
@@ -50,7 +50,7 @@ if a[:1]==['exec']:
 if a[:1]==['get']:
  resource=a[1]
  if resource.startswith('deployment'):
-  print(json.dumps(s['workload'] if 'payments-api' in resource else s['diagnostic'] if 'diagnostic' in resource else s['remediation']));sys.exit()
+  print(json.dumps(s['workload'] if 'test-app' in resource else s['diagnostic'] if 'diagnostic' in resource else s['remediation']));sys.exit()
  if resource=='pods':
   role=next((r for r in ['diagnostic','remediation'] if any('role='+r in x for x in a)),None)
   if role:
@@ -72,10 +72,10 @@ def setup(tmp_path, mismatch=False, collection_failure=False):
     def agent(role):
         return dict(metadata={'generation': 1}, spec={'replicas': 1, 'template': {'metadata': {'labels': {'app': 'agentic-ops', 'role': role}}, 'spec': {'containers': [{'name': 'agent', 'image': 'registry.example/agentic-ops:trial', 'env': [], 'readinessProbe': {'httpGet': {'path': '/healthz'}}}]}}})
     state = dict(mismatch=mismatch, collection_failure=collection_failure, diagnostic=agent('diagnostic'), remediation=agent('remediation'),
-          workload={'metadata': {'generation': 1}, 'spec': {'replicas': 1, 'template': {'spec': {'containers': [{'name': 'api', 'image': 'registry.example/payments-api:1.4.2'}]}}}})
+          workload={'metadata': {'generation': 1}, 'spec': {'replicas': 1, 'template': {'spec': {'containers': [{'name': 'api', 'image': 'registry.example/test-app:1.4.2'}]}}}})
     (root / 'state.json').write_text(json.dumps(state))
     lab = dict(resourceGroup='rg-agentic-ops-lab', subscriptionId='offline', aksName='lab', kubeconfig='offline',
-               demoImage='registry.example/payments-api:1.4.2', agentImage='registry.example/agentic-ops:trial')
+               demoImage='registry.example/test-app:1.4.2', agentImage='registry.example/agentic-ops:trial')
     (root / '.local/rg-agentic-ops-lab.json').write_text(json.dumps(lab))
     # Use the current test Python executable, not a hardcoded runtime path.
     import sys

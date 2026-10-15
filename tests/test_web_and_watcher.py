@@ -14,14 +14,14 @@ from test_aks import pod
 
 TOKEN = "s3cret"
 AUTH = {"X-Webhook-Token": TOKEN}
-PAYLOAD = {"namespace": "payments", "pod": "payments-api-abc-1", "workload": "payments-api",
+PAYLOAD = {"namespace": "test-app", "pod": "test-app-abc-1", "workload": "test-app",
            "reason": "ImagePullBackOff", "correlation_id": "INC-4821"}
 
 
 class Env:
     """Holds the collaborators so tests can assert on them."""
 
-    def __init__(self, owner="payments-api", token=TOKEN):
+    def __init__(self, owner="test-app", token=TOKEN):
         self.owner = owner
         self.resolver_calls = []
         self.executor = FakeExecutor()
@@ -50,8 +50,8 @@ def http(env):
 def test_webhook_fixes_typo_and_reports_action(http, env):
     body = http.post("/api/v1/incidents", json=PAYLOAD, headers=AUTH).json()
     assert body["status"] == "resolved" and body["action_executed"]
-    assert body["action"]["parameters"]["new_image"].endswith("payments-api:1.4.2")
-    assert env.resolver_calls == [("payments", "payments-api-abc-1")]
+    assert body["action"]["parameters"]["new_image"].endswith("test-app:1.4.2")
+    assert env.resolver_calls == [("test-app", "test-app-abc-1")]
 
 
 def test_webhook_is_disabled_without_a_configured_token():
@@ -81,7 +81,7 @@ def test_unmanaged_namespace_is_rejected_without_touching_the_cluster(http, env)
 def test_workload_that_does_not_match_the_pod_owner_is_rejected(http, env):
     response = http.post("/api/v1/incidents", json={**PAYLOAD, "workload": "billing"}, headers=AUTH)
     assert response.status_code == 409
-    assert "payments-api" in response.json()["detail"]
+    assert "test-app" in response.json()["detail"]
     assert env.executor.actions == []
 
 
@@ -122,23 +122,23 @@ def test_lifespan_starts_the_watcher_and_signals_it_to_stop():
 def test_resolve_pod_workload_maps_missing_pod_to_none_and_other_errors_raise():
     core, apps = MagicMock(), MagicMock()
     core.read_namespaced_pod.side_effect = k8s.exceptions.ApiException(status=404)
-    assert resolve_pod_workload(core, apps, "payments", "gone") is None
+    assert resolve_pod_workload(core, apps, "test-app", "gone") is None
     core.read_namespaced_pod.side_effect = k8s.exceptions.ApiException(status=500)
     with pytest.raises(k8s.exceptions.ApiException):
-        resolve_pod_workload(core, apps, "payments", "x")
+        resolve_pod_workload(core, apps, "test-app", "x")
     core.read_namespaced_pod.side_effect = None
     core.read_namespaced_pod.return_value = pod(owner=False)
-    assert resolve_pod_workload(core, apps, "payments", "x") is None
+    assert resolve_pod_workload(core, apps, "test-app", "x") is None
 
 
 def test_watcher_raises_incident_for_pull_failures_only():
     apps = MagicMock()
     parent = MagicMock(kind="Deployment")
-    parent.name = "payments-api"
+    parent.name = "test-app"
     apps.read_namespaced_replica_set.return_value = MagicMock(metadata=MagicMock(owner_references=[parent]))
     handled = []
-    watcher = PodWatcher(MagicMock(), apps, "payments", handled.append)
+    watcher = PodWatcher(MagicMock(), apps, "test-app", handled.append)
     assert watcher.process_pod(pod()) is True
-    assert handled[0].workload == "payments-api" and handled[0].namespace == "payments"
+    assert handled[0].workload == "test-app" and handled[0].namespace == "test-app"
     assert watcher.process_pod(pod(reason="CrashLoopBackOff")) is False
     assert len(handled) == 1

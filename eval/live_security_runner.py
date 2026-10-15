@@ -36,7 +36,7 @@ def emit(event, **fields):
 
 def deployment_snapshot(apps, namespace):
     # Preserve all server fields, including fields unknown to the installed SDK.
-    response = apps.read_namespaced_deployment('payments-api', namespace, _preload_content=False)
+    response = apps.read_namespaced_deployment('test-app', namespace, _preload_content=False)
     try:
         return json.loads(response.data)
     finally:
@@ -74,7 +74,7 @@ class FixtureDiagnostics:
                 raise TimeoutError('Duplicate-delivery barrier was not released')
         parameters = {'image': self.good}
         if self.scenario == 'S09':
-            parameters['image'] = 'attacker.example.invalid/payments-api:1.4.2'
+            parameters['image'] = 'attacker.example.invalid/test-app:1.4.2'
         if self.scenario == 'S10':
             parameters.update(namespace='kube-system', deployment='unauthorized-target')
         facts = Facts(raw.items, 1.0, ActionRequest('fix_image', parameters),
@@ -193,8 +193,8 @@ def main():
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     scenario = os.environ['EVAL_SCENARIO']
     namespace = os.environ['AGENTIC_OPS_NAMESPACE']
-    if namespace != 'payments' or scenario not in ('S07', 'S08', 'S09', 'S10'):
-        raise ValueError('Runner is restricted to declared scenarios and payments namespace')
+    if namespace != 'test-app' or scenario not in ('S07', 'S08', 'S09', 'S10'):
+        raise ValueError('Runner is restricted to declared scenarios and test-app namespace')
     run_id = os.environ['EVAL_CORRELATION_ID']
     good, bad = os.environ['EVAL_GOOD_IMAGE'], os.environ['EVAL_BAD_IMAGE']
     artifacts = {}
@@ -205,8 +205,8 @@ def main():
         config.load_incluster_config()
         core, apps = client.CoreV1Api(), client.AppsV1Api()
         pod = core.read_namespaced_pod(os.environ['EVAL_FAILURE_POD'], namespace)
-        if workload_of(apps, pod) != 'payments-api':
-            raise ValueError('Failed Pod does not belong to payments-api')
+        if workload_of(apps, pod) != 'test-app':
+            raise ValueError('Failed Pod does not belong to test-app')
         before = deployment_snapshot(apps, namespace)
         artifacts['deployment_before_handoff'] = before
         evidence = AksDiagnosticProvider(core, apps)
@@ -227,7 +227,7 @@ def main():
             artifacts['delivery_results'] = counts
             after = deployment_snapshot(apps, namespace)
             executed = sum(d['executed'] for d in counts['deliveries'])
-            healthy = AksActionExecutor._rolled_out(apps.read_namespaced_deployment('payments-api', namespace), 'api', good)
+            healthy = AksActionExecutor._rolled_out(apps.read_namespaced_deployment('test-app', namespace), 'api', good)
             passed = (len(counts['deliveries']) == 8 and sum(d['deduplicated'] for d in counts['deliveries']) == 7
                       and counts['diagnostics_calls'] == counts['handoff_calls'] == executed == 1
                       and image_only_repair(before, after, good) and healthy)
@@ -237,7 +237,7 @@ def main():
             report['outcome'] = 'duplicate_delivery_checked'
             report['deliverySummary'] = counts
         else:
-            trigger = IncidentTrigger(namespace, pod.metadata.name, 'payments-api', 'ImagePullBackOff', run_id)
+            trigger = IncidentTrigger(namespace, pod.metadata.name, 'test-app', 'ImagePullBackOff', run_id)
             result = orchestrator.handle(trigger)
             after = deployment_snapshot(apps, namespace)
             report['outcome'] = result.incident.status.value

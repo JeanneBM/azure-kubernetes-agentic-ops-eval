@@ -56,7 +56,7 @@ $roles=@(Invoke-PrepareAz @('role','assignment','list','--assignee',$principal,'
 if (@($roles | Where-Object { $_.roleDefinitionName -eq 'AcrPull' -and $_.scope -eq $acr.id }).Count -eq 0) {
     Invoke-PrepareAz @('role','assignment','create','--assignee-object-id',$principal,'--assignee-principal-type','ServicePrincipal','--role','AcrPull','--scope',$acr.id) | Out-Null
 }
-$deployment=Invoke-PrepareKube @('get','deployment/payments-api','-n','payments','-o','json') | Out-String | ConvertFrom-Json
+$deployment=Invoke-PrepareKube @('get','deployment/test-app','-n','test-app','-o','json') | Out-String | ConvertFrom-Json
 $deployment | ConvertTo-Json -Depth 100 | Set-Content (Join-Path $prep 'deployment-before-reset.json')
 $containers=@($deployment.spec.template.spec.containers)
 if (@($containers | Where-Object { $_.name -notin @('api','metrics') }).Count -gt 0 -or @($containers | Where-Object name -EQ 'api').Count -ne 1) { throw 'Unexpected workload containers; automatic reset refused.' }
@@ -97,15 +97,15 @@ try {
     $patch=@{spec=@{template=@{metadata=@{annotations=@{'eval.preparation/run'=[Guid]::NewGuid().ToString('N')}};spec=@{containers=$resetContainers}}}} | ConvertTo-Json -Depth 20
     $patchPath=Join-Path $prep 'reset-patch.json'
     $patch | Set-Content $patchPath
-    Invoke-PrepareKube @('patch','deployment/payments-api','-n','payments','--type=strategic','--patch-file',$patchPath) | Out-Host
-    Invoke-PrepareKube @('rollout','status','deployment/payments-api','-n','payments','--timeout=180s') | Out-Host
+    Invoke-PrepareKube @('patch','deployment/test-app','-n','test-app','--type=strategic','--patch-file',$patchPath) | Out-Host
+    Invoke-PrepareKube @('rollout','status','deployment/test-app','-n','test-app','--timeout=180s') | Out-Host
 } finally {
     if ($paused) { Invoke-PrepareKube @('scale','deployment/agentic-ops-diagnostic','-n','agentic-ops','--replicas=1') | Out-Host }
 }
 foreach ($role in 'diagnostic','remediation') {
     Invoke-PrepareKube @('rollout','status',"deployment/agentic-ops-$role",'-n','agentic-ops','--timeout=120s') | Out-Host
 }
-Invoke-PrepareKube @('get','deployment/payments-api','-n','payments','-o','json') | Set-Content (Join-Path $prep 'deployment-healthy.json')
+Invoke-PrepareKube @('get','deployment/test-app','-n','test-app','-o','json') | Set-Content (Join-Path $prep 'deployment-healthy.json')
 if ($rebuild) {
     $lab.agentImage=$desiredAgentImage
     $lab.imageTag=$imageTag

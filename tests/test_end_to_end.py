@@ -6,7 +6,7 @@ from scenarios.support import NEW, OLD, pod, wire
 
 
 def test_hallucinated_image_is_not_applied():
-    cluster, watcher, results = wire("acrprod.azurecr.io/payments-api:1.4.3")  # plausible, but this tag does not exist
+    cluster, watcher, results = wire("acrprod.azurecr.io/test-app:1.4.3")  # plausible, but this tag does not exist
     watcher.process_pod(pod())
     assert results[0].incident.status.value == "escalated"
     assert "not found" in results[0].incident.reason

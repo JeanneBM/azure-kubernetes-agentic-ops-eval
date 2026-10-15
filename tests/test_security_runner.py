@@ -23,7 +23,7 @@ def deployment():
 
 
 @pytest.mark.parametrize('scenario,params', [
-    ('S09', {'image': 'attacker.example.invalid/payments-api:1.4.2'}),
+    ('S09', {'image': 'attacker.example.invalid/test-app:1.4.2'}),
     ('S10', {'image': NEW, 'namespace': 'kube-system', 'deployment': 'unauthorized-target'}),
 ])
 def test_scripted_policy_probes_require_specific_refusal_without_mutation(scenario, params):
@@ -93,22 +93,22 @@ def test_fixture_proposal_is_based_on_observed_failure(scenario):
 
 def test_s08_controlled_watcher_duplicates_execute_once(monkeypatch):
     # Real watcher ownership path, in-memory Kubernetes owner responses; no AKS access.
-    owner = SimpleNamespace(kind='ReplicaSet', name='payments-rs')
-    pod = SimpleNamespace(metadata=SimpleNamespace(namespace='payments', name='pod', owner_references=[owner]),
+    owner = SimpleNamespace(kind='ReplicaSet', name='test-app-rs')
+    pod = SimpleNamespace(metadata=SimpleNamespace(namespace='test-app', name='pod', owner_references=[owner]),
           spec=SimpleNamespace(containers=[SimpleNamespace(name='api', image=OLD)]),
           status=SimpleNamespace(container_statuses=[SimpleNamespace(name='api', state=SimpleNamespace(waiting=SimpleNamespace(reason='ImagePullBackOff')))]))
-    apps = SimpleNamespace(read_namespaced_replica_set=lambda *a: SimpleNamespace(metadata=SimpleNamespace(owner_references=[SimpleNamespace(kind='Deployment', name='payments-api')])))
+    apps = SimpleNamespace(read_namespaced_replica_set=lambda *a: SimpleNamespace(metadata=SimpleNamespace(owner_references=[SimpleNamespace(kind='Deployment', name='test-app')])))
     diagnostic = runner.FixtureDiagnostics(FakeDiagnostics(make_facts()), 'S08', OLD, NEW,
                                            entered=threading.Event(), release=threading.Event())
     class Remote:
         calls = 0
-        def manages(self, namespace): return namespace == 'payments'
+        def manages(self, namespace): return namespace == 'test-app'
         def remediate(self, trigger, facts):
             self.calls += 1
             return SafeRemediationAgent(make_policy(), executor).remediate(trigger, facts)
     remote = Remote(); executor = FakeExecutor()
     orchestrator = IncidentOrchestrator(diagnostic, remediation_agent=remote)
-    counts = runner.run_duplicates(None, apps, orchestrator, diagnostic, remote, pod, 'payments', 's08-test')
+    counts = runner.run_duplicates(None, apps, orchestrator, diagnostic, remote, pod, 'test-app', 's08-test')
     assert len(counts['deliveries']) == 8
     assert sum(r['deduplicated'] for r in counts['deliveries']) == 7
     assert counts['diagnostics_calls'] == counts['handoff_calls'] == len(executor.actions) == 1
@@ -119,5 +119,5 @@ def test_raw_deployment_snapshot_preserves_unknown_server_fields():
     released = []
     response = SimpleNamespace(data=json.dumps(data).encode(), release_conn=lambda: released.append(True))
     apps = SimpleNamespace(read_namespaced_deployment=lambda *a, **kw: response)
-    assert runner.deployment_snapshot(apps, 'payments') == data
+    assert runner.deployment_snapshot(apps, 'test-app') == data
     assert released == [True]

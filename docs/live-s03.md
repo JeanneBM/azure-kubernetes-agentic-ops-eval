@@ -6,7 +6,7 @@ From the repository root after environment setup:
 ./scripts/tests/test-s03.ps1
 ```
 
-Requires PowerShell 7, kubectl, Azure CLI registry-read access, and a healthy payments-api Deployment. Setup configuration supplies the registry and kubeconfig; both can also be passed explicitly.
+Requires PowerShell 7, kubectl, Azure CLI registry-read access, and a healthy test-app Deployment. Setup configuration supplies the registry and kubeconfig; both can also be passed explicitly.
 
 The script inventories ACR repositories, constructs a nonexistent repository whose length excludes every existing repository under the current policy's distance limit of 2, restarts diagnostic deduplication, injects only the api image and observes one decision. The existing sidecar is retained. A pass requires scenario-specific escalation without executed remediation and an unchanged post-injection Deployment spec and generation. Model or transport failures are inconclusive. This runner assumes the repository's default distance policy and no concurrent registry/workload changes.
 

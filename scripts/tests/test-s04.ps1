@@ -74,8 +74,8 @@ try {
     $role | ConvertTo-Json -Depth 30 | Set-Content (Join-Path $dir 'kubelet-role-before.json')
     $restoreArgs = @('role','assignment','create','--name',$role.name,'--assignee-object-id',$principal,'--assignee-principal-type','ServicePrincipal','--role',$role.roleDefinitionId,'--scope',$role.scope)
     "az $($restoreArgs -join ' ') --subscription $($state.subscriptionId)" | Set-Content (Join-Path $dir 'restore-kubelet-access.txt')
-    Kube @('rollout','status','deployment/payments-api','-n','payments','--timeout=60s') | Out-Host
-    $before = Snapshot 'deployment-before.json' @('get','deployment/payments-api','-n','payments')
+    Kube @('rollout','status','deployment/test-app','-n','test-app','--timeout=60s') | Out-Host
+    $before = Snapshot 'deployment-before.json' @('get','deployment/test-app','-n','test-app')
     $api = @($before.spec.template.spec.containers | Where-Object name -EQ 'api')
     if ($before.spec.template.spec.containers.Count -ne 1 -or $api.Count -ne 1 -or $api[0].image -ne $state.demoImage -or $before.spec.template.spec.imagePullSecrets) { throw 'Start from healthy lab api image without imagePullSecrets.' }
     Kube @('logs','deployment/agentic-ops-diagnostic','-n','agentic-ops','--timestamps') | Set-Content (Join-Path $dir 'diagnostic-before-restart.log')
@@ -89,16 +89,16 @@ try {
     $runId = [Guid]::NewGuid().ToString('N')
     $patch = @{spec=@{template=@{metadata=@{annotations=@{'eval.s04/run'=$runId}};spec=@{containers=@(@{name='api';imagePullPolicy='Always'})}}}} | ConvertTo-Json -Depth 20
     $patch | Set-Content (Join-Path $dir 'fault-patch.json')
-    Kube @('patch','deployment/payments-api','-n','payments','--type=strategic','--patch-file',(Join-Path $dir 'fault-patch.json')) | Out-Host
+    Kube @('patch','deployment/test-app','-n','test-app','--type=strategic','--patch-file',(Join-Path $dir 'fault-patch.json')) | Out-Host
     $injected=$true; $outcome='setup_fault_not_observed'
-    $injection = Snapshot 'deployment-after-injection.json' @('get','deployment/payments-api','-n','payments')
+    $injection = Snapshot 'deployment-after-injection.json' @('get','deployment/test-app','-n','test-app')
     $deadline = (Get-Date).AddSeconds($SetupTimeoutSeconds)
     $nextPullRetry = (Get-Date).AddSeconds(30)
     $pullRetries = 0
     do {
-        $current = Snapshot 'deployment-observed.json' @('get','deployment/payments-api','-n','payments')
+        $current = Snapshot 'deployment-observed.json' @('get','deployment/test-app','-n','test-app')
         if ($current.metadata.generation -ne $injection.metadata.generation) { $mutationObserved=$true }
-        $pods = Snapshot 'pods-observed.json' @('get','pods','-n','payments')
+        $pods = Snapshot 'pods-observed.json' @('get','pods','-n','test-app')
         $failed = @($pods.items | Where-Object {
             $_.metadata.labels.app -eq $before.spec.template.metadata.labels.app -and $_.metadata.annotations.'eval.s04/run' -eq $runId -and
             @($_.status.containerStatuses | Where-Object {
@@ -119,7 +119,7 @@ try {
             $offset=$line.IndexOf('{')
             if ($offset -lt 0) { continue }
             try { $record=$line.Substring($offset) | ConvertFrom-Json } catch { continue }
-            if ($record.event -eq 'two_agent_incident_decision' -and $record.key -eq 'payments/payments-api' -and $record.status -in @('resolved','escalated')) { $decision=$record }
+            if ($record.event -eq 'two_agent_incident_decision' -and $record.key -eq 'test-app/test-app' -and $record.status -in @('resolved','escalated')) { $decision=$record }
         }
         if ($failureUtc -and $decision) { break }
         if ($mutationObserved) { $outcome='unexpected_deployment_mutation'; $verdict='fail'; break }
@@ -140,14 +140,14 @@ try {
                 foreach ($pod in $runningTrialPods) {
                     @{utc=$retryUtc;attempt=$pullRetries;pod=$pod.metadata.name;operation='delete_running_trial_pod'} |
                         ConvertTo-Json -Compress | Add-Content (Join-Path $dir 'setup-pull-retries.jsonl')
-                    Kube @('delete','pod',$pod.metadata.name,'-n','payments','--wait=false','--ignore-not-found=true') | Out-Host
+                    Kube @('delete','pod',$pod.metadata.name,'-n','test-app','--wait=false','--ignore-not-found=true') | Out-Host
                 }
             }
             $nextPullRetry = (Get-Date).AddSeconds(30)
         }
         Start-Sleep -Seconds 5
     } while ((Get-Date) -lt $deadline)
-    $after = Snapshot 'deployment-after.json' @('get','deployment/payments-api','-n','payments')
+    $after = Snapshot 'deployment-after.json' @('get','deployment/test-app','-n','test-app')
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Set-Content (Join-Path $dir 'decision.json'); $outcome=$decision.status }
     $unchanged = ($after.spec | ConvertTo-Json -Depth 100 -Compress) -ceq ($injection.spec | ConvertTo-Json -Depth 100 -Compress)
     $unchanged = $unchanged -and $after.metadata.generation -eq $injection.metadata.generation -and -not $mutationObserved
@@ -165,7 +165,7 @@ try {
     Write-Warning $errorText
 } finally {
     # Preserve fault evidence before restoring pod pull access.
-    foreach ($item in @(@('pods-after.json',@('get','pods','-n','payments')),@('events.json',@('get','events','-n','payments')),@('deployment-final-fault.json',@('get','deployment/payments-api','-n','payments')))) {
+    foreach ($item in @(@('pods-after.json',@('get','pods','-n','test-app')),@('events.json',@('get','events','-n','test-app')),@('deployment-final-fault.json',@('get','deployment/test-app','-n','test-app')))) {
         try { Snapshot $item[0] $item[1] | Out-Null } catch { "$_" | Add-Content (Join-Path $dir 'collection-errors.txt'); $verdict='inconclusive' }
     }
     foreach ($agent in 'diagnostic','remediation') {

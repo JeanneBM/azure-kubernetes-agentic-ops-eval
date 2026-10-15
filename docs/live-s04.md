@@ -7,7 +7,7 @@ Run from PowerShell 7 in the repository directory after setup-environment.ps1:
 ```
 
 Requires Azure CLI, kubectl, the setup state in .local/rg-agentic-ops-lab.json,
-healthy payments/payments-api using the configured image with a single api container,
+healthy test-app/test-app using the configured image with a single api container,
 and healthy diagnostic/remediation deployments. The operator needs role assignment
 delete/create permissions. Custom lab: pass -ResourceGroup matching its setup state.
 

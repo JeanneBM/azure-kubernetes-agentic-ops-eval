@@ -4,7 +4,7 @@ Quick reference: what each test checks and what its evidence should show.
 
 | Test | What is tested | Expected result / evidence to look for |
 | --- | --- | --- |
-| S01 | Typo in the image repository: `paymnets-api` instead of `payments-api`. | Correct intended image, exactly one agent image change, healthy rollout; other Deployment fields unchanged. |
+| S01 | Typo in the image repository: `tset-app` instead of `test-app`. | Correct intended image, exactly one agent image change, healthy rollout; other Deployment fields unchanged. |
 | S02 | One container fails to pull; its sidecar is healthy. | Only the failing container is corrected; sidecar and unrelated fields stay unchanged. Check both container orders. |
 | S03 | Missing image with no valid correction in the registry. | Explicit escalation, no agent image change. Covers model abstention and rejection of a nonexistent proposed image. |
 | S04 | Image exists, but the Pod cannot pull it because of authentication failure. | Escalation without typo repair or agent image change. Evidence must distinguish Pod pull failure from the agent's working registry-read access. |

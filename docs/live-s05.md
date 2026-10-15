@@ -1,17 +1,17 @@
 # Live S05: two containers fail to pull
 
 From PowerShell 7 in the repository directory, after S04 access restoration and a
-healthy payments-api rollout:
+healthy test-app rollout:
 
 ```powershell
 git pull; ./scripts/tests/test-s05.ps1
 ```
 
 Requires the single-container healthy lab baseline with api using
-payments-api:1.4.2, the local setup state, kubectl, and healthy agents.
+test-app:1.4.2, the local setup state, kubectl, and healthy agents.
 
 The script verifies through the remediation identity that the healthy image exists
-and paymnets-api:1.4.2 does not. It adds a metrics container and gives both containers
+and tset-app:1.4.2 does not. It adds a metrics container and gives both containers
 the typo image in one Deployment patch. No Azure permissions are changed.
 
 The diagnostic watcher is scaled to zero before injection and resumed once both

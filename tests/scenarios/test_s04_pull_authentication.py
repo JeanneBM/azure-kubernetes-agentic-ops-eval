@@ -16,5 +16,5 @@ def test_s04_existing_image_auth_failure_is_not_repaired(repetition, pull_reason
     assert any("unauthorized" in item.value for item in results[0].incident.facts.items)
     # ACR exchange/token endpoints succeed; this is NOT a remediation identity failure (P06).
     assert [path for path, _ in cluster.registry_requests] == [
-        "/oauth2/exchange", "/oauth2/token", "/v2/paymnets-api/manifests/1.4.2"]
+        "/oauth2/exchange", "/oauth2/token", "/v2/tset-app/manifests/1.4.2"]
     assert cluster.registry_requests[-1][1] == "Bearer at"

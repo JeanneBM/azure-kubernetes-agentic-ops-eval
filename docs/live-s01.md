@@ -12,10 +12,10 @@ The script automatically reads the registry and kubeconfig from
 `-AcrLoginServer` and `-Kubeconfig` parameters remain available for other labs.
 
 The script
-targets payments/payments-api and api, and requires the healthy starting image
-payments-api:1.4.2 in the supplied registry. It preserves diagnostic logs and
+targets test-app/test-app and api, and requires the healthy starting image
+test-app:1.4.2 in the supplied registry. It preserves diagnostic logs and
 restarts the diagnostic Deployment to clear its in-memory incident cooldown.
-It injects paymnets-api:1.4.2, waits up to 180 seconds (configurable with
+It injects tset-app:1.4.2, waits up to 180 seconds (configurable with
 -TimeoutSeconds), and never manually repairs the Deployment after injection.
 A failed or timed-out run can leave the injected image in place. Prepare a
 healthy baseline before another run.

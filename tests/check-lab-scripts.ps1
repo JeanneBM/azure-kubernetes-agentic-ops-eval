@@ -11,7 +11,7 @@ try {
     ("#!/bin/sh"+[Environment]::NewLine+"exit 0") | Set-Content $kubeProgram
     & chmod +x $kubeProgram
     $env:PATH=(Join-Path $temp 'bin')+[IO.Path]::PathSeparator+$oldPath
-    @{subscriptionId='offline-subscription';resourceGroup='rg-agentic-ops-lab';demoImage='example.azurecr.io/payments-api:1.4.2';kubeconfig='recorded-config'} |
+    @{subscriptionId='offline-subscription';resourceGroup='rg-agentic-ops-lab';demoImage='example.azurecr.io/test-app:1.4.2';kubeconfig='recorded-config'} |
         ConvertTo-Json | Set-Content (Join-Path $temp '.local/rg-agentic-ops-lab.json')
     foreach ($id in '01','02','03','05','06') {
         $original=Get-Content (Join-Path $repo "scripts/tests/test-s$id.ps1") -Raw
@@ -65,7 +65,7 @@ echo 'https://different.example:443'
             location='polandcentral';aiLocation='swedencentral';nodeVmSize='Standard_D2as_v4'
             modelName='gpt-4.1-nano';modelVersion='2025-04-14'
             modelDeployment='diagnostic-gpt41nano';modelCapacity=10
-            aiName='prior-account';acrName='prior-registry'
+            aiName='prior-account';acrName='prior-registry';managedNamespace='test-app'
         }
         $prior | ConvertTo-Json | Set-Content (Join-Path $case '.local/rg-agentic-ops-lab.json')
         $root=$case; $ResourceGroup=$prior.resourceGroup; $SubscriptionId=$prior.subscriptionId
@@ -79,6 +79,16 @@ echo 'https://different.example:443'
         if (-not $exists -and $state.aiName -eq 'prior-account') { throw 'Retired account name reused.' }
         if (-not $exists -and @(Get-ChildItem (Join-Path $case '.local/retired') -File).Count -ne 1) { throw 'Retired state missing.' }
         $passed++
+        if ($exists) {
+            $prior.managedNamespace='old-workload'
+            $prior | ConvertTo-Json | Set-Content (Join-Path $case '.local/rg-agentic-ops-lab.json')
+            $rejected=$false
+            try { . ([scriptblock]::Create($block)) } catch {
+                if ($_.Exception.Message -match 'previous workload naming') { $rejected=$true } else { throw }
+            }
+            if (-not $rejected) { throw 'Old workload namespace was silently adopted.' }
+            $passed++
+        }
     }
     foreach ($file in Get-ChildItem (Join-Path $repo 'scripts') -Recurse -Filter '*.ps1') {
         $tokens=$null; $errors=$null

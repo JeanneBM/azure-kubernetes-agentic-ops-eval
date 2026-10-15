@@ -12,16 +12,16 @@ from agentic_ops.acr import AcrRegistry
 from agentic_ops.aks import AksActionExecutor, AksDiagnosticProvider
 from agentic_ops.foundry import FoundryDiagnosticProvider
 from agentic_ops.watcher import PodWatcher
-OLD = "acrprod.azurecr.io/paymnets-api:1.4.2"
-NEW = "acrprod.azurecr.io/payments-api:1.4.2"
+OLD = "acrprod.azurecr.io/tset-app:1.4.2"
+NEW = "acrprod.azurecr.io/test-app:1.4.2"
 
 
 
 
 def pod(reason="ImagePullBackOff", image=OLD, owner=True):
-    owners = [client.V1OwnerReference(api_version="apps/v1", kind="ReplicaSet", name="payments-api-7d9", uid="u")] if owner else None
+    owners = [client.V1OwnerReference(api_version="apps/v1", kind="ReplicaSet", name="test-app-7d9", uid="u")] if owner else None
     return client.V1Pod(
-        metadata=client.V1ObjectMeta(name="payments-api-7d9-x", namespace="payments", owner_references=owners),
+        metadata=client.V1ObjectMeta(name="test-app-7d9-x", namespace="test-app", owner_references=owners),
         spec=client.V1PodSpec(containers=[client.V1Container(name="api", image=image)]),
         status=client.V1PodStatus(phase="Pending", container_statuses=[client.V1ContainerStatus(
             name="api", image=image, image_id="", ready=False, restart_count=0,
@@ -47,7 +47,7 @@ class FakeCluster:
         self.deployment = deployment(OLD, generation=1, observed=1, available=0)
         self.pod = pod()
         self.deployment.spec.template.metadata = client.V1ObjectMeta(
-            labels={"app": "payments-api"}, annotations={"eval": "preserve"})
+            labels={"app": "test-app"}, annotations={"eval": "preserve"})
         self.deployment.spec.template.spec.containers[0].env = [
             client.V1EnvVar(name="MODE", value="evaluation")]
         self.deployment.spec.template.spec.containers[0].resources = client.V1ResourceRequirements(
@@ -70,7 +70,7 @@ class FakeCluster:
 
     def read_namespaced_replica_set(self, name, namespace):
         return client.V1ReplicaSet(metadata=client.V1ObjectMeta(owner_references=[
-            client.V1OwnerReference(api_version="apps/v1", kind="Deployment", name="payments-api", uid="d")]))
+            client.V1OwnerReference(api_version="apps/v1", kind="Deployment", name="test-app", uid="d")]))
 
     def read_namespaced_deployment(self, name, namespace):
         return self.deployment
@@ -120,12 +120,12 @@ def wire(model_image, registry_has=(NEW,), *, sidecar_first=None):
     )
     policy = SelfCurePolicy(
         AcrRegistry(credential=Cred(), http_client=httpx.Client(transport=httpx.MockTransport(acr))),
-        namespace="payments", allowed_registries=["acrprod.azurecr.io"],
+        namespace="test-app", allowed_registries=["acrprod.azurecr.io"],
     )
     executor = AksActionExecutor(cluster, verify_timeout=5, poll_interval=0, sleep=lambda s: None)
     results = []
     orchestrator = IncidentOrchestrator(diagnostics, executor, policy)
-    watcher = PodWatcher(cluster, cluster, "payments", lambda t: results.append(orchestrator.handle(t)))
+    watcher = PodWatcher(cluster, cluster, "test-app", lambda t: results.append(orchestrator.handle(t)))
     return cluster, watcher, results
 
 
@@ -138,7 +138,7 @@ def assert_correct_recovery(cluster, watcher, results):
     assert len(results) == 1
     assert results[0].incident.status.value == "resolved"
     assert results[0].action_executed
-    assert cluster.patches == [("payments-api", "payments", {
+    assert cluster.patches == [("test-app", "test-app", {
         "spec": {"template": {"spec": {"containers": [{"name": "api", "image": NEW}]}}}})]
     assert cluster.deployment.spec.to_dict() == expected
     assert AksActionExecutor._rolled_out(cluster.deployment, "api", NEW)

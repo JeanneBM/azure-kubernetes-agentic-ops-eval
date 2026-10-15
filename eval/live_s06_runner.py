@@ -47,6 +47,6 @@ class BarrierRemediation(HttpRemediationAgent):
         return super().remediate(trigger, facts)
 remote = BarrierRemediation(os.environ["AGENTIC_OPS_REMEDIATION_URL"],
     os.environ["AGENTIC_OPS_REMEDIATION_TOKEN"], namespace)
-trigger = IncidentTrigger(namespace, os.environ["S06_FAILURE_POD"], "payments-api",
+trigger = IncidentTrigger(namespace, os.environ["S06_FAILURE_POD"], "test-app",
     "ImagePullBackOff", os.environ["S06_CORRELATION_ID"])
 IncidentOrchestrator(diagnostics, remediation_agent=remote).handle(trigger)

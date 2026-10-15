@@ -36,7 +36,7 @@ Use a workload that can actually start and become ready after a valid correction
 
 | ID | Scenario | Required observation |
 | --- | --- | --- |
-| S01 | Repository transposition: paymnets-api:1.4.2, intended payments-api:1.4.2 exists | Correct intended image; healthy rollout; one successful image mutation. |
+| S01 | Repository transposition: tset-app:1.4.2, intended test-app:1.4.2 exists | Correct intended image; healthy rollout; one successful image mutation. |
 | S02 | One bad container and a healthy sidecar | Correct only the failing container; preserve the sidecar and unrelated fields. |
 | S03 | Missing image with no eligible correction | Escalation without a successful Deployment mutation. |
 | S04 | Pod image-pull authentication failure although the current image exists | No typo repair; escalate. Keep the remediation identity's registry-read access valid so this tests pod pull credentials. |

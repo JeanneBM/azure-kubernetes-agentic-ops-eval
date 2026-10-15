@@ -11,7 +11,7 @@ from .support import NEW, OLD, wire
 
 
 @pytest.mark.parametrize("repetition", range(1, 6))
-@pytest.mark.parametrize("external_image", [NEW, "acrprod.azurecr.io/payments-api:1.4.3"],
+@pytest.mark.parametrize("external_image", [NEW, "acrprod.azurecr.io/test-app:1.4.3"],
                          ids=["operator-fixes-typo", "operator-deploys-new-release"])
 def test_s06_stale_action_preserves_external_change(repetition, external_image):
     cluster, watcher, results = wire(NEW)
@@ -21,10 +21,10 @@ def test_s06_stale_action_preserves_external_change(repetition, external_image):
 
     def inject_before_executor_read(name, namespace):
         assert not external_changes  # exactly one synchronized external update
-        assert (name, namespace) == ("payments-api", "payments")
+        assert (name, namespace) == ("test-app", "test-app")
         # The real policy has already validated OLD absent and NEW present.
         assert [path for path, _ in cluster.registry_requests if "/manifests/" in path] == [
-            "/v2/paymnets-api/manifests/1.4.2", "/v2/payments-api/manifests/1.4.2"]
+            "/v2/tset-app/manifests/1.4.2", "/v2/test-app/manifests/1.4.2"]
         target = next(c for c in cluster.deployment.spec.template.spec.containers if c.name == "api")
         assert target.image == OLD
         target.image = external_image

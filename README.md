@@ -1,5 +1,7 @@
 # Azure Kubernetes Agentic Ops — Evaluation
 
+> **Test workload:** `test-app` is a disposable nginx placeholder used only for fault injection and recovery checks. It has no business logic, payment processing, business data or extra backend. `tset-app` is the deliberately misspelled image alias used in the recovery scenario.
+
 [![Tests](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/test.yml/badge.svg)](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/test.yml)
 
 A two-agent AKS proof of concept for LLM-assisted diagnosis and policy-controlled
@@ -50,7 +52,7 @@ providers and assign roles. Local Docker is not required.
   Cilium and Workload Identity, Basic ACR and an Azure OpenAI model deployment.
 - Configures separate agent identities and resource-scoped permissions, builds
   the agent image in ACR and deploys both agents.
-- Imports a demo image and starts a healthy `payments-api` workload
+- Imports a demo image and starts a healthy `test-app` workload
   (nginx under a demo image alias).
 - Saves local configuration and kubeconfig under `.local/`, and setup snapshots
   under `eval/evidence/setup/`.
@@ -75,7 +77,7 @@ Completion prints `READY FOR TESTS`.
 
 ### Example setup output
 
-![Successful setup: both agent Pods and two payments-api replicas are Running and Ready](docs/images/setup-complete.png)
+![Successful setup: both agent Pods and two test-app replicas are Running and Ready](docs/images/setup-complete.png)
 
 Expected result: both agents and the demo replicas are `Running` and `1/1 Ready`,
 followed by `READY FOR TESTS`. This screenshot shows setup completion;
@@ -88,7 +90,7 @@ Load the saved configuration to inspect the lab:
 $config = Get-Content ./.local/rg-agentic-ops-lab.json -Raw | ConvertFrom-Json
 $env:KUBECONFIG = $config.kubeconfig
 kubectl get pods -n agentic-ops
-kubectl get pods -n payments
+kubectl get pods -n test-app
 ~~~
 
 To resume interrupted setup, keep the local state and rerun with the same
@@ -108,8 +110,8 @@ The script prepares the sidecar, injects the API image typo and captures recover
 and preservation evidence. See the [live S02 guide](docs/live-s02.md).
 
 
-The automated live S01 trial injects `paymnets-api:1.4.2` instead of
-`payments-api:1.4.2`, waits for the agent outcome and saves logs and snapshots:
+The automated live S01 trial injects `tset-app:1.4.2` instead of
+`test-app:1.4.2`, waits for the agent outcome and saves logs and snapshots:
 
 ~~~powershell
 $registry = ($config.demoImage -split '/')[0]
@@ -169,3 +171,5 @@ See the [cleanup script](scripts/environment/delete-environment-resource-group.p
 
 For architecture details, see [two-agent orchestration](docs/two-agent-orchestration.md)
 and [deployment boundaries](docs/two-workload-deployment.md).
+
+Historical evidence (logs, archives, screenshots and original reports) retains the resource names recorded at capture time. Current scripts and manifests use the neutral test-app naming. Recreate a disposable lab before using the renamed scripts against an older setup.
