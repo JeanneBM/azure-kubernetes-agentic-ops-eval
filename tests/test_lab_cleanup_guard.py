@@ -45,7 +45,7 @@ def test_setup_retains_live_state_but_retires_deleted_lab_names(tmp_path, exists
                     aiLocation="swedencentral", nodeVmSize="Standard_D2as_v4",
                     modelName="gpt-4.1-nano", modelVersion="2025-04-14",
                     modelDeployment="diagnostic-gpt41nano", modelCapacity=10,
-                    acrName="prior-registry", aiName="prior-account")
+                    acrName="prior-registry", aiName="prior-account", managedNamespace="test-app")
     (local / "rg-demo.json").write_text(json.dumps(previous))
     header = "$root = '" + str(tmp_path).replace("'", "''") + "'\n"
     for name in ["SubscriptionId", "ResourceGroup", "Location", "AiLocation", "NodeVmSize", "ModelName", "ModelVersion", "ModelDeployment"]:
