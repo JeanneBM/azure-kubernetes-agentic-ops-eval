@@ -11,6 +11,8 @@ from .agents import RemediationAgent, SafeRemediationAgent
 from .contracts import ActionRequest, Facts, Incident, IncidentStatus, IncidentTrigger, Recommendation
 from .safety import ActionExecutor, OutOfScope, PolicyViolation, SelfCurePolicy
 
+from .telemetry import Trace
+
 audit = logging.getLogger("agentic_ops.audit")
 
 
@@ -86,7 +88,11 @@ class IncidentOrchestrator:
                 now,
             )
 
-        incident, executed = self._process(trigger)
+        with Trace('diagnostic', trigger.correlation_id) as trace:
+            incident, executed = self._process(trigger)
+            if incident.status is IncidentStatus.ESCALATED:
+                trace.status = 'escalated'
+                trace.event('escalation', status='human_review')
         with self._lock:
             self._incidents[key] = (incident, self._clock())
         self._audit(incident, executed)

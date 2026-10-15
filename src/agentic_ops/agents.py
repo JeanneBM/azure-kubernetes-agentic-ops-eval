@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from .contracts import ActionRequest, Facts, IncidentTrigger
-from .safety import ActionExecutor, SelfCurePolicy
+from .safety import ActionExecutor, SelfCurePolicy, PolicyViolation, StaleActionError
+from .telemetry import Trace
 
 
 @dataclass(frozen=True)
@@ -43,9 +44,25 @@ class SafeRemediationAgent:
         return self._policy.namespace_allowed(namespace)
 
     def remediate(self, trigger: IncidentTrigger, facts: Facts) -> RemediationOutcome:
+        with Trace('remediation', trigger.correlation_id) as trace:
+            try:
+                return self._remediate(trigger, facts, trace)
+            except (PolicyViolation, StaleActionError):
+                trace.status = 'escalated'
+                trace.event('escalation', status='policy_refusal')
+                raise
+
+    def _remediate(self, trigger, facts, trace):
+        trace.tool('policy_check', dict(facts.safe_action.parameters) if facts.safe_action else {})
         action = self._policy.authorize(trigger, facts)
         self._executor.execute(action)
-        if not self._executor.verify(action):
+        trace.event('claim', status='fixed', attrs={'claim_id': trigger.correlation_id})
+        verified = self._executor.verify(action)
+        trace.event('verification', status='ok' if verified else 'failed',
+                    attrs={'claim_id': trigger.correlation_id, 'verifier': 'kubernetes_rollout'})
+        if not verified:
+            trace.status = 'escalated'
+            trace.event('escalation', status='verification_failed')
             return RemediationOutcome(
                 action=action,
                 executed=True,

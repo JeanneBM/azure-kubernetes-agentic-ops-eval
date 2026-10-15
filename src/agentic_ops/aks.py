@@ -8,6 +8,7 @@ from kubernetes import client, config
 from .contracts import ActionRequest, Evidence, Facts, IncidentTrigger, PullFailure
 
 from .safety import StaleActionError
+from .telemetry import tool
 
 PULL_REASONS = frozenset({"ImagePullBackOff", "ErrImagePull"})
 
@@ -62,7 +63,9 @@ class AksDiagnosticProvider:
         self._core, self._apps = _load_apis(core, apps)
 
     def collect(self, trigger: IncidentTrigger) -> Facts:
+        tool('kubectl_get', {'namespace': trigger.namespace, 'pod': trigger.pod})
         pod = self._core.read_namespaced_pod(trigger.pod, trigger.namespace)
+        tool('kubectl_events', {'namespace': trigger.namespace, 'pod': trigger.pod})
         events = self._core.list_namespaced_event(
             trigger.namespace, field_selector=f"involvedObject.name={trigger.pod}"
         )
@@ -87,6 +90,7 @@ class AksDiagnosticProvider:
         result = []
         for container in pod.spec.containers:
             try:
+                tool('kubectl_logs', {'namespace': trigger.namespace, 'pod': trigger.pod, 'container': container.name})
                 logs = self._core.read_namespaced_pod_log(
                     trigger.pod, trigger.namespace, container=container.name, previous=True, tail_lines=100
                 )
@@ -151,10 +155,12 @@ class AksActionExecutor:
         patch = {"spec": {"template": {"spec": {"containers": [
             {"name": p["container"], "image": p["new_image"]}
         ]}}}}
+        tool('kubectl_patch', dict(action.parameters))
         self._apps.patch_namespaced_deployment(p["deployment"], p["namespace"], patch)
 
     def verify(self, action: ActionRequest) -> bool:
         p = action.parameters
+        tool('rollout_status', dict(action.parameters))
         deadline = self._monotonic() + self._timeout
         while True:
             deployment = self._apps.read_namespaced_deployment(p["deployment"], p["namespace"])

@@ -7,6 +7,7 @@ import httpx
 from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 
 from .contracts import ActionRequest, Facts, IncidentTrigger
+from .telemetry import emit
 
 ALLOWED_MODEL_ACTIONS = frozenset({"fix_image"})
 
@@ -57,7 +58,10 @@ class FoundryDiagnosticProvider:
             },
         )
         response.raise_for_status()
-        content = response.json()["choices"][0]["message"]["content"]
+        data = response.json()
+        usage = data.get('usage') or {}
+        emit('llm_call', tokens=usage.get('total_tokens', 0), attrs={'usage_available': 'total_tokens' in usage})
+        content = data["choices"][0]["message"]["content"]
         return self._parse_facts(content, raw)
 
     @staticmethod

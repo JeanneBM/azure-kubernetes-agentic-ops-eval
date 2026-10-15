@@ -166,6 +166,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: AGENT_TELEMETRY_STDOUT
+              value: "1"
             - name: AGENTIC_OPS_ROLE
               value: diagnostic
             - name: AGENTIC_OPS_NAMESPACE
@@ -226,6 +228,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: AGENT_TELEMETRY_STDOUT
+              value: "1"
             - name: AGENTIC_OPS_ROLE
               value: remediation
             - name: AGENTIC_OPS_NAMESPACE

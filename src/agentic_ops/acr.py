@@ -5,6 +5,8 @@ import os
 import httpx
 from azure.identity import DefaultAzureCredential
 
+from .telemetry import tool
+
 from .safety import ImageRef
 
 _MANIFEST_TYPES = ", ".join(
@@ -35,6 +37,7 @@ class AcrRegistry:
         self._client = http_client or httpx.Client(timeout=20)
 
     def exists(self, image: ImageRef) -> bool:
+        tool('acr_check', {'image': str(image)})
         token = self._pull_token(image)
         try:
             response = self._client.head(

@@ -173,3 +173,12 @@ For architecture details, see [two-agent orchestration](docs/two-agent-orchestra
 and [deployment boundaries](docs/two-workload-deployment.md).
 
 Historical evidence (logs, archives, screenshots and original reports) retains the resource names recorded at capture time. Current scripts and manifests use the neutral test-app naming. Recreate a disposable lab before using the renamed scripts against an older setup.
+
+## Runtime observability
+
+Both agent workloads emit canonical `agent_monitor_event` envelopes to stdout.
+They record diagnostic reads, model usage when returned, handoff, deterministic
+policy checks, registry checks, patch attempts and rollout verification. The
+platform monitor reads these logs using a separate pod/log-only service account.
+No raw prompts, tool arguments, pod log bodies or credentials are copied into
+these telemetry events. For local instrumentation use `AGENT_TELEMETRY_FILE`.

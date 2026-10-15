@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from .agents import RemediationAgent, RemediationOutcome, SafeRemediationAgent
 from .contracts import ActionRequest, Evidence, Facts, IncidentTrigger, PullFailure
 from .safety import PolicyViolation, StaleActionError
+from .telemetry import tool
 
 
 class ActionPayload(BaseModel):
@@ -98,6 +99,7 @@ class HttpRemediationAgent(RemediationAgent):
             correlation_id=trigger.correlation_id,
             facts=FactsPayload.from_facts(facts),
         )
+        tool('remediate', {'namespace': trigger.namespace, 'workload': trigger.workload, 'correlation_id': trigger.correlation_id})
         response = self._client.post(
             f"{self._endpoint}/internal/v1/remediate",
             headers={"X-Agent-Token": self._token},
