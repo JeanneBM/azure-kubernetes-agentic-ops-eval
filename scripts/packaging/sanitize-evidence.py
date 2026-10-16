@@ -37,7 +37,7 @@ SECRET_ASSIGNMENT = re.compile(
     )
     (?:
       (?P<quote>\\?["']) (?P<quoted>.*?) (?P=quote)
-      | (?P<bare>[^\s"',}\\]+)
+      | (?P<bare>[^\s"',{}\[\]\\]+)
     )
     """
 )
@@ -230,3 +230,4 @@ if __name__ == "__main__":
     parser.add_argument("--destination", required=True)
     args = parser.parse_args()
     package(args.source, args.destination)
+

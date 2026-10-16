@@ -78,3 +78,32 @@ def test_final_check_rejects_unprocessed_assignments(monkeypatch):
     monkeypatch.setattr(sanitizer, "text", lambda value: value)
     with pytest.raises(ValueError):
         sanitizer.content("run.log", b'INFO {"password": "sample-private"}')
+
+
+def test_pod_projected_token_metadata_packages_without_false_alarm(tmp_path):
+    source = tmp_path / "evidence"
+    source.mkdir()
+    pod = {"items": [{"spec": {"volumes": [{"projected": {"sources": [
+        {"serviceAccountToken": {"path": "token", "expirationSeconds": 3600}},
+    ]}}], "containers": [{"env": [
+        {"name": "ACCESS_TOKEN", "value": "sample-private"},
+    ]}]}}]}
+    raw = json.dumps(pod)
+    (source / "agents-after.json").write_text(raw)
+    destination = tmp_path / "S07.zip"
+    module.package(source, destination)
+    assert (source / "agents-after.json").read_text() == raw
+    with zipfile.ZipFile(destination) as archive:
+        result = json.loads(archive.read("agents-after.json"))
+    spec = result["items"][0]["spec"]
+    assert spec["volumes"][0]["projected"]["sources"][0]["serviceAccountToken"]["path"] == "token"
+    assert spec["containers"][0]["env"][0]["value"] == "REDACTED_SECRET"
+
+
+@pytest.mark.parametrize("value", [{"password": "sample-private"}, ["token=sample-private"]])
+def test_nested_secret_containers_are_still_sanitized(value):
+    raw = json.dumps({"serviceAccountToken": value})
+    result = module.Sanitizer().content("pod.json", raw.encode()).decode()
+    assert "sample-private" not in result
+    assert "REDACTED_SECRET" in result
+
