@@ -10,3 +10,10 @@ imply that all ten scenarios passed. Raw working files stay under `.local/eviden
 
 The batch runner writes new combined archives here automatically. Individual
 scenario archives remain directly under `eval/evidence/`.
+
+## Recorded batch — 2026-10-16
+
+Run `S01-S10-20261016T122908199Z`: nine scenarios passed; S05 was inconclusive.
+This screenshot records that run and does not imply a ten-scenario pass.
+
+![S01-S10 batch summary: nine passed and S05 inconclusive](../screenshots/S01-S10-20261016T122908199Z.jpg)
