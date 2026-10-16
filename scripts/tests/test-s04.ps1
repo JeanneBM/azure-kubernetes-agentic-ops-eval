@@ -13,7 +13,7 @@ param(
     [string]$ResourceGroup = 'rg-agentic-ops-lab',
     [ValidateRange(60,1800)][int]$SetupTimeoutSeconds = 300,
     [ValidateRange(30,900)][int]$TimeoutSeconds = 180,
-    [string]$EvidenceRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence/S04')
+    [string]$EvidenceRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) '.local/evidence/S04')
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
@@ -22,7 +22,8 @@ $azExecutable = (Get-Command az -CommandType Application -ErrorAction Stop | Sel
 $root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $state = Get-Content (Join-Path $root ".local/$ResourceGroup.json") -Raw | ConvertFrom-Json
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
-$zipPath = Join-Path $EvidenceRoot ("S04-" + (Split-Path $dir -Leaf) + ".zip")
+$archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRoot } else { Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence' }
+$zipPath = Join-Path $archiveRoot ("S04-" + (Split-Path $dir -Leaf) + "-anonymized.zip")
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null
 function Invoke-LabAz {

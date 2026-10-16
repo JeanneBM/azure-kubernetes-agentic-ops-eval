@@ -10,7 +10,7 @@ param(
     [string]$ResourceGroup = 'rg-agentic-ops-lab',
     [switch]$UseModelProposal,
     [ValidateRange(30,900)][int]$TimeoutSeconds = 180,
-    [string]$EvidenceRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence/S06')
+    [string]$EvidenceRoot = (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) '.local/evidence/S06')
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
@@ -28,7 +28,8 @@ if (-not (Get-Command kubectl -CommandType Application -ErrorAction SilentlyCont
 $goodImage = "$AcrLoginServer/test-app:1.4.2"
 $badImage = $null
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
-$zipPath = Join-Path $EvidenceRoot ("S06-" + (Split-Path $dir -Leaf) + ".zip")
+$archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRoot } else { Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence' }
+$zipPath = Join-Path $archiveRoot ("S06-" + (Split-Path $dir -Leaf) + "-anonymized.zip")
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null
 function Kube {

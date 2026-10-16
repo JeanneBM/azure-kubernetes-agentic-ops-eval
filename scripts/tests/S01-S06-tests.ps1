@@ -41,7 +41,7 @@ if ($exists -eq 'false') {
     $state=Get-Content $statePath -Raw | ConvertFrom-Json
 }
 $batchId='S01-S06-'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')
-$batchDirectory=Join-Path $root ("eval/evidence/batches/"+$batchId)
+$batchDirectory=Join-Path $root (".local/evidence/batches/"+$batchId)
 New-Item -ItemType Directory -Force -Path $batchDirectory | Out-Null
 $rows=[Collections.Generic.List[object]]::new()
 function Save-BatchSummary {
@@ -105,7 +105,7 @@ try {
     if ($rows.Count -gt 0) { Save-BatchSummary }
     Write-Host "`n========== BATCH SUMMARY =========="
     $rows | Format-Table scenario,verdict,outcome,durationSeconds -AutoSize | Out-Host
-    $bundle=Join-Path (Split-Path $batchDirectory -Parent) ($batchId+'.zip')
+    $bundle=Join-Path (Join-Path $root 'eval/evidence') ($batchId+'-anonymized.zip')
     try {
         & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle
         Write-Host "Download: $bundle"

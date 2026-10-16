@@ -195,7 +195,7 @@ foreach ($role in 'remediation','diagnostic') {
 }
 
 Write-Host '[7/7] Save setup snapshots and configuration for separate test scripts'
-$setupDir = Join-Path $root ('eval/evidence/setup/'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'))
+$setupDir = Join-Path $root ('.local/evidence/setup/'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ'))
 New-Item -ItemType Directory -Force $setupDir | Out-Null
 Invoke-Kube @('get','deployments','-n','agentic-ops','-o','json') | Set-Content (Join-Path $setupDir 'agents.json')
 Invoke-Kube @('get','deployment','test-app','-n','test-app','-o','json') | Set-Content (Join-Path $setupDir 'test-app-healthy.json')

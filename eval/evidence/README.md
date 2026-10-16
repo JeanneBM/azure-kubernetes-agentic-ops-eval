@@ -10,10 +10,18 @@ The [S01 terminal screenshot](S01.png) contains Polish operator labels.
 See the [English translation](S01.en.md) alongside the original evidence.
 The recorded agent decision and Kubernetes output are already in English.
 
+## Archive delivery
+
+Default test runs keep raw working evidence under `.local/evidence/` and write only
+finished ZIP archives directly to `eval/evidence/`. Every exported archive name ends
+with `-anonymized.zip`, for example `S07-20261016T103606233Z-controlled-01-anonymized.zip`.
+Explicit `-EvidenceRoot` overrides remain available for isolated batch collection.
+Existing screenshots and documentation are retained.
+
 ## Layout
 
-Use `eval/evidence/<scenario-id>/<UTC-run-id>/`, for example
-`eval/evidence/S01/20261006T132600Z-C-01/`.
+Use `.local/evidence/<scenario-id>/<UTC-run-id>/`, for example
+`.local/evidence/S01/20261006T132600Z-C-01/`.
 The timestamp is an example naming convention, not a recorded run.
 Use a new directory for every attempt, including failed or interrupted attempts.
 
@@ -45,7 +53,7 @@ files before publishing. Script presence alone establishes no live result.
 ~~~powershell
 $scenario = "S01"
 $runId = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ") + "-C-01"
-$evidenceDir = Join-Path "eval/evidence/$scenario" $runId
+$evidenceDir = Join-Path ".local/evidence/$scenario" $runId
 New-Item -ItemType Directory -Path $evidenceDir -Force | Out-Null
 Copy-Item eval/evidence/TEMPLATE.md (Join-Path $evidenceDir "evidence.md")
 git rev-parse HEAD | Set-Content (Join-Path $evidenceDir "source-commit.txt")

@@ -5,6 +5,7 @@ param(
     [Parameter(Mandatory)][string]$DestinationPath
 )
 $ErrorActionPreference='Stop'
+if ($DestinationPath -notmatch '(?i)-anonymized\.zip$') { throw 'Destination must end with -anonymized.zip.' }
 $PSNativeCommandUseErrorActionPreference=$false
 # Never retain an outdated output when packaging cannot complete.
 if (Test-Path $DestinationPath) { Remove-Item -LiteralPath $DestinationPath -Force }
