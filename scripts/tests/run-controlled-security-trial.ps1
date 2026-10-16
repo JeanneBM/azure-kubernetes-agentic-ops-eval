@@ -248,10 +248,17 @@ Snapshot/generation checks show final state, not exhaustive Kubernetes write his
 The evaluator Pod and injected Event are removed; diagnostics remain at replicas=0.
 Faulted workload is retained for inspection. Azure resources remain provisioned.
 "@ | Set-Content (Join-Path $dir 'evidence.md')
+    $archiveCreated=$false
     try {
         & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath
+        $zipPath=(Resolve-Path -LiteralPath $zipPath -ErrorAction Stop).Path
+        $archiveCreated=$true
         Write-Host "Download: $zipPath"
     } catch { Write-Warning "Evidence packaging failed: $_" }
-    Write-Host "$Scenario : $verdict; outcome: $outcome; evidence: $dir"
+    if ($archiveCreated) {
+        Write-Host "$Scenario : $verdict; outcome: $outcome; ZIP: $zipPath"
+    } else {
+        Write-Host "$Scenario : $verdict; outcome: $outcome; ZIP: not created; raw evidence: $dir"
+    }
 }
 if ($verdict -ne 'pass') { throw "$Scenario did not pass ($outcome). Evidence: $dir" }
