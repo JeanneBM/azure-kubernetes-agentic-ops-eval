@@ -14,7 +14,8 @@ git pull
 
 Each known-lab trial automatically runs prepare-test-environment.ps1 before fault
 injection. It checks the recorded cluster, ensures at least 10 model capacity units,
-restores the kubelet's registry-scoped AcrPull if absent, pauses diagnostics, restores
+restores the kubelet's registry-scoped AcrPull if absent, ensures diagnostic read-only
+AcrPull for authenticated manifest evidence, pauses diagnostics, restores
 the healthy API image, removes the known metrics fixture, waits for healthy rollout,
 then resumes diagnostics. Preparation snapshots are stored inside each run's
 preparation directory. Prior trial evidence and ZIP files are not modified.

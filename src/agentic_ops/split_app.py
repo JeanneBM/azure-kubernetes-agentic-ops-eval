@@ -22,7 +22,7 @@ def build_app():
 
     from kubernetes import client, config
 
-    from .acr import AcrRegistry
+    from .acr import AcrRegistry, RegistryEvidenceProvider
     from .aks import AksActionExecutor, AksDiagnosticProvider, resolve_pod_workload
     from .foundry import FoundryDiagnosticProvider
     from .orchestrator import IncidentOrchestrator
@@ -46,7 +46,8 @@ def build_app():
 
     if role == "diagnostic":
         diagnostics = FoundryDiagnosticProvider(
-            AksDiagnosticProvider(core, apps),
+            RegistryEvidenceProvider(AksDiagnosticProvider(core, apps), AcrRegistry(),
+                                 namespace=namespace, allowed_registries=registries),
             endpoint=os.environ["AZURE_AI_FOUNDRY_ENDPOINT"],
             deployment=os.environ["AZURE_AI_FOUNDRY_DEPLOYMENT"],
         )

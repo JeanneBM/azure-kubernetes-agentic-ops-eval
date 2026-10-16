@@ -36,7 +36,9 @@ to pay for both.** This script is for reproducing setup from a clean environment
 - Azure OpenAI in `swedencentral`, `gpt-4.1-nano` version `2025-04-14`,
   `GlobalStandard`, capacity 1.
 - Separate diagnostic and remediation identities with resource-scoped
-  `Cognitive Services OpenAI User` and `AcrPull` respectively.
+  `Cognitive Services OpenAI User` for diagnostics and registry-scoped `AcrPull`
+  for both identities. Diagnostic manifest checks are read-only; Kubernetes writes
+  remain exclusive to remediation.
 - Both agents, their RBAC, Services, ingress NetworkPolicies and handoff Secret.
 - Two healthy `test-app` replicas. This is imported `nginx:1.27` under the
   demo image alias `test-app:1.4.2`, a placeholder with no business logic.

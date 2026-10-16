@@ -143,6 +143,7 @@ Write-Host '[4/7] Configure separate identities and least-privilege roles'
 $diagnostic = Get-AzJson @('identity','create','-g',$ResourceGroup,'-n',$state.diagnosticIdentity,'--location',$Location)
 $remediation = Get-AzJson @('identity','create','-g',$ResourceGroup,'-n',$state.remediationIdentity,'--location',$Location)
 Grant-Role $diagnostic.principalId 'Cognitive Services OpenAI User' $ai.id
+Grant-Role $diagnostic.principalId 'AcrPull' $acr.id
 Grant-Role $remediation.principalId 'AcrPull' $acr.id
 foreach ($entry in @(@($state.diagnosticIdentity,'agentic-ops-diagnostic'),@($state.remediationIdentity,'agentic-ops-remediation'))) {
     Invoke-Az @('identity','federated-credential','create','--name',$entry[1],'--identity-name',$entry[0],'-g',$ResourceGroup,'--issuer',$aks.oidcIssuerProfile.issuerUrl,'--subject',"system:serviceaccount:agentic-ops:$($entry[1])",'--audiences','api://AzureADTokenExchange','-o','none') | Out-Null

@@ -75,7 +75,16 @@ class FoundryDiagnosticProvider:
             "typo in the image name or tag. In that case it is "
             '{"name": "fix_image", "parameters": {"image": "<registry>/<repository>:<tag>"}} '
             "with the corrected full image reference, on the same registry and with the "
-            "smallest possible change. Never propose any other action or parameter."
+            "smallest possible change. Never propose any other action or parameter. "
+            "The authenticated-registry-manifest evidence records an independent lookup "
+            "of the failing image using diagnostic identity. A missing manifest confirms "
+            "that exact image is absent even if the Kubernetes error also contains an "
+            "anonymous-token 401; that 401 alone does not establish a kubelet permission "
+            "failure. Use all evidence to propose a minimal typo correction, if supported. "
+            "If the manifest exists or its status is unknown, return safe_action null; "
+            "do not guess a correction. Diagnostic registry access does not prove kubelet "
+            "access. An absent image alone does not establish the intended replacement. "
+            "The remediation agent independently checks both images and authorizes execution."
         )
 
     @staticmethod

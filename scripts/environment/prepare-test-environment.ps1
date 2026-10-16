@@ -56,6 +56,12 @@ $roles=@(Invoke-PrepareAz @('role','assignment','list','--assignee',$principal,'
 if (@($roles | Where-Object { $_.roleDefinitionName -eq 'AcrPull' -and $_.scope -eq $acr.id }).Count -eq 0) {
     Invoke-PrepareAz @('role','assignment','create','--assignee-object-id',$principal,'--assignee-principal-type','ServicePrincipal','--role','AcrPull','--scope',$acr.id) | Out-Null
 }
+# Read-only registry evidence for diagnostics; remediation still validates independently.
+$diagnosticIdentity=Invoke-PrepareAz @('identity','show','-g',$ResourceGroup,'-n',$lab.diagnosticIdentity)
+$diagnosticRoles=@(Invoke-PrepareAz @('role','assignment','list','--assignee',$diagnosticIdentity.principalId,'--scope',$acr.id,'--include-inherited'))
+if (@($diagnosticRoles | Where-Object { $_.roleDefinitionName -eq 'AcrPull' -and $_.scope -eq $acr.id }).Count -eq 0) {
+    Invoke-PrepareAz @('role','assignment','create','--assignee-object-id',$diagnosticIdentity.principalId,'--assignee-principal-type','ServicePrincipal','--role','AcrPull','--scope',$acr.id) | Out-Null
+}
 $deployment=Invoke-PrepareKube @('get','deployment/test-app','-n','test-app','-o','json') | Out-String | ConvertFrom-Json
 $deployment | ConvertTo-Json -Depth 100 | Set-Content (Join-Path $prep 'deployment-before-reset.json')
 $containers=@($deployment.spec.template.spec.containers)

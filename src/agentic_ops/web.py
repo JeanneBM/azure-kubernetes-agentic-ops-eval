@@ -107,7 +107,7 @@ def create_app(
 def build_app() -> FastAPI:
     from kubernetes import client, config
 
-    from .acr import AcrRegistry
+    from .acr import AcrRegistry, RegistryEvidenceProvider
     from .aks import AksActionExecutor, AksDiagnosticProvider, resolve_pod_workload
     from .foundry import FoundryDiagnosticProvider
     from .safety import SelfCurePolicy
@@ -121,7 +121,8 @@ def build_app() -> FastAPI:
     core, apps = client.CoreV1Api(), client.AppsV1Api()
 
     diagnostics = FoundryDiagnosticProvider(
-        AksDiagnosticProvider(core, apps),
+        RegistryEvidenceProvider(AksDiagnosticProvider(core, apps), AcrRegistry(),
+                                 namespace=namespace, allowed_registries=registries),
         endpoint=os.environ["AZURE_AI_FOUNDRY_ENDPOINT"],
         deployment=os.environ["AZURE_AI_FOUNDRY_DEPLOYMENT"],
     )

@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import os
+import json
 
 import httpx
 from azure.identity import DefaultAzureCredential
 
 from .telemetry import tool
 
-from .safety import ImageRef
+from .contracts import Evidence, Facts
+from .safety import ImageRef, PolicyViolation, parse_image
 
 _MANIFEST_TYPES = ", ".join(
     [
@@ -21,6 +23,45 @@ _MANIFEST_TYPES = ", ".join(
 
 class RegistryError(Exception):
     """The registry could not give a definite answer (auth, network, unexpected status)."""
+
+
+class RegistryEvidenceProvider:
+    """Enrich cluster facts with an authenticated, read-only manifest check.
+
+    This checks the failing image, never a model-supplied URL or an Event string.
+    Diagnostic access does not establish kubelet access or authorize a repair.
+    """
+
+    def __init__(self, evidence_provider, registry, *, namespace, allowed_registries):
+        self._evidence = evidence_provider
+        self._registry = registry
+        self._namespace = namespace
+        self._allowed = frozenset(r.strip().lower() for r in allowed_registries if r.strip())
+
+    def collect(self, trigger):
+        if trigger.namespace != self._namespace:
+            raise PolicyViolation("Registry evidence requested outside managed namespace")
+        raw = self._evidence.collect(trigger)
+        # Multiple failing containers remain ambiguous; do not select one.
+        if len(raw.pull_failures) != 1:
+            return raw
+        failure = raw.pull_failures[0]
+        image = parse_image(failure.image)
+        if image.registry not in self._allowed:
+            raise PolicyViolation("Registry evidence requested outside allowed registries")
+        try:
+            status = "exists" if self._registry.exists(image) else "missing"
+        except RegistryError:
+            status = "unknown"
+        item = Evidence(
+            "authenticated-registry-manifest",
+            json.dumps({"container": failure.container, "image": str(image),
+                        "status": status, "identity": "diagnostic",
+                        "kubelet_access": "not_verified"}),
+            f"acr://{image.registry}/{image.repository}:{image.tag}",
+        )
+        return Facts(raw.items + (item,), raw.groundedness, raw.safe_action,
+                     raw.summary, raw.pull_failures)
 
 
 class AcrRegistry:

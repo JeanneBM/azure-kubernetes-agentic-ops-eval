@@ -21,6 +21,7 @@ from kubernetes import client, config
 from agentic_ops.aks import AksDiagnosticProvider, AksActionExecutor, workload_of
 from agentic_ops.contracts import ActionRequest, Facts, IncidentTrigger
 from agentic_ops.foundry import FoundryDiagnosticProvider
+from agentic_ops.acr import AcrRegistry, RegistryEvidenceProvider
 from agentic_ops.orchestrator import IncidentOrchestrator
 from agentic_ops.remote import FactsPayload, HttpRemediationAgent
 from agentic_ops.watcher import PodWatcher
@@ -214,7 +215,10 @@ def main():
                                       os.environ['AGENTIC_OPS_REMEDIATION_TOKEN'], namespace)
         if scenario == 'S07':
             model_client = RecordingModelClient(os.environ['EVAL_PAYLOAD_MARKER'], artifacts)
-            diagnostics = FoundryDiagnosticProvider(evidence,
+            registry_evidence = RegistryEvidenceProvider(
+                evidence, AcrRegistry(), namespace=namespace,
+                allowed_registries=os.environ['AGENTIC_OPS_ALLOWED_REGISTRIES'].split(','))
+            diagnostics = FoundryDiagnosticProvider(registry_evidence,
                           endpoint=os.environ['AZURE_AI_FOUNDRY_ENDPOINT'],
                           deployment=os.environ['AZURE_AI_FOUNDRY_DEPLOYMENT'], http_client=model_client)
         else:

@@ -4,7 +4,7 @@ The supplied manifest runs the PoC as two independently authenticated workloads.
 
 | Workload | Identity and Kubernetes permissions | External capability |
 | --- | --- | --- |
-| Diagnostic agent | Read-only access to Pods, Events, ReplicaSets, and Deployments. | Azure AI Foundry inference and the authenticated internal remediation handoff. |
+| Diagnostic agent | Read-only access to Pods, Events, ReplicaSets, and Deployments. | Azure AI Foundry inference, read-only ACR manifest evidence, and the authenticated internal remediation handoff. |
 | Remediation agent | Read and patch access to Deployments only. | ACR tag validation, Kubernetes rollout verification, and the internal remediation API. It has no Foundry configuration. |
 
 ## Required Azure identities
@@ -14,7 +14,7 @@ Create two user-assigned identities and two federated credentials:
 - diagnostic identity subject: system:serviceaccount:agentic-ops:agentic-ops-diagnostic
 - remediation identity subject: system:serviceaccount:agentic-ops:agentic-ops-remediation
 
-Grant Cognitive Services OpenAI User only to the diagnostic identity. Grant AcrPull only to the remediation identity. Neither identity should receive the other role.
+Grant Cognitive Services OpenAI User only to the diagnostic identity. Grant registry-scoped AcrPull to both identities: diagnostics reads the failing manifest; remediation independently validates both old and proposed images. Only remediation has Kubernetes patch permission. Remediation must not receive the OpenAI inference role.
 
 Set DIAGNOSTIC_AZURE_CLIENT_ID and REMEDIATION_AZURE_CLIENT_ID when rendering deploy/aks-agentic-ops.yaml.
 
