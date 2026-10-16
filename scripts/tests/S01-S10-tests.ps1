@@ -121,7 +121,7 @@ try {
     Write-Host "`n========== BATCH SUMMARY =========="
     $rows | Format-Table -Property @('scenario','verdict','outcome','durationSeconds') -AutoSize | Out-Host
     foreach ($row in $rows) { if ($row.zip) { Write-Host "$($row.scenario) ZIP: $($row.zip)" } }
-    $bundle=Join-Path (Join-Path $root 'eval/evidence') ($batchId+'-anonymized.zip')
+    $bundle=Join-Path (Join-Path $root 'eval/evidence/S01-S10') ($batchId+'-anonymized.zip')
     $batchArchiveCreated=$false
     try {
         & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle
