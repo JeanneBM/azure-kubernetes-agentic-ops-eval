@@ -90,6 +90,8 @@ try {
     $paused=$true
     Invoke-PrepareKube @('scale','deployment/agentic-ops-diagnostic','-n','agentic-ops','--replicas=0') | Out-Host
     Invoke-PrepareKube @('wait','--for=delete','pods','-n','agentic-ops','-l','app=agentic-ops,role=diagnostic','--timeout=60s') | Out-Host
+    # The disposable lab records model input/output for evidence-backed diagnosis.
+    Invoke-PrepareKube @('set','env','deployment/agentic-ops-diagnostic','-n','agentic-ops','AGENTIC_OPS_RECORD_MODEL_IO=1') | Out-Host
     if ($rebuild) {
         foreach ($agentRole in 'diagnostic','remediation') {
             $agentDeployment=Invoke-PrepareKube @('get',"deployment/agentic-ops-$agentRole",'-n','agentic-ops','-o','json') | Out-String | ConvertFrom-Json

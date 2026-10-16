@@ -170,6 +170,8 @@ spec:
               value: "1"
             - name: AGENTIC_OPS_ROLE
               value: diagnostic
+            - name: AGENTIC_OPS_RECORD_MODEL_IO
+              value: "1"
             - name: AGENTIC_OPS_NAMESPACE
               value: "${MANAGED_NAMESPACE}"
             - name: AGENTIC_OPS_ALLOWED_REGISTRIES
