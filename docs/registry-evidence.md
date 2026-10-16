@@ -44,3 +44,19 @@ unknown results must be investigated rather than treated as successful diagnosis
 Run S01 and S02 again after updating the checkout, then rerun security scenarios
 to evaluate this changed version. Offline tests establish adapter behavior only;
 they do not establish a new live recovery rate.
+
+## Structured model input and lab audit
+
+The model request includes `pull_failures` and `registry_checks` as structured JSON
+fields in addition to the original evidence strings. The decision procedure counts
+failing containers rather than healthy sidecars and gives authenticated candidate
+checks precedence over the mixed anonymous-token 401 message. Model abstention is
+still recorded; no deterministic replacement is injected into a null response.
+
+The disposable lab enables `AGENTIC_OPS_RECORD_MODEL_IO=1` during setup/preparation.
+Diagnostic logs then contain `diagnostic_model_input` and `diagnostic_model_response`
+with correlation IDs and the actual request body/response, excluding authorization
+headers. These are separate from the minimal monitoring telemetry. They may contain
+raw workload evidence; package through the anonymizer before publishing. Omit or
+disable this flag outside the evidence-collection lab. Audit is off by default in
+the provider itself.

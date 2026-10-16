@@ -45,6 +45,28 @@ def test_null_action_is_allowed():
     assert p.collect(make_trigger()).safe_action is None
 
 
+def test_lab_audit_records_actual_io_without_authorization_header(monkeypatch, caplog):
+    monkeypatch.setenv('AGENTIC_OPS_RECORD_MODEL_IO', '1')
+    p, seen = provider(json.dumps({'groundedness': 0.9, 'summary': 'x', 'safe_action': None}))
+    with caplog.at_level('INFO', logger='agentic_ops.foundry'):
+        p.collect(make_trigger())
+    records = [json.loads(record.message) for record in caplog.records
+               if record.name == 'agentic_ops.foundry']
+    assert records[0]['event'] == 'diagnostic_model_input'
+    assert records[0]['payload'] == seen['body']
+    assert records[1]['event'] == 'diagnostic_model_response'
+    assert records[1]['payload']['choices'][0]['message']['content']
+    assert 'Bearer tok' not in caplog.text
+
+
+def test_lab_audit_is_disabled_by_default(monkeypatch, caplog):
+    monkeypatch.delenv('AGENTIC_OPS_RECORD_MODEL_IO', raising=False)
+    p, _ = provider(json.dumps({'groundedness': 0.9, 'safe_action': None}))
+    with caplog.at_level('INFO', logger='agentic_ops.foundry'):
+        p.collect(make_trigger())
+    assert not [r for r in caplog.records if r.name == 'agentic_ops.foundry']
+
+
 @pytest.mark.parametrize("reply", [
     "not json",
     json.dumps({"summary": "no groundedness"}),

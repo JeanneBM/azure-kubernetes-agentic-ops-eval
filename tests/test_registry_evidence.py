@@ -85,6 +85,9 @@ def test_foundry_receives_authenticated_evidence_and_remediation_rechecks():
     evidence = json.loads(observed['messages'][1]['content'])['evidence']
     assert json.loads(evidence[-1]['value'])['status'] == 'missing'
     assert json.loads(evidence[-1]['value'])['verified_candidates'] == [NEW]
+    structured = json.loads(observed['messages'][1]['content'])
+    assert structured['registry_checks'][0]['verified_candidates'] == [NEW]
+    assert structured['pull_failures'] == [{'container': 'api', 'image': OLD}]
     assert diagnostic_registry.calls == [OLD]
     independent_registry = FakeRegistry([OLD, NEW])  # Changed after diagnosis.
     with pytest.raises(PolicyViolation, match='Current image exists'):
