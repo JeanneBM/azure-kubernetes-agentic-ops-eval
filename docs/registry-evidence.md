@@ -16,7 +16,21 @@ select another registry for this read.
 The model receives the structured authenticated-registry-manifest evidence plus
 the original Kubernetes evidence. A registry lookup uses diagnostic credentials,
 so it does not establish that the kubelet has pull access. An absent image also
-does not identify the intended replacement: the model may still abstain.
+does not identify the intended replacement. When it is absent, diagnostics reads
+the registry repository catalog and checks nearby repository spellings with the
+same tag. Only manifest-confirmed existing images are included in
+`verified_candidates`. Candidate discovery does not use the evaluator's intended
+image or hardcode the test-app replacement.
+
+Discovery requires a complete catalog of fewer than 100 repositories, at most ten
+nearby spellings, and successful authenticated manifest checks. Pagination,
+authorization errors, invalid inventory and partial lookup failures produce
+`candidate_status=unknown` with no candidates. Repository distance uses the same
+maximum of two as the default remediation policy. This discovery fixes repository
+spelling candidates at the unchanged tag; it does not enumerate alternate tags.
+The model is instructed to propose the sole verified candidate and abstain on
+empty, unknown or ambiguous discovery. It can still abstain, and that remains
+visible in the live outcome rather than being overridden by a scripted repair.
 
 This is additional evidence, not a fallback that automatically repairs when the
 model returns null. Remediation keeps its own credentials and independently

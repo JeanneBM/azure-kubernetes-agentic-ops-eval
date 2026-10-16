@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import json
+import re
 
 import httpx
 from azure.identity import DefaultAzureCredential
@@ -9,7 +10,7 @@ from azure.identity import DefaultAzureCredential
 from .telemetry import tool
 
 from .contracts import Evidence, Facts
-from .safety import ImageRef, PolicyViolation, parse_image
+from .safety import ImageRef, PolicyViolation, parse_image, edit_distance
 
 _MANIFEST_TYPES = ", ".join(
     [
@@ -53,10 +54,20 @@ class RegistryEvidenceProvider:
             status = "exists" if self._registry.exists(image) else "missing"
         except RegistryError:
             status = "unknown"
+        candidates = ()
+        candidate_status = "not_checked"
+        if status == "missing":
+            try:
+                candidates = self._registry.candidates(image)
+                candidate_status = "complete"
+            except RegistryError:
+                candidate_status = "unknown"
         item = Evidence(
             "authenticated-registry-manifest",
             json.dumps({"container": failure.container, "image": str(image),
                         "status": status, "identity": "diagnostic",
+                        "candidate_status": candidate_status,
+                        "verified_candidates": [str(candidate) for candidate in candidates],
                         "kubelet_access": "not_verified"}),
             f"acr://{image.registry}/{image.repository}:{image.tag}",
         )
@@ -94,24 +105,61 @@ class AcrRegistry:
         raise RegistryError(f"Unexpected registry status {response.status_code} for {image}")
 
     def _pull_token(self, image: ImageRef) -> str:
+        return self._access_token(image.registry, f"repository:{image.repository}:pull")
+
+    def candidates(self, image: ImageRef) -> tuple[ImageRef, ...]:
+        """Verify close repository spellings at the unchanged tag.
+
+        An incomplete or failed inventory must not appear to be a unique match.
+        Bounds intentionally limit this discovery to small lab registries.
+        """
+        tool('acr_candidates', {'image': str(image)})
+        token = self._access_token(image.registry, "registry:catalog:*")
+        try:
+            response = self._client.get(
+                f"https://{image.registry}/v2/_catalog", params={"n": 100},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            response.raise_for_status()
+            data = response.json()
+            repositories = data["repositories"]
+            if (not isinstance(repositories, list) or len(repositories) >= 100
+                    or response.headers.get("Link") or data.get("link")):
+                raise RegistryError("Registry inventory incomplete or outside discovery bounds")
+            if any(not isinstance(repo, str) or len(repo) > 256 or not re.fullmatch(
+                    r"[a-z0-9]+(?:(?:[._-]|__)[a-z0-9]+)*(?:/[a-z0-9]+(?:(?:[._-]|__)[a-z0-9]+)*)*",
+                    repo) for repo in repositories):
+                raise RegistryError("Invalid repository inventory")
+            nearby = sorted({repo for repo in repositories
+                             if repo != image.repository
+                             and abs(len(repo) - len(image.repository)) <= 2
+                             and edit_distance(image.repository, repo) <= 2})
+            if len(nearby) > 10:
+                raise RegistryError("Too many nearby repositories for bounded discovery")
+            candidates = [ImageRef(image.registry, repo, image.tag) for repo in nearby]
+            return tuple(candidate for candidate in candidates if self.exists(candidate))
+        except (httpx.HTTPError, KeyError, ValueError, TypeError) as error:
+            raise RegistryError("Registry candidate discovery failed") from error
+
+    def _access_token(self, registry: str, scope: str) -> str:
         aad_token = self._credential.get_token("https://management.azure.com/.default").token
         exchange = {
             "grant_type": "access_token",
-            "service": image.registry,
+            "service": registry,
             "access_token": aad_token,
         }
         tenant = os.environ.get("AZURE_TENANT_ID")
         if tenant:
             exchange["tenant"] = tenant
         try:
-            refresh = self._client.post(f"https://{image.registry}/oauth2/exchange", data=exchange)
+            refresh = self._client.post(f"https://{registry}/oauth2/exchange", data=exchange)
             refresh.raise_for_status()
             access = self._client.post(
-                f"https://{image.registry}/oauth2/token",
+                f"https://{registry}/oauth2/token",
                 data={
                     "grant_type": "refresh_token",
-                    "service": image.registry,
-                    "scope": f"repository:{image.repository}:pull",
+                    "service": registry,
+                    "scope": scope,
                     "refresh_token": refresh.json()["refresh_token"],
                 },
             )
