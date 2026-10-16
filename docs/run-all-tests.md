@@ -1,32 +1,35 @@
-# All six scenarios from one script
+# Run S01–S10 from one script
 
-From PowerShell 7 at the repository root:
+From PowerShell 7, from any directory (replace the checkout path if necessary):
+
+```powershell
+& /home/joanna/azure-kubernetes-agentic-ops-eval/scripts/tests/S01-S10-tests.ps1
+```
+
+The ten scenarios run sequentially against the shared lab. S01–S06 use their
+existing preparation; S07–S10 receive `-PrepareBaseline` automatically.
+Default decision timeout is 300 seconds per scenario, configurable from 180 to 900.
+Preparation, builds and rollout waits can add time beyond that decision timeout.
+
+By default the runner continues after failures and records each result.
+Use `-StopOnFailure` to stop after the first non-pass scenario.
+Missing recorded state for an existing resource group is rejected; a missing lab
+can be provisioned using the current subscription or `-SubscriptionId`.
+
+Raw evidence and summaries stay under `.local/evidence/batches/S01-S10-<UTC>/`.
+Each available scenario ZIP is exported directly into `eval/evidence/`, with a
+name ending in `-anonymized.zip`. A combined S01-S10 archive is written there too.
+The final output lists full ZIP paths. Missing archives are recorded separately
+from functional verdicts and cause the batch command to report failure.
+
+Each scenario runs once. This is not a statistical benchmark.
+S06, S08, S09 and S10 use scripted proposals with real remediation;
+S07 uses the real model with controlled Event injection.
+Diagnostics remain paused after the final controlled trial.
+The Azure lab remains provisioned; use the cleanup script after saving evidence.
+
+## First six scenarios only
 
 ```powershell
 ./scripts/tests/S01-S06-tests.ps1
 ```
-
-The script checks the recorded subscription and provisions the default isolated lab
-if its resource group is absent. With no setup state it uses the current Azure
-subscription, or the explicit -SubscriptionId parameter. It refuses to adopt an
-existing lab group without its setup state.
-
-It runs S01, S02, S03, S04, S05 and S06 sequentially, reusing their scenario scripts.
-Each performs automatic preparation. Simultaneous execution would corrupt the shared
-Deployment fixtures, so the six scenarios do not run concurrently.
-
-By default it continues after failed/inconclusive scenarios and records every outcome.
--StopOnFailure stops on the first non-pass. -TimeoutSeconds sets scenario decision
-deadlines; it does not bound total provisioning/build/preparation duration.
-
-Each batch has its own evidence directory under eval/evidence/batches/S01-S06-<UTC>.
-It contains scenario evidence, individual archives, summary.json, summary.csv,
-summary.md and a combined batch ZIP alongside the directory.
-Old evidence is never selected as a new result. One batch is one repetition per
-scenario, not a statistical benchmark. S06 uses a scripted proposal by default and
-does not measure model diagnosis quality.
-
-The lab remains active after the batch so results can be inspected. Download the
-evidence and run delete-environment-resource-group.ps1 when finished.
-Archives are anonymized automatically before packaging. Unsupported content prevents
-archive creation. Local source evidence remains unchanged.

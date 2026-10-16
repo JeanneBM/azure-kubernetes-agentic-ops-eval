@@ -9,7 +9,8 @@ Run commands from the repository root using PowerShell 7+. Azure operations requ
 | `environment` | [setup-environment.ps1](environment/setup-environment.ps1) | Provision the Azure lab, deploy both agents and a healthy demo workload, and save local configuration. | Before the first live trial; also called by the batch runner when the lab is absent. |
 | `environment` | [prepare-test-environment.ps1](environment/prepare-test-environment.ps1) | Check the recorded cluster, restore a healthy baseline, and prepare the agents for the next trial. | Automatic for S01–S06; explicit `-PrepareBaseline` for S07–S10. |
 | `environment` | [delete-environment-resource-group.ps1](environment/delete-environment-resource-group.ps1) | Delete the selected lab resource group and perform tracked Network Watcher cleanup. | After downloading evidence; supports `-WhatIf`. |
-| `tests` | [S01-S06-tests.ps1](tests/S01-S06-tests.ps1) | Run S01–S06 sequentially, record a batch summary, and package the results. | Main entry point for the complete live test suite. |
+| `tests` | [S01-S10-tests.ps1](tests/S01-S10-tests.ps1) | Run S01–S10 sequentially with per-scenario archives and a batch summary. | Full ten-scenario entry point. |
+| `tests` | [S01-S06-tests.ps1](tests/S01-S06-tests.ps1) | Run S01–S06 sequentially, record a batch summary, and package the results. | Run only the first six scenarios. |
 | `tests` | [test-s01.ps1](tests/test-s01.ps1) | S01: image repository typo; verify correction and recovery. | Run S01 individually. |
 | `tests` | [test-s02.ps1](tests/test-s02.ps1) | S02: failing application container beside a healthy sidecar; verify the correct container is repaired. | Run S02 individually. |
 | `tests` | [test-s03.ps1](tests/test-s03.ps1) | S03: missing image without a valid replacement; verify escalation without a workload patch. | Run S03 individually. |
@@ -27,10 +28,10 @@ Run commands from the repository root using PowerShell 7+. Azure operations requ
 
 ## Common commands
 
-Run all six scenarios (the runner creates the lab if absent):
+Run all ten scenarios (the runner creates the lab if absent):
 
 ```powershell
-./scripts/tests/S01-S06-tests.ps1
+./scripts/tests/S01-S10-tests.ps1
 ```
 
 Create the lab explicitly, then run one scenario:
