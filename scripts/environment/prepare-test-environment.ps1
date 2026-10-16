@@ -108,7 +108,7 @@ foreach ($role in 'diagnostic','remediation') {
 Invoke-PrepareKube @('get','deployment/test-app','-n','test-app','-o','json') | Set-Content (Join-Path $prep 'deployment-healthy.json')
 if ($rebuild) {
     $lab.agentImage=$desiredAgentImage
-    $lab.imageTag=$imageTag
+    $lab | Add-Member -NotePropertyName imageTag -NotePropertyValue $imageTag -Force
     $lab | ConvertTo-Json -Depth 30 | Set-Content $statePath
 }
 Write-Host 'PREPARE COMPLETE: healthy single-container baseline; test can inject its fault.'
