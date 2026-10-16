@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import shutil
 from pathlib import Path
 
 spec = importlib.util.spec_from_file_location('build_ledger', Path(__file__).parents[1] / 'scripts/build_ledger.py')
@@ -25,7 +26,16 @@ def test_missing_finish_does_not_create_trial_or_match_unrelated_package(tmp_pat
 def test_archived_evidence_counts_and_manual_comments_survive(tmp_path):
     root = Path(__file__).parents[1]
     output = tmp_path / 'ledger.md'
-    rows = ledger.build(root / 'eval/evidence', output)
+    # Freeze the historical S01-S06 fixture; newly recorded trials must not
+    # change the expected counts in this regression test.
+    evidence = tmp_path / 'historical-evidence'
+    evidence.mkdir()
+    archives = sorted(p for p in (root / 'eval/evidence').glob('*.zip')
+                      if p.name.startswith(tuple(f'S{i:02d}-' for i in range(1, 7))))
+    assert len(archives) == 7
+    for archive in archives:
+        shutil.copy2(archive, evidence / archive.name)
+    rows = ledger.build(evidence, output)
     assert len(rows) == 12
     assert sum(r['trial'] is not None for r in rows) == 7
     assert sum(r['data']['status'] == 'no decision in package' for r in rows) == 1
@@ -35,5 +45,5 @@ def test_archived_evidence_counts_and_manual_comments_survive(tmp_path):
         if line.startswith('| 1 |'):
             lines[i] = line[:-2] + 'manual note |'
     output.write_text('\n'.join(lines))
-    ledger.build(root / 'eval/evidence', output)
+    ledger.build(evidence, output)
     assert 'manual note' in output.read_text()

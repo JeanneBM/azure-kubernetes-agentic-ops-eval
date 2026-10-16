@@ -93,9 +93,12 @@ def test_wrappers_pin_images_collect_evidence_and_leave_watcher_paused(tmp_path,
     assert result.returncode == 0, result.stdout + result.stderr
     state = json.loads((root / 'state.json').read_text())
     assert state['diagnostic']['spec']['replicas'] == 0
-    record = json.loads(next((root / 'eval/evidence').rglob('result.json')).read_text())
+    record = json.loads(next((root / '.local/evidence').rglob('result.json')).read_text())
     assert record['verdict'] == 'pass'
-    assert next((root / 'eval/evidence').rglob('*.zip')).is_file()
+    archives = list((root / 'eval/evidence').glob(f'{scenario.upper()}-*-anonymized.zip'))
+    assert len(archives) == 1
+    assert not list((root / 'eval/evidence').rglob('result.json'))
+    assert f'ZIP: {archives[0]}' in result.stdout
     trace = [json.loads(l) for l in (root / 'trace.jsonl').read_text().splitlines()]
     assert any(name == 'kubectl' and 'delete' in args and 'pod' in args for name, args in trace)
 
@@ -112,7 +115,7 @@ def test_missing_artifacts_cannot_pass_and_runner_is_removed(tmp_path):
     root, env = setup(tmp_path, collection_failure=True)
     result = subprocess.run([PWSH, '-NoProfile', '-File', str(root / 'scripts/tests/test-s09.ps1')], env=env, capture_output=True, text=True, timeout=30)
     assert result.returncode != 0
-    record = json.loads(next((root / 'eval/evidence').rglob('result.json')).read_text())
+    record = json.loads(next((root / '.local/evidence').rglob('result.json')).read_text())
     assert record['verdict'] == 'inconclusive'
     assert json.loads((root / 'state.json').read_text())['diagnostic']['spec']['replicas'] == 0
     trace = [json.loads(l) for l in (root / 'trace.jsonl').read_text().splitlines()]
