@@ -8,6 +8,19 @@ from agentic_ops.foundry import FoundryDiagnosticProvider
 from conftest import NEW, make_facts, make_trigger
 
 
+def with_check(raw, *, status="missing", candidate_status="complete", candidates=(NEW,),
+               container=None, image=None):
+    from agentic_ops.contracts import Evidence as Item
+    failure = raw.pull_failures[0]
+    check = Item("authenticated-registry-manifest", json.dumps({
+        "container": container or failure.container, "image": image or failure.image,
+        "status": status, "candidate_status": candidate_status,
+        "verified_candidates": list(candidates),
+    }), "acr://verified-check")
+    return Facts(raw.items + (check,), raw.groundedness, raw.safe_action, raw.summary,
+                 raw.pull_failures)
+
+
 def provider(reply):
     seen = {}
 
@@ -18,7 +31,7 @@ def provider(reply):
 
     class Evidence:
         def collect(self, trigger):
-            return make_facts(None, params=None, groundedness=1.0, summary="")
+            return with_check(make_facts(None, params=None, groundedness=1.0, summary=""))
 
     p = FoundryDiagnosticProvider(
         Evidence(), endpoint="https://f.openai.azure.com/", deployment="gpt",
@@ -126,3 +139,48 @@ def test_authenticated_registry_abstention_does_not_depend_on_model(status, cand
     result = guarded_provider(raw).collect(make_trigger())
     assert result.safe_action is None
     assert result.items == raw.items
+
+
+def test_missing_registry_evidence_fails_closed_before_model():
+    raw = make_facts(None, params=None)  # one pull failure, no authenticated check at all
+    result = guarded_provider(raw).collect(make_trigger())
+    assert result.safe_action is None and "unique typo repair" in result.summary
+
+
+@pytest.mark.parametrize("kwargs", [
+    {"image": "acrprod.azurecr.io/other:1.0"},      # check describes a different image
+    {"container": "metrics"},                        # check describes a different container
+])
+def test_registry_check_for_another_image_or_container_fails_closed(kwargs):
+    raw = with_check(make_facts(None, params=None), **kwargs)
+    result = guarded_provider(raw).collect(make_trigger())
+    assert result.safe_action is None
+
+
+def test_no_failing_container_abstains_before_model():
+    from agentic_ops.contracts import Facts as F
+    raw = F(make_facts(None, params=None).items, 1.0, pull_failures=())
+    result = guarded_provider(raw).collect(make_trigger())
+    assert result.safe_action is None and "No container" in result.summary
+
+
+@pytest.mark.parametrize("proposed", [
+    "acrprod.azurecr.io/test-app:1.4.3",             # same repo, different tag
+    "acrprod.azurecr.io/test-api:1.4.2",             # another nearby repository
+    "evil.azurecr.io/test-app:1.4.2",
+])
+def test_model_proposal_other_than_unique_verified_candidate_is_rejected(proposed):
+    p, _ = provider(json.dumps({"groundedness": 1.0, "summary": "x",
+                                "safe_action": {"name": "fix_image", "parameters": {"image": proposed}}}))
+    with pytest.raises(ValueError, match="unique verified candidate"):
+        p.collect(make_trigger())
+
+
+def test_system_prompt_has_no_unguarded_fallback_clause():
+    assert "registry_checks is absent" not in FoundryDiagnosticProvider._system_prompt()
+
+
+@pytest.mark.parametrize("candidate", [None, "", "   ", 42, {}])
+def test_invalid_unique_candidate_abstains_before_model(candidate):
+    raw = with_check(make_facts(None, params=None), candidates=[candidate])
+    assert guarded_provider(raw).collect(make_trigger()).safe_action is None

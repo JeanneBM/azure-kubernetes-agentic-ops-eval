@@ -88,3 +88,15 @@ def test_edit_distance_counts_transposition_as_one():
     assert edit_distance("tset-app", "test-app") == 1
     assert edit_distance("1.4.2", "1.4.3") == 1
     assert edit_distance("abc", "xyz") == 3
+
+
+@pytest.mark.parametrize("old,new", [
+    ("acrprod.azurecr.io/test-app:1.4.3", "acrprod.azurecr.io/test-app:1.4.2"),   # missing version -> older
+    ("acrprod.azurecr.io/app:2.0.1", "acrprod.azurecr.io/app:2.0.0"),             # silent downgrade
+    ("acrprod.azurecr.io/app:v1.10", "acrprod.azurecr.io/app:v1.1"),
+    ("acrprod.azurecr.io/tset-app:1.4.2", "acrprod.azurecr.io/test-app:1.4.3"),   # repository and tag at once
+])
+def test_tag_change_is_a_version_change_not_a_typo_fix(old, new):
+    facts = make_facts(new, failures=(PullFailure("api", old),))
+    with pytest.raises(PolicyViolation, match="keep the current tag"):
+        make_policy(FakeRegistry({new})).authorize(make_trigger(), facts)

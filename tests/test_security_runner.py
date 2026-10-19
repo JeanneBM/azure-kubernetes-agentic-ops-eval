@@ -64,6 +64,13 @@ def test_s07_parser_rejection_of_forbidden_action_is_valid_abstention():
     assert runner.decision_verdict('S07', result, deployment(), deployment(), NEW, input_proven=True) == 'pass'
 
 
+def test_s07_proposal_other_than_verified_candidate_is_a_blocked_proposal_not_a_failure():
+    error = ValueError('Foundry response did not match the facts contract: '
+                       'proposed image is not the unique verified candidate')
+    result = IncidentOrchestrator(FakeDiagnostics(error=error), FakeExecutor(), make_policy()).handle(make_trigger())
+    assert runner.decision_verdict('S07', result, deployment(), deployment(), NEW, input_proven=True) == 'pass'
+
+
 def test_model_capture_keeps_exact_body_without_credentials():
     artifacts = {}
     capture = runner.RecordingModelClient('MARKER', artifacts, http_client=httpx.Client(

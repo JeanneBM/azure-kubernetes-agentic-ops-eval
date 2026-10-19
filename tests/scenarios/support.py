@@ -8,7 +8,7 @@ import httpx
 from kubernetes import client
 
 from agentic_ops import IncidentOrchestrator, SelfCurePolicy
-from agentic_ops.acr import AcrRegistry
+from agentic_ops.acr import AcrRegistry, RegistryEvidenceProvider
 from agentic_ops.aks import AksActionExecutor, AksDiagnosticProvider
 from agentic_ops.foundry import FoundryDiagnosticProvider
 from agentic_ops.watcher import PodWatcher
@@ -85,10 +85,36 @@ class FakeCluster:
         self.deployment.status.observed_generation = self.deployment.metadata.generation
         self.deployment.status.available_replicas = 1
 
+def _acr_handler(registry_has, log):
+    """Mock ACR endpoint. One instance per identity, as in production."""
+    repositories = sorted({ref.split("/", 1)[1].rsplit(":", 1)[0] for ref in registry_has})
+
+    def acr(request: httpx.Request) -> httpx.Response:
+        log.append((request.url.path, request.headers.get("authorization")))
+        if request.url.path == "/oauth2/exchange":
+            return httpx.Response(200, json={"refresh_token": "rt"})
+        if request.url.path == "/oauth2/token":
+            return httpx.Response(200, json={"access_token": "at"})
+        if request.url.path == "/v2/_catalog":
+            return httpx.Response(200, json={"repositories": repositories})
+        ref = request.url.path.removeprefix("/v2/").replace("/manifests/", ":")
+        return httpx.Response(200 if f"acrprod.azurecr.io/{ref}" in registry_has else 404)
+
+    return acr
+
+
 def wire(model_image, registry_has=(NEW,), *, sidecar_first=None):
+    """Production chain: AKS evidence -> authenticated registry evidence -> model.
+
+    The diagnostic and remediation identities use separate registry clients, so
+    `registry_requests` records only the remediation policy's reads and
+    `diagnostic_registry_requests` only the diagnostic evidence reads.
+    """
     cluster = FakeCluster(sidecar_first)
+    cluster.model_requests = []
 
     def foundry(request: httpx.Request) -> httpx.Response:
+        cluster.model_requests.append(request)
         prompt = json.loads(request.content)["messages"][1]["content"]
         assert OLD in prompt  # the model saw the cluster evidence
         evidence = json.loads(prompt)["evidence"]
@@ -100,26 +126,25 @@ def wire(model_image, registry_has=(NEW,), *, sidecar_first=None):
         return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps(reply)}}]})
 
     cluster.registry_requests = []
-
-    def acr(request: httpx.Request) -> httpx.Response:
-        cluster.registry_requests.append((request.url.path, request.headers.get("authorization")))
-        if request.url.path == "/oauth2/exchange":
-            return httpx.Response(200, json={"refresh_token": "rt"})
-        if request.url.path == "/oauth2/token":
-            return httpx.Response(200, json={"access_token": "at"})
-        ref = request.url.path.removeprefix("/v2/").replace("/manifests/", ":")
-        return httpx.Response(200 if f"acrprod.azurecr.io/{ref}" in registry_has else 404)
+    cluster.diagnostic_registry_requests = []
 
     class Cred:
         def get_token(self, scope):
             return NS(token="aad")
 
+    def registry(log):
+        return AcrRegistry(credential=Cred(), http_client=httpx.Client(
+            transport=httpx.MockTransport(_acr_handler(registry_has, log))))
+
     diagnostics = FoundryDiagnosticProvider(
-        AksDiagnosticProvider(cluster, cluster), endpoint="https://f.openai.azure.com", deployment="gpt",
+        RegistryEvidenceProvider(
+            AksDiagnosticProvider(cluster, cluster), registry(cluster.diagnostic_registry_requests),
+            namespace="test-app", allowed_registries=["acrprod.azurecr.io"]),
+        endpoint="https://f.openai.azure.com", deployment="gpt",
         http_client=httpx.Client(transport=httpx.MockTransport(foundry)), token_provider=lambda: "t",
     )
     policy = SelfCurePolicy(
-        AcrRegistry(credential=Cred(), http_client=httpx.Client(transport=httpx.MockTransport(acr))),
+        registry(cluster.registry_requests),
         namespace="test-app", allowed_registries=["acrprod.azurecr.io"],
     )
     executor = AksActionExecutor(cluster, verify_timeout=5, poll_interval=0, sleep=lambda s: None)
