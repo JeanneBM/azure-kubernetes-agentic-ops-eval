@@ -145,3 +145,19 @@ def test_policy_refusal_audit_preserves_original_proposal(caplog):
         'name': facts.safe_action.name, 'parameters': dict(facts.safe_action.parameters)
     }
     assert executor.actions == []
+
+
+@pytest.mark.parametrize("groundedness", [0.0, 0.8, 1.0])
+def test_multiple_failures_take_precedence_over_model_confidence(groundedness):
+    from agentic_ops import PullFailure
+    facts = make_facts(groundedness=groundedness, failures=(
+        PullFailure("api", "acrprod.azurecr.io/tset-app:1.4.2"),
+        PullFailure("metrics", "acrprod.azurecr.io/metrcis:1.0.0")))
+    registry = FakeRegistry({NEW})
+    orchestrator, _, executor = build(facts, policy=make_policy(registry))
+    result = orchestrator.handle(make_trigger())
+    assert result.incident.status is IncidentStatus.ESCALATED
+    assert "Expected exactly one container failing to pull, found 2" in result.incident.reason
+    assert not result.action_executed
+    assert executor.actions == []
+    assert registry.calls == []

@@ -182,3 +182,14 @@ policy checks, registry checks, patch attempts and rollout verification. The
 platform monitor reads these logs using a separate pod/log-only service account.
 No raw prompts, tool arguments, pod log bodies or credentials are copied into
 these telemetry events. For local instrumentation use `AGENT_TELEMETRY_FILE`.
+
+## Diagnostic abstention gates
+
+Multiple observed pull failures are rejected before model inference, independently
+of model groundedness. Authenticated checks for the exact failing container/image
+also bypass inference when the current image exists, lookup is unknown, discovery
+is incomplete, or there is no unique verified candidate. These gates never
+construct a repair. A unique candidate still requires a model proposal and the
+independent remediation policy; model refusal is preserved. Model-led diagnosis
+quality and live repeatability still require new Azure trials after rebuilding
+and deploying the agent image. Historical evidence is unchanged.

@@ -41,3 +41,13 @@ command immediately. Download evidence before leaving an ephemeral Cloud Shell.
 This script has not established a live S04 result until it is run on AKS.
 
 Evidence ZIP names start with the scenario ID: `S04-<UTC-run-id>-C-01.zip`.
+
+### Repeated injection timeouts
+
+Deleting AcrPull does not immediately invalidate cached kubelet/ACR credentials.
+A running replacement Pod is not evidence that the diagnostic agent handled an
+authentication failure. The runner checks for additional known registry grants
+and records setup timeouts explicitly; custom roles and group grants still need
+operator review. A timeout remains INCONCLUSIVE. Do not repeat full batches to
+wait out credentials; investigate this setup separately. This change does not
+guarantee a live authentication fault within the setup deadline.
