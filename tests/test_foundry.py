@@ -79,3 +79,50 @@ def test_contract_violations_raise_value_error(reply):
     p, _ = provider(reply)
     with pytest.raises(ValueError):
         p.collect(make_trigger())
+
+
+def guarded_provider(raw):
+    class Source:
+        def collect(self, trigger):
+            return raw
+
+    def forbidden(request):
+        pytest.fail("Structural abstention must not call the model")
+
+    return FoundryDiagnosticProvider(
+        Source(), endpoint="https://f.openai.azure.com", deployment="gpt",
+        http_client=httpx.Client(transport=httpx.MockTransport(forbidden)),
+        token_provider=lambda: pytest.fail("No model token should be requested"),
+    )
+
+
+def test_two_failures_abstain_before_model_even_with_low_groundedness():
+    from agentic_ops.contracts import PullFailure
+    raw = make_facts(None, params=None, groundedness=0.0)
+    raw = Facts(raw.items, 0.0, pull_failures=(
+        raw.pull_failures[0], PullFailure("metrics", NEW)))
+    result = guarded_provider(raw).collect(make_trigger())
+    assert result.safe_action is None
+    assert result.pull_failures == raw.pull_failures
+
+
+@pytest.mark.parametrize("status,candidate_status,candidates", [
+    ("missing", "complete", []),
+    ("missing", "complete", [NEW, NEW + "2"]),
+    ("missing", "unknown", []),
+    ("unknown", "not_checked", []),
+    ("exists", "not_checked", []),
+])
+def test_authenticated_registry_abstention_does_not_depend_on_model(status, candidate_status, candidates):
+    from agentic_ops.contracts import Evidence
+    raw = make_facts(None, params=None)
+    failure = raw.pull_failures[0]
+    check = Evidence("authenticated-registry-manifest", json.dumps({
+        "container": failure.container, "image": failure.image,
+        "status": status, "candidate_status": candidate_status,
+        "verified_candidates": candidates,
+    }), "acr://verified-check")
+    raw = Facts(raw.items + (check,), 1.0, pull_failures=raw.pull_failures)
+    result = guarded_provider(raw).collect(make_trigger())
+    assert result.safe_action is None
+    assert result.items == raw.items

@@ -105,6 +105,12 @@ class IncidentOrchestrator:
         stage = "diagnostic agent"
         try:
             facts = self._diagnostics.collect(trigger)
+            if len(facts.pull_failures) > 1:
+                return self._escalate(
+                    trigger, facts,
+                    "diagnostic agent policy: Expected exactly one container failing to pull, "
+                    f"found {len(facts.pull_failures)}",
+                ), False
             if facts.groundedness < self._groundedness_threshold:
                 return self._escalate(
                     trigger, facts,

@@ -43,8 +43,28 @@ class FoundryDiagnosticProvider:
 
     def collect(self, trigger: IncidentTrigger) -> Facts:
         raw = self._evidence_provider.collect(trigger)
+        # Structural ambiguity is a policy decision, independent of model confidence.
+        if len(raw.pull_failures) > 1:
+            return Facts(raw.items, raw.groundedness, None,
+                         "Multiple containers fail to pull; human review required.",
+                         raw.pull_failures)
         registry_checks = [json.loads(item.value) for item in raw.items
                            if item.name == "authenticated-registry-manifest"]
+        # Abstain only on authenticated evidence tied to this exact failing image.
+        # No candidate is ever synthesized here; repair proposals still come from the model.
+        if len(raw.pull_failures) == 1:
+            failure = raw.pull_failures[0]
+            checks = [c for c in registry_checks
+                      if c.get("container") == failure.container and c.get("image") == failure.image]
+            if len(checks) == 1:
+                check = checks[0]
+                candidates = check.get("verified_candidates", [])
+                if (check.get("status") in {"exists", "unknown"}
+                    or (check.get("status") == "missing"
+                        and (check.get("candidate_status") != "complete" or len(candidates) != 1))):
+                    return Facts(raw.items, raw.groundedness, None,
+                                 "Authenticated registry evidence does not establish a unique typo repair; human review required.",
+                                 raw.pull_failures)
         model_input = {
             "temperature": 0,
             "response_format": {"type": "json_object"},
