@@ -44,27 +44,28 @@ class FoundryDiagnosticProvider:
     def collect(self, trigger: IncidentTrigger) -> Facts:
         raw = self._evidence_provider.collect(trigger)
         # Structural ambiguity is a policy decision, independent of model confidence.
-        if len(raw.pull_failures) > 1:
-            return Facts(raw.items, raw.groundedness, None,
-                         "Multiple containers fail to pull; human review required.",
-                         raw.pull_failures)
+        if len(raw.pull_failures) != 1:
+            reason = ("Multiple containers fail to pull; human review required."
+                      if raw.pull_failures else
+                      "No container is currently failing to pull; human review required.")
+            return Facts(raw.items, raw.groundedness, None, reason, raw.pull_failures)
         registry_checks = [json.loads(item.value) for item in raw.items
                            if item.name == "authenticated-registry-manifest"]
-        # Abstain only on authenticated evidence tied to this exact failing image.
-        # No candidate is ever synthesized here; repair proposals still come from the model.
-        if len(raw.pull_failures) == 1:
-            failure = raw.pull_failures[0]
-            checks = [c for c in registry_checks
-                      if c.get("container") == failure.container and c.get("image") == failure.image]
-            if len(checks) == 1:
-                check = checks[0]
-                candidates = check.get("verified_candidates", [])
-                if (check.get("status") in {"exists", "unknown"}
-                    or (check.get("status") == "missing"
-                        and (check.get("candidate_status") != "complete" or len(candidates) != 1))):
-                    return Facts(raw.items, raw.groundedness, None,
-                                 "Authenticated registry evidence does not establish a unique typo repair; human review required.",
-                                 raw.pull_failures)
+        # Fail closed: the model is consulted only when authenticated registry evidence
+        # tied to this exact failing image establishes one verified typo candidate.
+        # No candidate is ever synthesized here; the model may only select that one.
+        failure = raw.pull_failures[0]
+        checks = [c for c in registry_checks
+                  if c.get("container") == failure.container and c.get("image") == failure.image]
+        candidates = checks[0].get("verified_candidates", []) if len(checks) == 1 else []
+        if not (len(checks) == 1 and checks[0].get("status") == "missing"
+                and checks[0].get("candidate_status") == "complete"
+                and isinstance(candidates, list) and len(candidates) == 1
+                and isinstance(candidates[0], str) and candidates[0].strip()):
+            return Facts(raw.items, raw.groundedness, None,
+                         "Authenticated registry evidence does not establish a unique typo repair; human review required.",
+                         raw.pull_failures)
+        unique_candidate = candidates[0]
         model_input = {
             "temperature": 0,
             "response_format": {"type": "json_object"},
@@ -91,7 +92,14 @@ class FoundryDiagnosticProvider:
         usage = data.get('usage') or {}
         emit('llm_call', tokens=usage.get('total_tokens', 0), attrs={'usage_available': 'total_tokens' in usage})
         content = data["choices"][0]["message"]["content"]
-        return self._parse_facts(content, raw)
+        facts = self._parse_facts(content, raw)
+        if (facts.safe_action is not None
+                and facts.safe_action.parameters.get("image") != unique_candidate):
+            raise ValueError(
+                "Foundry response did not match the facts contract: "
+                "proposed image is not the unique verified candidate"
+            )
+        return facts
 
     @staticmethod
     def _audit(event, trigger, payload):
@@ -122,8 +130,6 @@ class FoundryDiagnosticProvider:
             "4. If the current image exists, lookup status is unknown, candidate discovery is "
             "incomplete, or candidates are empty or multiple, return safe_action null. "
             "Never invent an image, alter a registry, namespace or target, or add parameters. "
-            "When registry_checks is absent, propose only a minimal evidence-supported image "
-            "typo correction on the same registry; otherwise abstain. "
             "The independent remediation agent authorizes and verifies any proposal. "
             "Your summary must agree with your selected action and the authenticated checks."
         )

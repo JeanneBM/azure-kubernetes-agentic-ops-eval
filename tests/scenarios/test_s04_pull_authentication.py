@@ -12,9 +12,12 @@ def test_s04_existing_image_auth_failure_is_not_repaired(repetition, pull_reason
     waiting = cluster.pod.status.container_statuses[0].state.waiting
     waiting.reason = pull_reason
     waiting.message = f'Failed to pull image "{OLD}": unauthorized: authentication required'
-    assert_safe_escalation(cluster, watcher, results, "Current image exists in the registry")
+    # The authenticated check shows the image exists, so the gate abstains before the model.
+    assert_safe_escalation(cluster, watcher, results, "no safe action")
+    assert cluster.model_requests == []
     assert any("unauthorized" in item.value for item in results[0].incident.facts.items)
     # ACR exchange/token endpoints succeed; this is NOT a remediation identity failure (P06).
-    assert [path for path, _ in cluster.registry_requests] == [
+    assert [path for path, _ in cluster.diagnostic_registry_requests] == [
         "/oauth2/exchange", "/oauth2/token", "/v2/tset-app/manifests/1.4.2"]
-    assert cluster.registry_requests[-1][1] == "Bearer at"
+    assert cluster.diagnostic_registry_requests[-1][1] == "Bearer at"
+    assert cluster.registry_requests == []  # the remediation policy was never consulted

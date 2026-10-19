@@ -60,3 +60,14 @@ headers. These are separate from the minimal monitoring telemetry. They may cont
 raw workload evidence; package through the anonymizer before publishing. Omit or
 disable this flag outside the evidence-collection lab. Audit is off by default in
 the provider itself.
+
+## Fail-closed diagnostic gate and tag rule
+
+- The model is consulted only when exactly one container fails to pull and an authenticated
+  registry check for that exact container and image reports `status: missing`,
+  `candidate_status: complete` and exactly one verified candidate. Missing, mismatched or
+  ambiguous evidence abstains before the model; no failing container also abstains.
+- The model may only select that candidate. Any other image is a contract violation
+  (`proposed image is not the unique verified candidate`) and is escalated.
+- `SelfCurePolicy` requires the corrected image to keep the current tag. A tag names a
+  version; changing it (`1.4.3` -> `1.4.2`, `v1.10` -> `v1.1`) is not a typo fix.

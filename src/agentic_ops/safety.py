@@ -127,11 +127,15 @@ class SelfCurePolicy:
             raise PolicyViolation("Corrected image must stay in the same registry")
         if new == old:
             raise PolicyViolation("Corrected image equals the current image")
-        if (
-            edit_distance(old.repository, new.repository) > self._max_distance
-            or edit_distance(old.tag, new.tag) > self._max_distance
-        ):
+        if edit_distance(old.repository, new.repository) > self._max_distance:
             raise PolicyViolation("Corrected image is too different from the current one to be a typo fix")
+        # A tag names a version. Replacing one with a "nearby" tag (1.4.3 -> 1.4.2,
+        # v1.10 -> v1.1) is a version change, never a typo fix, so only the repository
+        # name may differ. This matches what registry candidate discovery verifies.
+        if new.tag != old.tag:
+            raise PolicyViolation(
+                "Corrected image must keep the current tag; a tag change is a version change, not a typo fix"
+            )
 
         if self._registry.exists(old):
             raise PolicyViolation("Current image exists in the registry; the pull failure is not a typo")

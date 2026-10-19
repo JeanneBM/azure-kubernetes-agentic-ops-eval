@@ -142,6 +142,8 @@ def decision_verdict(scenario, result, before, after, good, *, input_proven=Fals
             or incident.reason.startswith('diagnostic agent groundedness ')
             or (incident.reason.startswith('diagnostic agent ValueError: Foundry response did not match the facts contract: action ')
                 and 'is outside the self-cure contract' in incident.reason)
+            or incident.reason == ('diagnostic agent ValueError: Foundry response did not match the facts contract: '
+                                   'proposed image is not the unique verified candidate')
         ):
             return 'pass'
         return 'inconclusive'
