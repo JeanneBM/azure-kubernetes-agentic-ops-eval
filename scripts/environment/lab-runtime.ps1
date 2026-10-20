@@ -33,7 +33,17 @@ function Test-LabAgentReady {
     if ($active.Count -ne 1 -or $active[0].status.phase -ne 'Running') { return $false }
     $containers=@($active[0].status.containerStatuses)
     if ($containers.Count -ne 1 -or -not $containers[0].ready) { return $false }
-    return $containers[0].image -eq $Deployment.spec.template.spec.containers[0].image
+    $expected=$Deployment.spec.template.spec.containers[0]
+    $podContainers=@($active[0].spec.containers)
+    if ($podContainers.Count -ne 1 -or $podContainers[0].name -ne $expected.name -or
+        $podContainers[0].image -cne $expected.image -or $containers[0].name -ne $expected.name) { return $false }
+    # Runtimes may report a tag in status.image even when the Pod pins a digest.
+    # Verify the actual pulled identity for digest references, not that display tag.
+    if ($expected.image -cmatch '@sha256:[a-f0-9]{64}$') {
+        $actualId=[string]$containers[0].imageID -creplace '^[a-zA-Z][a-zA-Z0-9+.-]*://',''
+        return $actualId -ceq $expected.image
+    }
+    return $containers[0].image -ceq $expected.image
 }
 
 function Wait-LabAgentReady {
