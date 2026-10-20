@@ -55,7 +55,7 @@ if a[:1]==['get']:
   role=next((r for r in ['diagnostic','remediation'] if any('role='+r in x for x in a)),None)
   if role:
    c=s[role]['spec']['template']['spec']['containers'][0]
-   print(json.dumps({'items':[{'metadata':{'name':role},'spec':{'containers':[c]},'status':{'phase':'Running','containerStatuses':[{'ready':True,'image':c['image'],'imageID':'docker-pullable://registry.example/agentic-ops@sha256:'+'1'*64}]}}]}))
+   print(json.dumps({'items':[{'metadata':{'name':role},'spec':{'containers':[c]},'status':{'phase':'Running','containerStatuses':[{'name':c['name'],'ready':True,'image':c['image'],'imageID':'docker-pullable://registry.example/agentic-ops@sha256:'+'1'*64}]}}]}))
   else:print(json.dumps({'items':[{'metadata':{'name':'failed-pod','uid':'uid'},'status':{'containerStatuses':[{'name':'api','image':s['workload']['spec']['template']['spec']['containers'][0]['image'],'state':{'waiting':{'reason':'ImagePullBackOff'}}}]}}]}))
   sys.exit()
  print(json.dumps({'items':[]}));sys.exit()

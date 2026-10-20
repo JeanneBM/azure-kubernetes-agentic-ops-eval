@@ -23,8 +23,8 @@ def execute(tmp_path, body, env=None):
 
 def test_ready_guard_rejects_zero_stale_and_terminating_only_pods(tmp_path):
     body = r'''
-$d = '{"metadata":{"generation":3},"spec":{"replicas":1,"template":{"spec":{"containers":[{"image":"r/agent:v1"}]}}},"status":{"observedGeneration":3,"replicas":1,"updatedReplicas":1,"readyReplicas":1,"availableReplicas":1}}' | ConvertFrom-Json
-$p = '{"items":[{"metadata":{"deletionTimestamp":null},"status":{"phase":"Running","containerStatuses":[{"ready":true,"image":"r/agent:v1"}]}}]}' | ConvertFrom-Json
+$d = '{"metadata":{"generation":3},"spec":{"replicas":1,"template":{"spec":{"containers":[{"name":"agent","image":"r/agent:v1"}]}}},"status":{"observedGeneration":3,"replicas":1,"updatedReplicas":1,"readyReplicas":1,"availableReplicas":1}}' | ConvertFrom-Json
+$p = '{"items":[{"metadata":{"deletionTimestamp":null},"spec":{"containers":[{"name":"agent","image":"r/agent:v1"}]},"status":{"phase":"Running","containerStatuses":[{"name":"agent","ready":true,"image":"r/agent:v1"}]}}]}' | ConvertFrom-Json
 if (-not (Test-LabAgentReady $d $p)) { throw 'Healthy agent rejected' }
 $d.spec.replicas=0
 if (Test-LabAgentReady $d $p) { throw 'Zero replicas accepted' }
@@ -35,6 +35,26 @@ if (Test-LabAgentReady $d $p) { throw 'Terminating-only pod accepted' }
 $p.items[0].metadata.deletionTimestamp=$null; $p.items[0].status.containerStatuses[0].image='r/agent:old'
 if (Test-LabAgentReady $d $p) { throw 'Old image accepted' }
 '''
+    result = execute(tmp_path, body)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_digest_pinned_agent_accepts_runtime_tag_only_with_matching_image_id(tmp_path):
+    digest = 'a' * 64
+    body = r''' 
+$d = '{"metadata":{"generation":3},"spec":{"replicas":1,"template":{"spec":{"containers":[{"name":"agent","image":"r/agent@sha256:DIGEST"}]}}},"status":{"observedGeneration":3,"replicas":1,"updatedReplicas":1,"readyReplicas":1,"availableReplicas":1}}' | ConvertFrom-Json
+$p = '{"items":[{"metadata":{"deletionTimestamp":null},"spec":{"containers":[{"name":"agent","image":"r/agent@sha256:DIGEST"}]},"status":{"phase":"Running","containerStatuses":[{"name":"agent","ready":true,"image":"r/agent:trial","imageID":"r/agent@sha256:DIGEST"}]}}]}' | ConvertFrom-Json
+if (-not (Test-LabAgentReady $d $p)) { throw 'Matching digest with runtime tag rejected' }
+$p.items[0].status.containerStatuses[0].imageID='docker-pullable://r/agent@sha256:DIGEST'
+if (-not (Test-LabAgentReady $d $p)) { throw 'Matching prefixed digest rejected' }
+$p.items[0].status.containerStatuses[0].imageID='r/agent@sha256:WRONG'
+if (Test-LabAgentReady $d $p) { throw 'Different digest accepted' }
+$p.items[0].status.containerStatuses[0].imageID=$null
+if (Test-LabAgentReady $d $p) { throw 'Missing digest accepted' }
+$p.items[0].status.containerStatuses[0].imageID='r/agent@sha256:DIGEST'
+$p.items[0].spec.containers[0].image='r/agent:old'
+if (Test-LabAgentReady $d $p) { throw 'Different Pod spec accepted' }
+'''.replace('DIGEST', digest).replace('WRONG', 'b' * 64)
     result = execute(tmp_path, body)
     assert result.returncode == 0, result.stdout + result.stderr
 
