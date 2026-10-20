@@ -13,6 +13,7 @@ try {
     $env:PATH=(Join-Path $temp 'bin')+[IO.Path]::PathSeparator+$oldPath
     @{subscriptionId='offline-subscription';resourceGroup='rg-agentic-ops-lab';demoImage='example.azurecr.io/test-app:1.4.2';kubeconfig='recorded-config'} |
         ConvertTo-Json | Set-Content (Join-Path $temp '.local/rg-agentic-ops-lab.json')
+    Copy-Item (Join-Path $repo 'scripts/environment/lab-runtime.ps1') (Join-Path $temp 'scripts/environment/lab-runtime.ps1')
     foreach ($id in '01','02','03','05','06') {
         $original=Get-Content (Join-Path $repo "scripts/tests/test-s$id.ps1") -Raw
         $head=$original.Substring(0,$original.IndexOf('$goodImage ='))

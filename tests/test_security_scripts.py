@@ -27,7 +27,7 @@ if a[:1]==['scale']:
  s[role]['spec']['replicas']=int(next(x for x in a if x.startswith('--replicas=')).split('=')[1]);save();sys.exit()
 if a[:2]==['set','image']:
  dep=s['workload'] if 'test-app' in a[2] else s['diagnostic'] if 'diagnostic' in a[2] else s['remediation']
- dep['spec']['template']['spec']['containers'][0]['image']=a[3].split('=',1)[1];dep['metadata']['generation']+=1;save();sys.exit()
+ dep['spec']['template']['spec']['containers'][0]['image']=a[3].split('=',1)[1];dep['metadata']['generation']+=1;dep.setdefault('status', {})['observedGeneration']=dep['metadata']['generation'];save();sys.exit()
 if a[:1]==['create']:
  data=json.loads(pathlib.Path(a[2]).read_text())
  if data['kind']=='Pod':
@@ -55,7 +55,7 @@ if a[:1]==['get']:
   role=next((r for r in ['diagnostic','remediation'] if any('role='+r in x for x in a)),None)
   if role:
    c=s[role]['spec']['template']['spec']['containers'][0]
-   print(json.dumps({'items':[{'metadata':{'name':role},'spec':{'containers':[c]},'status':{'phase':'Running','containerStatuses':[{'ready':True,'imageID':'docker-pullable://registry.example/agentic-ops@sha256:'+'1'*64}]}}]}))
+   print(json.dumps({'items':[{'metadata':{'name':role},'spec':{'containers':[c]},'status':{'phase':'Running','containerStatuses':[{'ready':True,'image':c['image'],'imageID':'docker-pullable://registry.example/agentic-ops@sha256:'+'1'*64}]}}]}))
   else:print(json.dumps({'items':[{'metadata':{'name':'failed-pod','uid':'uid'},'status':{'containerStatuses':[{'name':'api','image':s['workload']['spec']['template']['spec']['containers'][0]['image'],'state':{'waiting':{'reason':'ImagePullBackOff'}}}]}}]}))
   sys.exit()
  print(json.dumps({'items':[]}));sys.exit()
@@ -70,7 +70,7 @@ def setup(tmp_path, mismatch=False, collection_failure=False):
     (root / 'eval').mkdir(); shutil.copy(source / 'eval/live_security_runner.py', root / 'eval/live_security_runner.py')
     (root / '.local').mkdir(); (root / 'bin').mkdir()
     def agent(role):
-        return dict(metadata={'generation': 1}, spec={'replicas': 1, 'template': {'metadata': {'labels': {'app': 'agentic-ops', 'role': role}}, 'spec': {'containers': [{'name': 'agent', 'image': 'registry.example/agentic-ops:trial', 'env': [], 'readinessProbe': {'httpGet': {'path': '/healthz'}}}]}}})
+        return dict(metadata={'generation': 1}, status={'observedGeneration':1,'replicas':1,'updatedReplicas':1,'readyReplicas':1,'availableReplicas':1}, spec={'replicas': 1, 'template': {'metadata': {'labels': {'app': 'agentic-ops', 'role': role}}, 'spec': {'containers': [{'name': 'agent', 'image': 'registry.example/agentic-ops:trial', 'env': [], 'readinessProbe': {'httpGet': {'path': '/healthz'}}}]}}})
     state = dict(mismatch=mismatch, collection_failure=collection_failure, diagnostic=agent('diagnostic'), remediation=agent('remediation'),
           workload={'metadata': {'generation': 1}, 'spec': {'replicas': 1, 'template': {'spec': {'containers': [{'name': 'api', 'image': 'registry.example/test-app:1.4.2'}]}}}})
     (root / 'state.json').write_text(json.dumps(state))

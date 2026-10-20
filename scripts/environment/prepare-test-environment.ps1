@@ -10,6 +10,7 @@ param(
     [Parameter(Mandatory)][string]$EvidenceDirectory,
     [ValidateRange(1,100)][int]$MinimumModelCapacity=10
 )
+. (Join-Path $PSScriptRoot 'lab-runtime.ps1')
 $ErrorActionPreference='Stop'
 $PSNativeCommandUseErrorActionPreference=$false
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
@@ -111,7 +112,11 @@ try {
     if ($paused) { Invoke-PrepareKube @('scale','deployment/agentic-ops-diagnostic','-n','agentic-ops','--replicas=1') | Out-Host }
 }
 foreach ($role in 'diagnostic','remediation') {
+    $agentState=Invoke-PrepareKube @('get',"deployment/agentic-ops-$role",'-n','agentic-ops','-o','json') | Out-String | ConvertFrom-Json
+    if ($agentState.spec.replicas -gt 1) { throw 'Unexpected multi-replica agent; reset refused.' }
+    Invoke-PrepareKube @('scale',"deployment/agentic-ops-$role",'-n','agentic-ops','--replicas=1') | Out-Host
     Invoke-PrepareKube @('rollout','status',"deployment/agentic-ops-$role",'-n','agentic-ops','--timeout=120s') | Out-Host
+    Wait-LabAgentReady -Executable $kubectlProgram -Kubeconfig $lab.kubeconfig -Role $role -CommandLog (Join-Path $prep 'commands.txt')
 }
 Invoke-PrepareKube @('get','deployment/test-app','-n','test-app','-o','json') | Set-Content (Join-Path $prep 'deployment-healthy.json')
 if ($rebuild) {

@@ -31,13 +31,11 @@ $archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRo
 $zipPath = Join-Path $archiveRoot ("S05-" + (Split-Path $dir -Leaf) + "-anonymized.zip")
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null
+. (Join-Path $PSScriptRoot '../environment/lab-runtime.ps1')
 function Kube {
     param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
-    $output = & kubectl @script:kubeArgs @Arguments
-    $code = $LASTEXITCODE
-    "$([DateTime]::UtcNow.ToString('o')) kubectl $($Arguments -join ' ') [exit=$code]" | Add-Content (Join-Path $script:dir 'commands.txt')
-    if ($code -ne 0) { throw "kubectl failed: $($Arguments -join ' ')" }
-    return $output
+    $explicitConfig = $script:Kubeconfig
+    Invoke-LabKubectl -Executable (Get-Command kubectl -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source -Kubeconfig $explicitConfig -Arguments $Arguments -CommandLog (Join-Path $script:dir 'commands.txt')
 }
 function Save-Json {
     param([string]$File,[string[]]$Arguments)
@@ -71,6 +69,7 @@ try {
     Kube @('rollout','restart','deployment/agentic-ops-diagnostic','-n','agentic-ops') | Out-Host
     foreach ($role in 'diagnostic','remediation') {
         Kube @('rollout','status',"deployment/agentic-ops-$role",'-n','agentic-ops','--timeout=180s') | Out-Host
+        Wait-LabAgentReady -Executable (Get-Command kubectl -CommandType Application | Select-Object -First 1).Source -Kubeconfig $Kubeconfig -Role $role -CommandLog (Join-Path $dir 'commands.txt')
     }
     Save-Json 'agents-before.json' @('get','pods','-n','agentic-ops')
     # Pause observation so diagnosis cannot race the second container's pull failure.
@@ -116,6 +115,7 @@ try {
     # Includes diagnostic startup; this is a functional trial, not warmed latency.
     $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
     Kube @('rollout','status','deployment/agentic-ops-diagnostic','-n','agentic-ops','--timeout=120s') | Out-Host
+    Wait-LabAgentReady -Executable (Get-Command kubectl -CommandType Application | Select-Object -First 1).Source -Kubeconfig $Kubeconfig -Role diagnostic -CommandLog (Join-Path $dir 'commands.txt')
     do {
         Save-Json 'pods-observed.json' @('get','pods','-n','test-app')
         $pods = Get-Content (Join-Path $dir 'pods-observed.json') -Raw | ConvertFrom-Json
