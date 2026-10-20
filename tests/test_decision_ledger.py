@@ -30,9 +30,18 @@ def test_archived_evidence_counts_and_manual_comments_survive(tmp_path):
     # change the expected counts in this regression test.
     evidence = tmp_path / 'historical-evidence'
     evidence.mkdir()
-    archives = sorted(p for p in (root / 'eval/evidence').glob('*.zip')
-                      if p.name.startswith(tuple(f'S{i:02d}-' for i in range(1, 7))))
-    assert len(archives) == 7
+    # An explicit manifest freezes input membership, not the growing evidence folder.
+    historical_archives = (
+        'S01-20261006T134759278Z-anonymized.zip',
+        'S01-v2-20261009T120039727Z-C-01-anonymized.zip',
+        'S02-20261009T105643940Z-C-01-anonymized.zip',
+        'S03-20261009T111132556Z-C-01-anonymized.zip',
+        'S04-20261012T083058902Z-C-01-anonymized.zip',
+        'S05-20261012T092231374Z-C-01-anonymized.zip',
+        'S06-20261012T094802362Z-C-01-anonymized.zip',
+    )
+    archives = [root / 'eval/evidence' / name for name in historical_archives]
+    assert all(p.is_file() for p in archives), 'Historical ledger fixture is missing'
     for archive in archives:
         shutil.copy2(archive, evidence / archive.name)
     rows = ledger.build(evidence, output)
