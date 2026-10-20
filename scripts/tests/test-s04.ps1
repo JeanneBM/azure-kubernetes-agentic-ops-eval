@@ -32,13 +32,11 @@ function Invoke-LabAz {
     if ($LASTEXITCODE -ne 0) { throw "Azure CLI failed: $($Arguments[0..2] -join ' ')" }
     if ($output) { $output | Out-String | ConvertFrom-Json }
 }
+. (Join-Path $PSScriptRoot '../environment/lab-runtime.ps1')
 function Kube {
-    param([string[]]$Arguments)
-    $output = & kubectl --kubeconfig $script:state.kubeconfig @Arguments
-    $exitCode = $LASTEXITCODE
-    "$([DateTime]::UtcNow.ToString('o')) kubectl $($Arguments -join ' ') [exit=$exitCode]" | Add-Content (Join-Path $script:dir 'commands.txt')
-    if ($exitCode -ne 0) { throw "kubectl failed: $($Arguments -join ' ')" }
-    $output
+    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
+    $explicitConfig = $script:state.kubeconfig
+    Invoke-LabKubectl -Executable (Get-Command kubectl -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source -Kubeconfig $explicitConfig -Arguments $Arguments -CommandLog (Join-Path $script:dir 'commands.txt')
 }
 function Snapshot {
     param([string]$File,[string[]]$Arguments)
@@ -92,7 +90,8 @@ try {
     if ($before.spec.template.spec.containers.Count -ne 1 -or $api.Count -ne 1 -or $api[0].image -ne $state.demoImage -or $before.spec.template.spec.imagePullSecrets) { throw 'Start from healthy lab api image without imagePullSecrets.' }
     Kube @('logs','deployment/agentic-ops-diagnostic','-n','agentic-ops','--timestamps') | Set-Content (Join-Path $dir 'diagnostic-before-restart.log')
     Kube @('rollout','restart','deployment/agentic-ops-diagnostic','-n','agentic-ops') | Out-Host
-    foreach ($agent in 'diagnostic','remediation') { Kube @('rollout','status',"deployment/agentic-ops-$agent",'-n','agentic-ops','--timeout=180s') | Out-Host }
+    foreach ($agent in 'diagnostic','remediation') { Kube @('rollout','status',"deployment/agentic-ops-$agent",'-n','agentic-ops','--timeout=180s') | Out-Host
+        Wait-LabAgentReady -Executable (Get-Command kubectl -CommandType Application | Select-Object -First 1).Source -Kubeconfig $state.kubeconfig -Role $agent -CommandLog (Join-Path $dir 'commands.txt') }
     RegistryCheck 'registry-before.txt'
     Write-Host "S04: temporarily removing lab kubelet AcrPull. Evidence: $dir"
     $start = [DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')

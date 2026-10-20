@@ -33,3 +33,18 @@ The Azure lab remains provisioned; use the cleanup script after saving evidence.
 ```powershell
 ./scripts/tests/S01-S06-tests.ps1
 ```
+
+### Batch lifecycle guards
+
+The batch starts each scenario in a separate PowerShell process and saves its
+console output as `runner-console.log`. Preparation restores both agents to one
+replica and checks the observed Deployment generation, replica counts, pod
+readiness, and container image before fault injection. A zero-replica Deployment
+is not considered ready.
+
+Only read-only `kubectl logs` requests retry (up to four attempts, two seconds
+apart). Mutating commands are never replayed by this helper. Exhausted log
+requests and preparation failures remain errors in the evidence; they do not
+become successful trials. These guards do not solve S04 token/cache-dependent
+authentication fault injection; an unobserved authentication failure remains
+inconclusive.

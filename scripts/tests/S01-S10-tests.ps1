@@ -73,9 +73,12 @@ try {
         $scenarioError=$null
         Write-Host "`n========== $scenario ($($scenarios.IndexOf($scenario)+1)/10) =========="
         try {
-            $parameters=@{TimeoutSeconds=$TimeoutSeconds;EvidenceRoot=$scenarioDirectory}
-            if ($scenario -in @('S07','S08','S09','S10')) { $parameters.PrepareBaseline=$true }
-            & $scenarioScript @parameters
+            New-Item -ItemType File -Force -Path (Join-Path $scenarioDirectory 'runner-console.log') | Out-Null
+            $childArguments=@('-NoProfile','-NonInteractive','-File',$scenarioScript,'-TimeoutSeconds',"$TimeoutSeconds",'-EvidenceRoot',$scenarioDirectory)
+            if ($scenario -in @('S07','S08','S09','S10')) { $childArguments+='-PrepareBaseline' }
+            $pwshProgram=Join-Path $PSHOME $(if ($IsWindows) { 'pwsh.exe' } else { 'pwsh' })
+            & $pwshProgram @childArguments 2>&1 | Tee-Object -FilePath (Join-Path $scenarioDirectory 'runner-console.log') | Out-Host
+            if ($LASTEXITCODE -ne 0) { throw "Scenario process exited with code $LASTEXITCODE; see runner-console.log." }
         } catch {
             $scenarioError=$_.Exception.Message
             Write-Warning "$scenario finished with an error; its result will remain in the batch summary."

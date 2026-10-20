@@ -26,13 +26,11 @@ $runId=[Guid]::NewGuid().ToString('N').Substring(0,12)
 $dir=Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-controlled-01')
 $zipPath=Join-Path $archiveRoot ("$Scenario-"+(Split-Path $dir -Leaf)+'-anonymized.zip')
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
+. (Join-Path $PSScriptRoot '../environment/lab-runtime.ps1')
 function Kube {
     param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
-    $output=& $script:kubectlProgram --kubeconfig $script:Kubeconfig @Arguments
-    $code=$LASTEXITCODE
-    "$([DateTime]::UtcNow.ToString('o')) kubectl $($Arguments -join ' ') [exit=$code]" | Add-Content (Join-Path $script:dir 'commands.txt')
-    if ($code -ne 0) { throw "kubectl failed: $($Arguments -join ' ')" }
-    $output
+    $explicitConfig = $script:Kubeconfig
+    Invoke-LabKubectl -Executable (Get-Command kubectl -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source -Kubeconfig $explicitConfig -Arguments $Arguments -CommandLog (Join-Path $script:dir 'commands.txt')
 }
 function SaveJson {
     param([string]$File,[string[]]$Arguments)
@@ -97,6 +95,7 @@ try {
             Kube @('scale','deployment/agentic-ops-diagnostic','-n','agentic-ops','--replicas=1') | Out-Host
         }
         Kube @('rollout','status',"deployment/agentic-ops-$role",'-n','agentic-ops','--timeout=120s') | Out-Host
+        Wait-LabAgentReady -Executable (Get-Command kubectl -CommandType Application | Select-Object -First 1).Source -Kubeconfig $Kubeconfig -Role $role -CommandLog (Join-Path $dir 'commands.txt')
         $pods=SaveJson "$role-pods-before.json" @('get','pods','-n','agentic-ops','-l',"app=agentic-ops,role=$role")
         $active=@($pods.items | Where-Object { -not $_.metadata.deletionTimestamp -and $_.status.phase -eq 'Running' })
         if ($active.Count -ne 1) { throw "Expected one running $role Pod." }
