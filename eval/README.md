@@ -29,12 +29,18 @@ S07–S10 have [controlled live scripts](../docs/live-s07-s10.md), offline runne
 
 ## Status
 
-Individual passing examples exist for every S01–S10 scenario. Subsequent batch
-results varied; on 2026-10-21, separate script processes with 60-second pauses
-recorded nine passes and S04 inconclusive. Read the
-[dated execution pacing findings](execution-pacing-findings.md) for the chronology,
-archive references and limits of this comparison. These runs are not a benchmark
-or proof of repeatability.
+Individual passing examples exist for every S01–S10 scenario. Historical batch
+results varied. Four complete operator-reported summaries on 2026-10-21 recorded
+9, 8, 9 and 9 passing scripts out of ten; S04 did not pass in all four, and S02
+also did not pass in the second. Script exit status is separate from the reviewed
+agent outcome.
+
+Read the [readiness and baseline findings](readiness-and-baseline-findings.md)
+for the evidence, outcome categories and interpretation limits, and the
+[pacing and readiness replication plan](pacing-replication-plan.md) for the planned
+controlled comparison. Earlier [execution pacing notes](execution-pacing-findings.md)
+remain available. The observed improvement does not isolate the effect of pauses;
+the replication experiment has not been executed.
 
 S06 and S08–S10 use scripted proposals with live remediation; S07 uses the real
 model. Safe escalation is an expected success for several policy scenarios.
