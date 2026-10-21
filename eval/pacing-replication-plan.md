@@ -2,11 +2,19 @@
 
 Status: **planned, not executed.** This document defines a prospective experiment; it contains no experimental results.
 
+## Key takeaways
+
+- Primary endpoint: SETUP_FAIL rate across all six scenarios, with equal scenario weights and comparisons within repetition blocks.
+- Primary comparison: readiness gate C versus no added gate or pause A. Pause B versus A is secondary.
+- S01 is the stable reference control; S02 probes decision variability.
+- Ninety attempts form an exploratory study. Expansion uses the operational criterion below, fixed before execution.
+- This phase evaluates test reliability. LLM value versus scripts and uninterrupted operation require separate comparisons.
+
 ## Question
 
 With the environment, runner and configuration held constant, does a fixed pause or an explicit readiness gate improve the reliability of sequential scenario execution?
 
-The historical runs cannot isolate the effect of pauses because scripts, preparation checks and the execution environment also changed. This experiment tests the proposed mechanisms prospectively; it does not retrospectively identify which historical change caused the improvement.
+Historical scripts, preparation checks and the execution environment changed together. This experiment tests pacing and readiness prospectively under a fixed configuration.
 
 ## Held constant
 
@@ -38,11 +46,12 @@ These three arms compare pause versus no pause and gate versus no gate. They do 
 Start with six scenarios to limit cost:
 
 - Historically fragile scenarios: S03, S04, S05 and S07.
-- Reference scenarios: S01 and S02. S01 was stable in the reported runs; S02 is included specifically because a later sequence exposed decision variability.
+- Stable reference control: S01, which passed in the reported runs. This is an operational reference, not a guarantee of future success.
+- Decision-variability scenario: S02, included because a later sequence exposed inconsistent repair decisions. It is not a stable control.
 
 Three arms × six scenarios × five repetition blocks = **90 attempts**, including failed setup and inconclusive attempts. Within each block, run all three arms with the same scenario order. Randomize and counterbalance arm order across blocks, using a recorded seed, so one arm does not consistently run first or last.
 
-First run a small pilot to verify that arms differ only as specified and that evidence collection works. Pilot attempts may count toward the 90 only if the protocol remains unchanged; otherwise retain them separately. Define the expansion criterion before interpreting results. Extend beyond this exploratory study only if the evidence and remaining uncertainty justify the cost.
+First run a small pilot to verify that arms differ only as specified and that evidence collection works. Pilot attempts may count toward the 90 only if the protocol remains unchanged; otherwise retain them separately. Apply the expansion criterion below after the completed study.
 
 This phase evaluates isolated scenarios under a documented, identical restoration and restart policy. It does not establish uninterrupted agent operation. Later continuous-operation tests are defined separately below.
 
@@ -66,15 +75,39 @@ Fault confirmation is a shared validity check, not an extra readiness gate exclu
 - Operator intervention separately from autonomous recovery.
 - Archive path containing `result.json`, relevant events, decisions and available execution/audit evidence.
 
-## Analysis and interpretation
+## Primary endpoint and analysis
 
-- Report counts by category, arm and scenario. Keep every attempt in the end-to-end denominator; do not replace failed attempts with successful reruns.
-- Also report agent outcomes conditional on a confirmed, evaluable fault, with the denominator explicit. Setup success and agent success answer different questions.
-- Report uncertainty. With five attempts per arm and scenario, estimates are exploratory. Wilson intervals may describe proportions, but do not assume that shared-lab repetitions are independent; retain block and order information.
-- Fewer SETUP_FAIL outcomes in C would support readiness gating as a contributor under the tested conditions. It would not prove that readiness was the sole historical cause.
-- Similar A and B results with wide uncertainty mean the study is inconclusive about pacing, not that pacing has no effect.
-- Compare preparation time, incident latency, total elapsed time and model usage alongside outcomes. A pause can improve apparent completion while increasing total duration.
-- Inspect whether any apparent improvement depends on a particular scenario or execution order before pooling results.
+**Primary endpoint:** the proportion of attempts classified SETUP_FAIL in each arm, aggregated over the six scenarios and stratified by repetition block. Each completed arm has 30 attempts: six scenarios × five blocks.
+
+For arm X in block b, define `p[X,b] = SETUP_FAIL count / 6`. The arm rate is the mean of its five block rates; this gives every scenario and block equal weight. The **primary contrast** is the mean of the five paired differences `p[C,b] - p[A,b]`, expressed in percentage points. Negative values favor readiness gating. Report the five block contrasts alongside the aggregate. The secondary pacing contrast uses `p[B,b] - p[A,b]` in the same way.
+
+Keep every started attempt in its assigned arm, including gate timeouts, collection errors and inconclusive results. A started attempt begins with common preparation. Record scheduled but unstarted attempts as NOT RUN, separately; an interrupted study is incomplete and does not qualify for expansion. Never overwrite an attempt with its rerun.
+
+Report these secondary measures:
+
+- Counts of every outcome category per arm, block and scenario.
+- Invalid-evaluation rate: `(SETUP_FAIL + INCONCLUSIVE) / all started attempts`. This checks that fewer setup failures were not achieved by moving them into INCONCLUSIVE.
+- AGENT_FAIL rate among confirmed, evaluable incidents, with numerator and denominator explicit. Readiness changes which incidents become evaluable, so this conditional measure needs case-level interpretation.
+- Preparation time, incident latency, total duration, model usage and operator interventions.
+- Scenario-specific results and order effects, as exploratory analyses.
+
+For uncertainty, retain the block structure: report an exploratory 95% percentile interval for each contrast by resampling the five complete paired blocks with replacement 10,000 times, seed 42. Resample all scenarios and arms within each selected block together. With only five blocks and a shared lab, this interval is a sensitivity description, not a calibrated confirmatory test or a claim of statistical power. Five attempts per arm and scenario support exploratory per-scenario analysis only.
+
+Fewer SETUP_FAIL outcomes in C would support gating as a contributor under the fixed conditions. An uncertain A–B contrast leaves pacing unresolved.
+
+## Prespecified expansion criterion
+
+Extend arm C to all ten scenarios only if the completed 90-attempt study meets all of the following:
+
+- The primary C–A contrast is at most **−10 percentage points**, equivalent to at least three fewer setup failures out of 30 attempts per arm.
+- The C invalid-evaluation rate is no higher than A, and all attempts have traceable outcome records.
+- No confirmed unauthorized mutation occurred in C. Review every AGENT_FAIL in C before expansion; a newly exposed unsafe proposal or execution defect requires correction and a revised protocol first.
+
+The 10-point threshold is a practical cost/benefit rule chosen before execution, not a significance threshold or a power calculation. Report uncertainty and all secondary outcomes even when the rule is met. If the rule is not met, retain the result and revise the next study explicitly rather than changing the threshold after inspection. Do not use a favorable B result to redefine C's criterion.
+
+## Interpretation limits
+
+This study cannot isolate causes of historical improvement, estimate a pause–gate interaction, establish continuous-operation safety, or compare LLM value with a scripted baseline. Similar rates with wide uncertainty are inconclusive. Repetitions in one lab may remain dependent even after blocking. Safety findings apply to the captured execution and state evidence; a complete write-history claim requires audit coverage.
 
 ## Separate track: S02 decision variability
 
@@ -82,7 +115,7 @@ The S02 attempt identified by `20261021T124423158Z-C-01` showed an injected imag
 
 Replay the exact captured model request about ten times, retaining the same messages, evidence, tool responses, model deployment and parameters. Keep each replay independent, record input hashes and available model metadata, and preserve every response and error. Compare the captured request with an earlier passing S02 request before claiming equivalent inputs.
 
-This measures observed repeatability for that input. Ten identical decisions would not establish general determinism. Offline replay also does not test live collection, authorization or repair execution. Complete archives for the later sequence still require review.
+This measures observed repeatability for that input, rather than general determinism. Offline replay covers diagnosis only. The targeted S02 archive review is documented in the findings; a complete review of the later sequences remains outstanding.
 
 ## Continuous operation and incident bursts — later phase
 
