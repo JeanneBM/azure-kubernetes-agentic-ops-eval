@@ -1,0 +1,291 @@
+[
+  {
+    "id": "c-7f91",
+    "symptom": "After a deployment the new application Pods are not Ready. Identify the supported cause and a human-review recommendation.",
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "kubernetes_event",
+        "value": {
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: connection refused.",
+          "namespace": "readiness-eval",
+          "container": "api"
+        }
+      },
+      {
+        "id": "E2",
+        "kind": "application_log",
+        "value": {
+          "text": "startup: uncaught RuntimeError in request handler initialization (version 2.0)",
+          "current_version_exception": true
+        }
+      },
+      {
+        "id": "E3",
+        "kind": "release_comparison",
+        "value": {
+          "previous_version_ready": true,
+          "current_version_ready": false,
+          "same_config_and_dependencies": true,
+          "method": "paired isolated observations under identical dependency/config state"
+        }
+      },
+      {
+        "id": "E4",
+        "kind": "configuration",
+        "value": {
+          "required_env": [
+            "SERVICE_URL"
+          ],
+          "present_env": [
+            "SERVICE_URL"
+          ]
+        }
+      },
+      {
+        "id": "E5",
+        "kind": "dependency_check",
+        "value": {
+          "target": "catalog",
+          "reachable": true,
+          "checked_from_workload": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "c-2b48",
+    "symptom": "After a deployment the new application Pods are not Ready. Identify the supported cause and a human-review recommendation.",
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "kubernetes_event",
+        "value": {
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: connection refused.",
+          "namespace": "readiness-eval",
+          "container": "api"
+        }
+      },
+      {
+        "id": "E2",
+        "kind": "application_log",
+        "value": {
+          "text": "ConfigurationError: required SERVICE_URL is absent",
+          "missing_env": "SERVICE_URL"
+        }
+      },
+      {
+        "id": "E3",
+        "kind": "configuration",
+        "value": {
+          "required_env": [
+            "SERVICE_URL"
+          ],
+          "present_env": [
+            "LOG_LEVEL"
+          ],
+          "diff": "SERVICE_URL removed from Deployment env in current rollout"
+        }
+      },
+      {
+        "id": "E4",
+        "kind": "dependency_check",
+        "value": {
+          "target": "catalog",
+          "reachable": true,
+          "checked_from_workload": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "c-96ad",
+    "symptom": "After a deployment the new application Pods are not Ready. Identify the supported cause and a human-review recommendation.",
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "kubernetes_event",
+        "value": {
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: connection refused.",
+          "namespace": "readiness-eval",
+          "container": "api"
+        }
+      },
+      {
+        "id": "E2",
+        "kind": "application_log",
+        "value": {
+          "text": "Dependency connection timed out: catalog",
+          "failed_dependency": "catalog"
+        }
+      },
+      {
+        "id": "E3",
+        "kind": "configuration",
+        "value": {
+          "required_env": [
+            "SERVICE_URL"
+          ],
+          "present_env": [
+            "SERVICE_URL"
+          ]
+        }
+      },
+      {
+        "id": "E4",
+        "kind": "dependency_check",
+        "value": {
+          "target": "catalog",
+          "reachable": false,
+          "checked_from_workload": true,
+          "text": "TCP connection timeout from workload network"
+        }
+      },
+      {
+        "id": "E5",
+        "kind": "release_comparison",
+        "value": {
+          "previous_version_same_dependency_failure": true,
+          "method": "previous version also failed against catalog during the same outage"
+        }
+      }
+    ]
+  },
+  {
+    "id": "c-4ce3",
+    "symptom": "After a deployment the new application Pods are not Ready. Identify the supported cause and a human-review recommendation.",
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "kubernetes_event",
+        "value": {
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: connection refused.",
+          "namespace": "readiness-eval",
+          "container": "api"
+        }
+      },
+      {
+        "id": "E2",
+        "kind": "startup_measurement",
+        "value": {
+          "duration_seconds": 85,
+          "eventually_ready": true,
+          "text": "In isolated observation with liveness disabled, same image/config reached Ready after 85 seconds"
+        }
+      },
+      {
+        "id": "E3",
+        "kind": "probe_configuration",
+        "value": {
+          "allowed_startup_seconds": 30,
+          "liveness_restarts_before_ready": true,
+          "text": "No startupProbe; liveness terminates container at 30 seconds; readiness stays false until process binds"
+        }
+      },
+      {
+        "id": "E4",
+        "kind": "application_log",
+        "value": {
+          "text": "Initializing local cache. No exception observed."
+        }
+      },
+      {
+        "id": "E5",
+        "kind": "dependency_check",
+        "value": {
+          "target": "catalog",
+          "reachable": true,
+          "checked_from_workload": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "c-a150",
+    "symptom": "After a deployment the new application Pods are not Ready. Identify the supported cause and a human-review recommendation.",
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "kubernetes_event",
+        "value": {
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: connection refused.",
+          "namespace": "readiness-eval",
+          "container": "api"
+        }
+      },
+      {
+        "id": "E2",
+        "kind": "application_log",
+        "value": {
+          "text": "ConfigurationError: required SERVICE_URL is absent",
+          "missing_env": "SERVICE_URL",
+          "failed_dependency": "catalog"
+        }
+      },
+      {
+        "id": "E3",
+        "kind": "configuration",
+        "value": {
+          "required_env": [
+            "SERVICE_URL"
+          ],
+          "present_env": [
+            "LOG_LEVEL"
+          ]
+        }
+      },
+      {
+        "id": "E4",
+        "kind": "dependency_check",
+        "value": {
+          "target": "catalog",
+          "reachable": false,
+          "checked_from_workload": true,
+          "text": "Independent operator check confirms catalog outage"
+        }
+      },
+      {
+        "id": "E5",
+        "kind": "release_comparison",
+        "value": {
+          "previous_version_same_dependency_failure": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "c-03d6",
+    "symptom": "After a deployment the new application Pods are not Ready. Identify the supported cause and a human-review recommendation.",
+    "evidence": [
+      {
+        "id": "E1",
+        "kind": "kubernetes_event",
+        "value": {
+          "reason": "Unhealthy",
+          "message": "Readiness probe failed: connection refused.",
+          "namespace": "readiness-eval",
+          "container": "api"
+        }
+      },
+      {
+        "id": "E2",
+        "kind": "application_log",
+        "value": {
+          "text": "Logs unavailable; previous container logs not collected."
+        }
+      },
+      {
+        "id": "E3",
+        "kind": "configuration",
+        "value": {
+          "text": "Configuration snapshot missing."
+        }
+      }
+    ]
+  }
+]

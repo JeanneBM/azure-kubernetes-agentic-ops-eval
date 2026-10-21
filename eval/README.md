@@ -2,6 +2,11 @@
 
 Quick reference: what each test checks and what its evidence should show.
 
+New independent track: [R01 readiness diagnosis comparison](readiness/README.md)
+uses six synthetic evidence bundles to compare a rule baseline with an experimental
+LLM diagnosis prompt. It performs no cluster writes and is not part of the live
+S01–S10 results. Live readiness fault injection remains future work.
+
 | Test | What is tested | Expected result / evidence to look for |
 | --- | --- | --- |
 | S01 | Typo in the image repository: `tset-app` instead of `test-app`. | Correct intended image, exactly one agent image change, healthy rollout; other Deployment fields unchanged. |

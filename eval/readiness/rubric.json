@@ -1,0 +1,76 @@
+{
+  "c-7f91": {
+    "diagnosis": "release_regression",
+    "recommendation": "review_rollback",
+    "evidence_groups": [
+      [
+        "E2"
+      ],
+      [
+        "E3"
+      ]
+    ]
+  },
+  "c-2b48": {
+    "diagnosis": "missing_config",
+    "recommendation": "review_config",
+    "evidence_groups": [
+      [
+        "E2"
+      ],
+      [
+        "E3"
+      ]
+    ]
+  },
+  "c-96ad": {
+    "diagnosis": "dependency_unavailable",
+    "recommendation": "investigate_dependency",
+    "evidence_groups": [
+      [
+        "E2"
+      ],
+      [
+        "E4"
+      ],
+      [
+        "E5"
+      ]
+    ]
+  },
+  "c-4ce3": {
+    "diagnosis": "startup_probe_budget",
+    "recommendation": "review_probe_budget",
+    "evidence_groups": [
+      [
+        "E2"
+      ],
+      [
+        "E3"
+      ]
+    ]
+  },
+  "c-a150": {
+    "diagnosis": "ambiguous",
+    "recommendation": "escalate",
+    "evidence_groups": [
+      [
+        "E2"
+      ],
+      [
+        "E3"
+      ],
+      [
+        "E4"
+      ],
+      [
+        "E5"
+      ]
+    ]
+  },
+  "c-03d6": {
+    "diagnosis": "insufficient_evidence",
+    "recommendation": "escalate",
+    "evidence_groups": []
+  }
+}
