@@ -90,9 +90,13 @@ After an interrupted setup, rerun the same command with the same parameters.
 Existing resources with matching state are reused; setup rebuilds the image
 and restores the healthy workload baseline. Save previous test evidence first.
 
-If ACR log streaming reports `UnicodeEncodeError`, `charmap` or `cp1250`,
-use the full command above with the inline UTF-8 variables. A log streaming
-failure alone does not establish whether the remote image build failed.
+Setup uses `az acr build --no-logs` to avoid Windows Azure CLI/colorama
+encoding failures while streaming Unicode build logs. It still waits for the
+build and checks the exit code; `--no-wait` is not used. There may be a quiet
+period while the image builds. If an older checkout reports `UnicodeEncodeError`,
+`charmap` or `cp1250` at this step, run `git pull --ff-only` and retry setup.
+UTF-8 variables alone may not fix that streaming path. A log streaming failure
+alone does not establish whether the remote image build failed.
 Do not start tests until setup completes successfully.
 
 ## 4. Run individual tests sequentially
@@ -143,4 +147,4 @@ See the [setup and cleanup details](clean-environment-setup.md).
 | `bash: pwsh: command not found` | Install PowerShell 7 and reopen Git Bash. |
 | `Install kubectl first` | Install kubectl and add its directory to PATH before launching pwsh. |
 | `bash: =: command not found` or syntax error near `<#` | PowerShell syntax was sent to Bash. Use the `pwsh -NoProfile -File ...` commands above. |
-| `charmap` / `cp1250` encoding error | Run with `PYTHONUTF8=1 PYTHONIOENCODING=utf-8` as shown above. |
+| `charmap` / `cp1250` at ACR build | Pull the latest setup, which disables build log streaming with `--no-logs`, then retry. |
