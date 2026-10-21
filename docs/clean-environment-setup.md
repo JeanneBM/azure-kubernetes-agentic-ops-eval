@@ -5,6 +5,9 @@ PoC. It does not run pytest, inject faults, or execute S01–S06. Run scenarios
 separately after setup. Kubernetes readiness is not proof of successful live
 inference, ACR validation, or agent handoff.
 
+For local Windows Git Bash, use the [dedicated guide](local-git-bash.md),
+including PowerShell 7 installation and UTF-8 settings for Azure CLI logs.
+
 ## Run once
 
 Use PowerShell 7, a current Azure CLI, kubectl and git (Azure Cloud Shell in
@@ -34,7 +37,7 @@ to pay for both.** This script is for reproducing setup from a clean environment
 - Azure CNI Overlay with Cilium, OIDC and Workload Identity.
 - ACR Basic, admin credentials disabled, RBAC permissions, AKS image-pull access.
 - Azure OpenAI in `swedencentral`, `gpt-4.1-nano` version `2025-04-14`,
-  `GlobalStandard`, capacity 1.
+  `GlobalStandard`, default capacity 10.
 - Separate diagnostic and remediation identities with resource-scoped
   `Cognitive Services OpenAI User` for diagnostics and registry-scoped `AcrPull`
   for both identities. Diagnostic manifest checks are read-only; Kubernetes writes
