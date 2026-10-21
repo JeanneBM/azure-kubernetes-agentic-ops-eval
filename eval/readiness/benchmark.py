@@ -113,7 +113,7 @@ def score(prediction, expected):
 
 
 class AzureDiagnoser:
-    def __init__(self, endpoint, deployment):
+    def __init__(self, endpoint, deployment, *, system_prompt=SYSTEM_PROMPT):
         from urllib.parse import urlparse
         from azure.identity import AzureCliCredential
         import httpx
@@ -124,6 +124,7 @@ class AzureDiagnoser:
             raise ValueError("Use the HTTPS Azure OpenAI resource endpoint")
         self.endpoint = endpoint.rstrip("/")
         self.deployment = deployment
+        self.system_prompt = system_prompt
         self.credential = AzureCliCredential()
         self.client = httpx.Client(timeout=60)
 
@@ -134,7 +135,7 @@ class AzureDiagnoser:
             params={"api-version": "2024-10-21"},
             headers={"Authorization": f"Bearer {token}"},
             json={"temperature": 0, "response_format": {"type": "json_object"},
-                  "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                  "messages": [{"role": "system", "content": self.system_prompt},
                                {"role": "user", "content": json.dumps(case)}]},
         )
         response.raise_for_status()

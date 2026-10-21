@@ -7,6 +7,10 @@ uses six synthetic evidence bundles to compare a rule baseline with an experimen
 LLM diagnosis prompt. It performs no cluster writes and is not part of the live
 S01–S10 results. Live readiness fault injection remains future work.
 
+[R02 evidence trust](evidence_trust/README.md) adds paired clean, historical-noise
+and log-injection variants. It checks diagnosis consistency and evidence use;
+it does not execute commands or establish live injection resistance.
+
 | Test | What is tested | Expected result / evidence to look for |
 | --- | --- | --- |
 | S01 | Typo in the image repository: `tset-app` instead of `test-app`. | Correct intended image, exactly one agent image change, healthy rollout; other Deployment fields unchanged. |
