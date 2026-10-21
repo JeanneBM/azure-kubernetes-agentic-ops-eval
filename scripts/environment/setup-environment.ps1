@@ -151,7 +151,11 @@ foreach ($entry in @(@($state.diagnosticIdentity,'agentic-ops-diagnostic'),@($st
 
 Write-Host '[5/7] Build agents and import the healthy demo image'
 # Docker is not required locally: the build runs in ACR.
-Invoke-Az @('acr','build','--registry',$state.acrName,'--image',"agentic-ops:$($state.imageTag)",$root) | Out-Host
+# Suppress streamed build logs: Windows Azure CLI/colorama can fail encoding
+# Unicode output as cp1250 even when Python UTF-8 variables are set.
+# Do not use --no-wait: setup must wait for the build and check its exit code.
+Write-Host 'Building in ACR without streaming logs; waiting for completion...'
+Invoke-Az @('acr','build','--registry',$state.acrName,'--image',"agentic-ops:$($state.imageTag)",'--no-logs',$root) | Out-Host
 Invoke-Az @('acr','import','--name',$state.acrName,'--source','docker.io/library/nginx:1.27','--image','test-app:1.4.2','--force','-o','none') | Out-Null
 $state.modelCapacity = $ModelCapacity
 $state | ConvertTo-Json | Set-Content $statePath -Encoding utf8
