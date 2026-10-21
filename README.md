@@ -78,23 +78,6 @@ Replace the placeholder with your subscription ID. For an existing checkout,
 run `git pull --ff-only` from its directory, then the setup command.
 Completion prints `READY FOR TESTS`.
 
-### Example setup output
-
-![Successful setup: both agent Pods and two test-app replicas are Running and Ready](docs/images/setup-complete.png)
-
-Expected result: both agents and the demo replicas are `Running` and `1/1 Ready`,
-followed by `READY FOR TESTS`. This screenshot shows setup completion;
-model inference and remediation are checked in separate live trials.
-Resource names, paths and Pod identifiers vary between environments.
-
-### Provisioned Azure environment
-
-![Azure portal resource inventory for the evaluation lab](docs/images/azure-environment-ready.png)
-
-Azure resources provisioned for the test lab: AKS, ACR, Azure OpenAI,
-separate agent identities and supporting network resources. Workload readiness
-is checked by the setup output above; scenario results are recorded separately.
-
 Load the saved configuration to inspect the lab:
 
 ~~~powershell
