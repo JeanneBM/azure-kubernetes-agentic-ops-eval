@@ -101,6 +101,11 @@ first. For defaults, parameter overrides and implementation details, read the
 
 ## Run scenarios and collect evidence
 
+**Execution findings (2026-10-21):** separate script processes with 60-second
+pauses recorded 9/10 passes; S04 remained inconclusive. Earlier sequential batch
+results varied. See the [dated findings and evidence](eval/execution-pacing-findings.md)
+for readiness failures and the limits of attributing improvement to pauses.
+
 For live S02 (one faulty API container alongside a healthy sidecar), run after setup:
 
 ~~~powershell
