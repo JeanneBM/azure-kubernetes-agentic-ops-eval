@@ -1,16 +1,31 @@
 # Sequential functional tests
 
-Provision once with scripts/environment/setup-environment.ps1 (default ModelCapacity: 10).
+Provision the lab once with `scripts/environment/setup-environment.ps1`.
 From the repository root in PowerShell 7:
 
 ```powershell
 git pull
-./scripts/tests/test-s01.ps1
-./scripts/tests/test-s02.ps1
-./scripts/tests/test-s03.ps1
-./scripts/tests/test-s04.ps1
-./scripts/tests/test-s05.ps1
+./scripts/tests/run-tests-one-by-one.ps1
 ```
+
+This launches `test-s01.ps1` through `test-s10.ps1` as separate PowerShell
+processes, waiting for each script to finish and then pausing for 60 seconds.
+Each script creates its own evidence and anonymized ZIP under `eval/evidence`.
+There is no combined batch archive. S07–S10 receive `-PrepareBaseline`.
+The launcher requires existing recorded lab state and does not provision resources.
+
+The sequence stops at the first nonzero exit code. To resume from S05, change the
+pause, select a range, or explicitly continue after errors:
+
+```powershell
+./scripts/tests/run-tests-one-by-one.ps1 -From 5
+./scripts/tests/run-tests-one-by-one.ps1 -From 7 -To 10 -PauseSeconds 120
+./scripts/tests/run-tests-one-by-one.ps1 -ContinueOnFailure
+```
+
+Continuing after errors still reports an overall failure when the sequence ends.
+A pause reduces request overlap but does not guarantee avoidance of model throttling.
+You can also invoke any `test-sXX.ps1` directly.
 
 Each known-lab trial automatically runs prepare-test-environment.ps1 before fault
 injection. It checks the recorded cluster, ensures at least 10 model capacity units,
