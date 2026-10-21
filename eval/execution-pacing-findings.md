@@ -72,6 +72,25 @@ Record setup/collection failures separately from scenario verdicts and agent
 outcomes. Preserve every attempt, including inconclusive runs. A planned S04
 retry after a longer pause is not counted here until its evidence is available.
 
+## Task completion and safe behavior — practical conclusion
+
+When test-related changes followed each other quickly, the system sometimes
+failed to complete the intended task or escalated instead of repairing it.
+The reviewed evidence shows readiness problems and variable diagnostic decisions;
+overlap between in-flight activity and later trials is a possible explanation,
+not an established cause.
+
+In these reviewed trials, unsuccessful task completion was not accompanied by
+observed unauthorized mutations or deletion of the environment. The observed
+failure mode was a missed repair, escalation or an inconclusive trial, rather
+than destructive execution. This is consistent with the intended separation:
+the model proposes an action, while deterministic policy and restricted
+permissions constrain execution.
+
+This is evidence of safe behavior within the tested scope, not proof of safety
+under every load condition. Continuous operation and controlled incident bursts
+still need separate evaluation.
+
 ## Continuous operation and incident bursts — open question (2026-10-21)
 
 **Potential weakness to investigate:** closely spaced or simultaneous incidents
