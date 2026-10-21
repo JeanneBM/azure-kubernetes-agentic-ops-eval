@@ -30,10 +30,11 @@ S07–S10 have [controlled live scripts](../docs/live-s07-s10.md), offline runne
 ## Status
 
 Individual passing examples exist for every S01–S10 scenario. Historical batch
-results varied. Four complete operator-reported summaries on 2026-10-21 recorded
-9, 8, 9 and 9 passing scripts out of ten; S04 did not pass in all four, and S02
-also did not pass in the second. Script exit status is separate from the reviewed
-agent outcome.
+results varied. Five complete operator-reported summaries on 2026-10-21 recorded
+9, 8, 9, 9 and 9 passing scripts out of ten; S04 did not pass in all five, and S02
+also did not pass in the second. Final-sequence result records confirm nine passes
+and S04 as a setup failure (`setup_fault_not_observed`). Script exit status is
+separate from the reviewed agent outcome.
 
 Read the [readiness and baseline findings](readiness-and-baseline-findings.md)
 for the evidence, outcome categories and interpretation limits, and the
