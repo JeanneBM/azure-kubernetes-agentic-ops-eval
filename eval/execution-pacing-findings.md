@@ -71,3 +71,56 @@ environment and trial order fixed, vary only the pause, and repeat both settings
 Record setup/collection failures separately from scenario verdicts and agent
 outcomes. Preserve every attempt, including inconclusive runs. A planned S04
 retry after a longer pause is not counted here until its evidence is available.
+
+## Continuous operation and incident bursts — open question (2026-10-21)
+
+**Potential weakness to investigate:** closely spaced or simultaneous incidents
+may expose interference between in-flight actions, retained agent state,
+deduplication and Kubernetes events. Current evidence does not establish event
+overload or stale logs confusing the model as the root cause.
+
+The operator reported a subsequent sequence with S02 and S04 not passing. The
+shared S02 decision shows an injected fault followed by model abstention: the
+model recognized the missing typo image and verified replacement, but interpreted
+the 401 message as an access issue and escalated. This is a scenario failure,
+distinct from a setup failure. The new run's complete archives have not been
+reviewed for this note; input equivalence and the cause of the changed decision
+remain unconfirmed.
+
+### Separate the evaluation questions
+
+| Test mode | Question | Agent lifecycle |
+| --- | --- | --- |
+| Isolated scenario | Can the system handle a defined fault from a known baseline? | A documented reset/restart is allowed. |
+| Continuous sequence | Can it handle successive incidents while retaining state? | Keep both agent processes running across incidents. |
+| Concurrent incidents / burst | Can it safely separate and handle overlapping incidents? | Keep agents running; deliberately control incident timing and workload targets. |
+
+Resetting between isolated trials is legitimate, but cannot demonstrate
+continuous-operation reliability. Resetting or restarting agents after every
+action could hide state, deduplication or unfinished-action problems. Restoring
+the disposable application is a different operation from restarting the agents;
+record any operator restoration separately from autonomous recovery.
+
+### Follow-up trial requirements
+
+- Keep the same deployed image digest, configuration and agent Pods/processes;
+  record Pod UIDs and restart counts. An unexpected restart breaks the
+  uninterrupted-operation claim and must remain in the results.
+- Start with a sequential incident stream, then test controlled overlap and a
+  bounded burst. Do not describe ordinary sequential batches as concurrent.
+- Define workload targets and expected outcomes before injection. Multiple
+  failures outside the current remediation policy may correctly require
+  escalation; a burst test does not expand the permitted repair scope.
+- Correlate each fault, Kubernetes event, model input, proposal, authorization,
+  write and verification with its incident and timestamps.
+- Check that old events do not trigger incorrect new actions, duplicate delivery
+  does not cause duplicate writes, and stale proposals cannot overwrite newer
+  state. Account for unfinished actions and record recovery after the burst.
+- Evaluate availability and safety separately: latency, completed/unresolved
+  incidents, correct escalations, model variability, duplicate writes and
+  unauthorized or incorrect mutations. Record throttling and readiness failures
+  separately rather than attributing all nonpasses to reasoning.
+
+This is a planned evaluation direction, not a completed test or a confirmed
+weakness. The existing controlled S08 duplicate-delivery test covers a narrower
+case and does not establish general burst resilience.
