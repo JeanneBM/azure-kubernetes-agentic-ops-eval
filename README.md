@@ -46,6 +46,9 @@ Use **PowerShell 7**, Azure CLI, kubectl and git. Azure Cloud Shell in PowerShel
 mode is suitable. The account needs permission to create resources, register
 providers and assign roles. Local Docker is not required.
 
+**Local Windows Git Bash:** follow the [step-by-step guide](docs/local-git-bash.md)
+for installation, Azure login, UTF-8 setup, sequential tests and cleanup.
+
 ### What the setup script does
 
 - Creates a dedicated `rg-agentic-ops-lab` resource group, one-node AKS with
