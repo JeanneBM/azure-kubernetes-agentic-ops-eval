@@ -4,19 +4,13 @@ Store redacted logs, resource snapshots and screenshots from actual PoC trials h
 Scenario IDs follow [the evaluation protocol](../../evaluation-scenarios.md).
 This directory is separate from the mocked checks in `tests/scenarios/`.
 
-## Recorded S01 screenshot
-
-The [S01 terminal screenshot](S01.png) contains Polish operator labels.
-See the [English translation](S01.en.md) alongside the original evidence.
-The recorded agent decision and Kubernetes output are already in English.
-
 ## Archive delivery
 
 Default test runs keep raw working evidence under `.local/evidence/` and write only
 finished ZIP archives directly to `eval/evidence/`. Every exported archive name ends
 with `-anonymized.zip`, for example `S07-20261016T103606233Z-controlled-01-anonymized.zip`.
 Explicit `-EvidenceRoot` overrides remain available for isolated batch collection.
-Existing screenshots and documentation are retained.
+Existing archives and documentation remain available.
 
 ## Layout
 
