@@ -81,7 +81,7 @@ $desiredAgentImage="$($acr.loginServer)/agentic-ops:$imageTag"
 $rebuild=$lab.agentImage -ne $desiredAgentImage
 if ($rebuild) {
     Write-Host "PREPARE: application changed; building agent image $imageTag once."
-    $buildArgs=@('acr','build','--registry',$lab.acrName,'--image',"agentic-ops:$imageTag",$root,'--subscription',$lab.subscriptionId,'--only-show-errors')
+    $buildArgs=@('acr','build','--registry',$lab.acrName,'--image',"agentic-ops:$imageTag",$root,'--subscription',$lab.subscriptionId,'--only-show-errors','--no-logs')
     & $azProgram @buildArgs | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'Agent image build failed; no test fault injected.' }
 }
