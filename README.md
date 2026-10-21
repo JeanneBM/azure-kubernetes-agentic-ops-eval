@@ -78,6 +78,13 @@ Replace the placeholder with your subscription ID. For an existing checkout,
 run `git pull --ff-only` from its directory, then the setup command.
 Completion prints `READY FOR TESTS`.
 
+### Provisioned test environment
+
+![Azure lab resources prepared for scenario testing](docs/images/test-environment.png)
+
+AKS, ACR, Azure OpenAI and separate agent identities, with supporting network
+resources. Image edited for presentation; live scenario evidence is recorded separately.
+
 Load the saved configuration to inspect the lab:
 
 ~~~powershell
