@@ -86,6 +86,83 @@ def test_only_image_change_and_exactly_one_generation_are_allowed():
     assert not trial.image_only_change(before, after, "good")
 
 
+def test_report_serializes_sdk_dates_without_coercing_null_or_unknown_types():
+    from datetime import datetime, timezone
+    from kubernetes import client
+
+    timestamp = datetime(2026, 10, 22, 14, 40, 32, tzinfo=timezone.utc)
+    snapshot = client.V1Deployment(metadata=client.V1ObjectMeta(
+        creation_timestamp=timestamp, managed_fields=[client.V1ManagedFieldsEntry(time=timestamp)],
+    )).to_dict()
+    report = json.loads(trial.encode_report({"before": snapshot, "action_executed": None}))
+    assert report["before"]["metadata"]["creation_timestamp"] == timestamp.isoformat()
+    assert report["before"]["metadata"]["managed_fields"][0]["time"] == timestamp.isoformat()
+    assert report["action_executed"] is None
+    with pytest.raises(TypeError, match="Unsupported report value"):
+        trial.encode_report({"unsupported": object()})
+
+
+@pytest.mark.parametrize("mode", ["delayed", "lost-ack"])
+def test_in_pod_main_emits_terminal_result_with_sdk_dates(mode, monkeypatch, capsys):
+    import threading
+    from datetime import datetime, timezone
+    from unittest.mock import MagicMock
+    from kubernetes import client, config
+    from agentic_ops import aks, remote
+    from agentic_ops.agents import RemediationOutcome
+    from test_aks import deployment, pod
+
+    before = deployment(generation=2)
+    after = deployment(image="acrprod.azurecr.io/test-app:1.4.2", generation=3, observed=3)
+    for item in (before, after):
+        item.metadata.creation_timestamp = datetime(2026, 10, 22, tzinfo=timezone.utc)
+    core, apps = MagicMock(), MagicMock()
+    core.read_namespaced_pod.return_value = pod()
+    apps.read_namespaced_deployment.side_effect = [before, after]
+    monkeypatch.setattr(client, "CoreV1Api", lambda: core)
+    monkeypatch.setattr(client, "AppsV1Api", lambda: apps)
+    monkeypatch.setattr(config, "load_incluster_config", lambda: None)
+    monkeypatch.setattr(aks, "workload_of", lambda apps, pod: "test-app")
+    monkeypatch.setattr(aks, "AksDiagnosticProvider", lambda *args: SimpleNamespace(collect=lambda trigger: make_facts()))
+
+    class Proxy:
+        url = "http://localhost"
+        requests, confirmed, errors = 1, [{"executed": True, "successful": True}], []
+        done = threading.Event()
+
+        def __init__(self, *args):
+            self.done.set()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+    monkeypatch.setattr(trial, "HandoffProxy", Proxy)
+    monkeypatch.setattr(remote, "HttpRemediationAgent", lambda *a, **kw: SimpleNamespace(
+        manages=lambda ns: True,
+        remediate=lambda trigger, facts: RemediationOutcome(
+            None, True if mode == "delayed" else None, mode == "delayed", "controlled result"),
+    ))
+    clock = iter([0, 100.1])
+    monkeypatch.setattr(trial, "time", SimpleNamespace(monotonic=lambda: next(clock)))
+    for key, value in {
+        "EVAL_HANDOFF_MODE": mode, "AGENTIC_OPS_NAMESPACE": "test-app",
+        "EVAL_GOOD_IMAGE": "acrprod.azurecr.io/test-app:1.4.2",
+        "EVAL_BAD_IMAGE": "acrprod.azurecr.io/tset-app:1.4.2",
+        "EVAL_CORRELATION_ID": "regression", "EVAL_FAILURE_POD": "failed-pod",
+        "AGENTIC_OPS_REMEDIATION_URL": "http://remediation", "AGENTIC_OPS_REMEDIATION_TOKEN": "test-token",
+    }.items():
+        monkeypatch.setenv(key, value)
+    assert trial.main() == 0
+    report = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+    assert report["event"] == "handoff_trial_result"
+    assert report["verdict"] == "pass"
+    assert report["before"]["metadata"]["creation_timestamp"] == "2026-10-22T00:00:00+00:00"
+    assert report["action_executed"] is (True if mode == "delayed" else None)
+
+
 def test_evaluator_retains_identity_and_network_policy_labels_without_mutating_template():
     template = {"spec": {"template": {"spec": {"serviceAccountName": "agentic-ops-diagnostic",
         "containers": [{"name": "agent", "image": "old", "envFrom": [{"configMapRef": {"name": "timeouts"}}],
