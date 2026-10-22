@@ -1,11 +1,17 @@
 from __future__ import annotations
 
 import time
+import hashlib
+import json
+from dataclasses import replace
 from typing import Callable
 
 from kubernetes import client, config
 
-from .contracts import ActionRequest, Evidence, Facts, IncidentTrigger, PullFailure
+from .contracts import (
+    ActionRequest, Evidence, Facts, IncidentTrigger, PullFailure,
+    TriggerContextError, TriggerOwnershipChanged, TriggerTargetGone,
+)
 
 from .safety import StaleActionError
 from .telemetry import tool
@@ -54,6 +60,58 @@ def find_pull_failures(pod: client.V1Pod) -> tuple[PullFailure, ...]:
         if waiting and waiting.reason in PULL_REASONS and status.name in images:
             failures.append(PullFailure(status.name, images[status.name]))
     return tuple(failures)
+
+
+def _read_trigger_object(read, kind: str, name: str, namespace: str):
+    try:
+        return read(name, namespace)
+    except client.exceptions.ApiException as error:
+        if error.status == 404:
+            raise TriggerTargetGone(f"{kind} {namespace}/{name} no longer exists") from error
+        raise TriggerContextError(
+            f"could not read {kind} {namespace}/{name}: HTTP {error.status}"
+        ) from error
+
+
+def resolve_incident_trigger(
+    core: client.CoreV1Api, apps: client.AppsV1Api, trigger: IncidentTrigger
+) -> IncidentTrigger:
+    """Identify a failure from live cluster data before cooldown is consulted.
+
+    Replica names and correlation IDs do not define a new incident. Deployment
+    UID/revision distinguish recreation and recurrence after a repaired rollout.
+    This read-only lookup runs for watcher and webhook triggers alike.
+    Raises TriggerContextError (or a subclass) when the context cannot be read.
+    """
+    pod = _read_trigger_object(core.read_namespaced_pod, "pod", trigger.pod, trigger.namespace)
+    replica_set = None
+    deployment_owner = None
+    for owner in pod.metadata.owner_references or []:
+        if owner.kind == "ReplicaSet":
+            replica_set = _read_trigger_object(
+                apps.read_namespaced_replica_set, "replicaset", owner.name, trigger.namespace
+            )
+            deployment_owner = next((
+                parent for parent in replica_set.metadata.owner_references or []
+                if parent.kind == "Deployment" and parent.name == trigger.workload
+            ), None)
+            if deployment_owner is not None:
+                break
+    if deployment_owner is None:
+        raise TriggerOwnershipChanged("Pod is no longer owned by the requested Deployment")
+    # The Deployment's current generation advances during remediation while old
+    # pods still emit events. Use the failing ReplicaSet's rollout revision so
+    # those notifications retain their identity. Kubernetes advances this
+    # revision when a prior ReplicaSet is reused for a later rollout/rollback.
+    context = {
+        "deployment_uid": deployment_owner.uid,
+        "replica_set_uid": replica_set.metadata.uid,
+        "revision": (replica_set.metadata.annotations or {}).get("deployment.kubernetes.io/revision", ""),
+        "template_hash": (pod.metadata.labels or {}).get("pod-template-hash", ""),
+        "pull_failures": sorted((f.container, f.image) for f in find_pull_failures(pod)),
+    }
+    fingerprint = hashlib.sha256(json.dumps(context, sort_keys=True).encode()).hexdigest()
+    return replace(trigger, failure_fingerprint=fingerprint)
 
 
 class AksDiagnosticProvider:

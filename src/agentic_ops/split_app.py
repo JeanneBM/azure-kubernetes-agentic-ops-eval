@@ -23,7 +23,7 @@ def build_app():
     from kubernetes import client, config
 
     from .acr import AcrRegistry, RegistryEvidenceProvider
-    from .aks import AksActionExecutor, AksDiagnosticProvider, resolve_pod_workload
+    from .aks import AksActionExecutor, AksDiagnosticProvider, resolve_pod_workload, resolve_incident_trigger
     from .foundry import FoundryDiagnosticProvider
     from .orchestrator import IncidentOrchestrator
     from .safety import SelfCurePolicy
@@ -56,7 +56,10 @@ def build_app():
             os.environ["AGENTIC_OPS_REMEDIATION_TOKEN"],
             namespace,
         )
-        orchestrator = IncidentOrchestrator(diagnostics, remediation_agent=remediation)
+        orchestrator = IncidentOrchestrator(
+            diagnostics, remediation_agent=remediation,
+            resolve_trigger=lambda trigger: resolve_incident_trigger(core, apps, trigger),
+        )
         watcher = PodWatcher(core, apps, namespace, orchestrator.handle)
         return create_app(
             orchestrator,

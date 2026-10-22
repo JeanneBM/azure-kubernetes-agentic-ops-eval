@@ -5,7 +5,11 @@ import pytest
 from kubernetes import client
 
 from agentic_ops import ActionRequest
-from agentic_ops.aks import AksActionExecutor, AksDiagnosticProvider, find_pull_failures, workload_of
+from agentic_ops.contracts import TriggerContextError, TriggerOwnershipChanged, TriggerTargetGone
+from agentic_ops.aks import (
+    AksActionExecutor, AksDiagnosticProvider, find_pull_failures, workload_of,
+    resolve_incident_trigger,
+)
 from conftest import NEW, OLD, make_trigger
 
 
@@ -25,6 +29,74 @@ def test_pull_failure_detected_from_cluster_state():
     failures = find_pull_failures(pod())
     assert [(f.container, f.image) for f in failures] == [("api", OLD)]
     assert find_pull_failures(pod(reason="CrashLoopBackOff")) == ()
+
+
+def incident_context():
+    core, apps = MagicMock(), MagicMock()
+    core.read_namespaced_pod.return_value = pod()
+    apps.read_namespaced_replica_set.return_value = client.V1ReplicaSet(
+        metadata=client.V1ObjectMeta(
+            uid="replicaset-uid", annotations={"deployment.kubernetes.io/revision": "1"},
+            owner_references=[client.V1OwnerReference(
+                api_version="apps/v1", kind="Deployment", name="test-app", uid="deployment-uid",
+            )],
+        ),
+    )
+    return core, apps
+
+
+def test_failure_identity_ignores_pod_name_and_uses_live_image():
+    from dataclasses import replace
+    core, apps = incident_context()
+    first = resolve_incident_trigger(core, apps, make_trigger())
+    core.read_namespaced_pod.return_value.metadata.name = "another-replica"
+    second = resolve_incident_trigger(core, apps, replace(make_trigger(), pod="another-replica"))
+    assert first.failure_fingerprint == second.failure_fingerprint
+    core.read_namespaced_pod.return_value.spec.containers[0].image = "acrprod.azurecr.io/different:2"
+    assert resolve_incident_trigger(core, apps, make_trigger()).failure_fingerprint != first.failure_fingerprint
+
+
+def test_old_pod_notifications_stay_duplicates_but_reused_rollout_is_new():
+    core, apps = incident_context()
+    first = resolve_incident_trigger(core, apps, make_trigger())
+    # A patch to the Deployment must not give lingering old pods a new identity.
+    apps.read_namespaced_deployment.return_value = deployment(NEW, generation=2)
+    assert resolve_incident_trigger(core, apps, make_trigger()).failure_fingerprint == first.failure_fingerprint
+    apps.read_namespaced_deployment.assert_not_called()
+    # Reintroducing the same bad image can reuse the ReplicaSet and template hash.
+    apps.read_namespaced_replica_set.return_value.metadata.annotations["deployment.kubernetes.io/revision"] = "3"
+    assert resolve_incident_trigger(core, apps, make_trigger()).failure_fingerprint != first.failure_fingerprint
+
+
+def test_failure_identity_changes_when_deployment_is_recreated():
+    core, apps = incident_context()
+    first = resolve_incident_trigger(core, apps, make_trigger())
+    apps.read_namespaced_replica_set.return_value.metadata.owner_references[0].uid = "new-deployment-uid"
+    assert resolve_incident_trigger(core, apps, make_trigger()).failure_fingerprint != first.failure_fingerprint
+
+
+def test_failure_identity_refuses_changed_ownership():
+    core, apps = incident_context()
+    apps.read_namespaced_replica_set.return_value.metadata.owner_references[0].name = "other"
+    with pytest.raises(TriggerOwnershipChanged, match="no longer owned"):
+        resolve_incident_trigger(core, apps, make_trigger())
+
+
+@pytest.mark.parametrize("api", ["core", "apps"])
+def test_vanished_pod_or_replicaset_is_a_typed_target_gone(api):
+    core, apps = incident_context()
+    read = core.read_namespaced_pod if api == "core" else apps.read_namespaced_replica_set
+    read.side_effect = client.exceptions.ApiException(status=404)
+    with pytest.raises(TriggerTargetGone, match="no longer exists"):
+        resolve_incident_trigger(core, apps, make_trigger())
+
+
+def test_other_api_failures_are_a_typed_context_error():
+    core, apps = incident_context()
+    core.read_namespaced_pod.side_effect = client.exceptions.ApiException(status=503)
+    with pytest.raises(TriggerContextError, match="HTTP 503") as raised:
+        resolve_incident_trigger(core, apps, make_trigger())
+    assert not isinstance(raised.value, (TriggerTargetGone, TriggerOwnershipChanged))
 
 
 def test_workload_resolved_through_replicaset():

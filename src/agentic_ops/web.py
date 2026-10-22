@@ -10,7 +10,9 @@ from typing import Callable
 from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 
-from .contracts import IncidentTrigger
+from .contracts import (
+    IncidentTrigger, TriggerContextError, TriggerOwnershipChanged, TriggerTargetGone,
+)
 from .orchestrator import IncidentOrchestrator
 from .safety import OutOfScope
 
@@ -83,6 +85,19 @@ def create_app(
             result = orchestrator.handle(IncidentTrigger(**payload.model_dump()))
         except OutOfScope:
             raise HTTPException(status_code=403, detail="namespace is not managed by this instance")
+        # The incident context is read again after the ownership check above, so the
+        # pod can disappear or change owner in between. Nothing was diagnosed or run.
+        except TriggerTargetGone as error:
+            log.warning("incident context lookup: %s", error)
+            raise HTTPException(status_code=422, detail="pod or its ReplicaSet no longer exists")
+        except TriggerOwnershipChanged as error:
+            log.warning("incident context lookup: %s", error)
+            raise HTTPException(
+                status_code=409, detail="pod is no longer owned by the requested Deployment"
+            )
+        except TriggerContextError:
+            log.exception("could not read incident context")
+            raise HTTPException(status_code=502, detail="could not read incident context from the cluster")
         incident = result.incident
         return {
             "status": incident.status.value,
@@ -108,7 +123,7 @@ def build_app() -> FastAPI:
     from kubernetes import client, config
 
     from .acr import AcrRegistry, RegistryEvidenceProvider
-    from .aks import AksActionExecutor, AksDiagnosticProvider, resolve_pod_workload
+    from .aks import AksActionExecutor, AksDiagnosticProvider, resolve_pod_workload, resolve_incident_trigger
     from .foundry import FoundryDiagnosticProvider
     from .safety import SelfCurePolicy
     from .watcher import PodWatcher
@@ -127,7 +142,10 @@ def build_app() -> FastAPI:
         deployment=os.environ["AZURE_AI_FOUNDRY_DEPLOYMENT"],
     )
     policy = SelfCurePolicy(AcrRegistry(), namespace=namespace, allowed_registries=registries)
-    orchestrator = IncidentOrchestrator(diagnostics, AksActionExecutor(apps), policy)
+    orchestrator = IncidentOrchestrator(
+        diagnostics, AksActionExecutor(apps), policy,
+        resolve_trigger=lambda trigger: resolve_incident_trigger(core, apps, trigger),
+    )
     watcher = PodWatcher(core, apps, namespace, orchestrator.handle)
     token = os.environ.get("AGENTIC_OPS_WEBHOOK_TOKEN") or None
     if token is None:
