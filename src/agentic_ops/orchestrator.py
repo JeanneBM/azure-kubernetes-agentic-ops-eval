@@ -8,7 +8,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Callable, Protocol
 
 from .agents import RemediationAgent, SafeRemediationAgent
-from .contracts import ActionRequest, Facts, Incident, IncidentStatus, IncidentTrigger, Recommendation
+from .contracts import (
+    ActionRequest, Facts, Incident, IncidentStatus, IncidentTrigger, Recommendation, TriggerContextError,
+)
 from .safety import ActionExecutor, OutOfScope, PolicyViolation, SelfCurePolicy
 
 from .telemetry import Trace
@@ -48,6 +50,7 @@ class IncidentOrchestrator:
         groundedness_threshold: float = 0.85,
         cooldown: timedelta = timedelta(minutes=15),
         clock: Callable[[], datetime] | None = None,
+        resolve_trigger: Callable[[IncidentTrigger], IncidentTrigger] | None = None,
     ) -> None:
         if not 0 <= groundedness_threshold <= 1:
             raise ValueError("groundedness_threshold must be between 0 and 1")
@@ -65,7 +68,11 @@ class IncidentOrchestrator:
         self._groundedness_threshold = groundedness_threshold
         self._cooldown = cooldown
         self._clock = clock or (lambda: datetime.now(timezone.utc))
-        self._incidents: dict[str, tuple[Incident, datetime]] = {}
+        self._resolve_trigger = resolve_trigger
+        # In-flight work is serialized per Deployment; completed outcomes are
+        # remembered per (Deployment, failure fingerprint) until the cooldown ends.
+        self._in_flight: dict[str, Incident] = {}
+        self._completed: dict[tuple[str, str], tuple[Incident, datetime]] = {}
         self._lock = threading.Lock()
 
     def manages(self, namespace: str) -> bool:
@@ -75,26 +82,52 @@ class IncidentOrchestrator:
         if not self.manages(trigger.namespace):
             raise OutOfScope(trigger.namespace)
 
+        if self._resolve_trigger is not None:
+            # Context is read before any state changes; a failure here runs nothing.
+            try:
+                trigger = self._resolve_trigger(trigger)
+            except TriggerContextError:
+                raise
+            except Exception as error:  # noqa: BLE001 - e.g. a network error in the client
+                raise TriggerContextError(
+                    f"could not resolve incident context: {type(error).__name__}: {error}"
+                ) from error
         key = trigger.deduplication_key
         now = self._clock()
+        fingerprint_key = (key, trigger.failure_fingerprint)
         with self._lock:
-            existing = self._incidents.get(key)
-            if existing and (
-                existing[0].status is IncidentStatus.OPEN or now - existing[1] < self._cooldown
-            ):
-                return IncidentResult(existing[0], deduplicated=True)
-            self._incidents[key] = (
-                Incident(trigger, IncidentStatus.OPEN, Facts((), 0.0)),
-                now,
-            )
+            # Expire only completed outcomes; in-flight work is kept however long it runs.
+            self._completed = {
+                k: entry for k, entry in self._completed.items() if now - entry[1] < self._cooldown
+            }
+            # Any signal for a Deployment with work in flight is a duplicate, even with
+            # a different fingerprint. It is not queued: the watcher re-delivers on the
+            # pod's next status change and webhook callers retry.
+            in_flight = self._in_flight.get(key)
+            if in_flight is not None:
+                return IncidentResult(in_flight, deduplicated=True)
+            # Completed outcomes are matched per fingerprint, so late notifications
+            # from an earlier rollout stay duplicates after a newer one was handled.
+            completed = self._completed.get(fingerprint_key)
+            if completed is not None:
+                return IncidentResult(completed[0], deduplicated=True)
+            self._in_flight[key] = Incident(trigger, IncidentStatus.OPEN, Facts((), 0.0))
 
-        with Trace('diagnostic', trigger.correlation_id) as trace:
-            incident, executed = self._process(trigger)
-            if incident.status is IncidentStatus.ESCALATED:
-                trace.status = 'escalated'
-                trace.event('escalation', status='human_review')
-        with self._lock:
-            self._incidents[key] = (incident, self._clock())
+        finished: tuple[Incident, datetime] | None = None
+        try:
+            with Trace('diagnostic', trigger.correlation_id) as trace:
+                incident, executed = self._process(trigger)
+                if incident.status is IncidentStatus.ESCALATED:
+                    trace.status = 'escalated'
+                    trace.event('escalation', status='human_review')
+            finished = (incident, self._clock())
+        finally:
+            # One critical section: no window in which the Deployment is neither
+            # in flight nor recorded as completed.
+            with self._lock:
+                self._in_flight.pop(key, None)
+                if finished is not None:
+                    self._completed[fingerprint_key] = finished
         self._audit(incident, executed)
         return IncidentResult(incident, action_executed=executed)
 
@@ -168,6 +201,7 @@ class IncidentOrchestrator:
             "event": "two_agent_incident_decision",
             "correlation_id": incident.trigger.correlation_id,
             "key": incident.trigger.deduplication_key,
+            "failure_fingerprint": incident.trigger.failure_fingerprint,
             "trigger_reason": incident.trigger.reason,
             "status": incident.status.value,
             "reason": incident.reason,

@@ -19,6 +19,14 @@ The package version alone does not establish a release date.
 
 ### Fixed
 
+- Deduplicate completed incidents by cluster-derived failure and rollout identity
+  rather than suppressing every incident on a Deployment during its cooldown.
+  Keep completed outcomes per Deployment and fingerprint, so interleaved events
+  from two rollouts stay duplicates; keep one in-flight incident per Deployment
+  and expire completed entries. Report context-lookup failures as webhook 422/409/502
+  instead of 500, without diagnosis or execution. Add local regression coverage;
+  continuous operation on AKS is not yet validated.
+
 - Remove eligible Network Watchers with the Cloud Shell-confirmed `az resource
   delete --resource-group ... --name ... --resource-type Microsoft.Network/networkWatchers`
   command, using discovered names/groups and verifying absence afterwards.
@@ -122,4 +130,3 @@ in `eval/`; the full evaluation protocol is in `evaluation-scenarios.md`.
 [Unreleased]: https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/compare/0c627fa5884471e93356c8c5c90b900ed82a35f7...main
 [#1]: https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/pull/1
 [#2]: https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/pull/2
-

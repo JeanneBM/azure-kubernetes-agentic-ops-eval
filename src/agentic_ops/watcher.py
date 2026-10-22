@@ -8,7 +8,7 @@ from typing import Callable
 from kubernetes import client, watch
 
 from .aks import find_pull_failures, workload_of
-from .contracts import IncidentTrigger
+from .contracts import IncidentTrigger, TriggerOwnershipChanged, TriggerTargetGone
 
 log = logging.getLogger("agentic_ops.watcher")
 
@@ -48,7 +48,15 @@ class PodWatcher:
             reason="ImagePullBackOff",
             correlation_id=f"watch-{uuid.uuid4().hex[:8]}",
         )
-        self._handle(trigger)
+        try:
+            self._handle(trigger)
+        except TriggerTargetGone as error:
+            # Expected after a rollout replaces the pod; nothing was diagnosed or run.
+            log.info("skipping event for %s: %s", pod.metadata.name, error)
+            return False
+        except TriggerOwnershipChanged as error:
+            log.warning("skipping event for %s: %s", pod.metadata.name, error)
+            return False
         return True
 
     def run(self, stop: threading.Event) -> None:
@@ -68,3 +76,4 @@ class PodWatcher:
             except Exception:  # noqa: BLE001 - reconnect on API/watch errors
                 log.exception("pod watch interrupted; reconnecting")
                 stop.wait(5)
+

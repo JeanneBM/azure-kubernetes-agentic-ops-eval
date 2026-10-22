@@ -1,9 +1,11 @@
 import threading
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from agentic_ops import IncidentOrchestrator, IncidentStatus, OutOfScope, PolicyViolation
+from agentic_ops.contracts import TriggerContextError, TriggerOwnershipChanged, TriggerTargetGone
 from conftest import (
     NEW, FakeDiagnostics, FakeExecutor, FakeRegistry, make_facts, make_policy, make_trigger,
 )
@@ -108,7 +110,39 @@ def test_escalated_incident_is_retried_after_cooldown():
     assert diagnostics.calls == 2
 
 
-def test_concurrent_signals_execute_the_action_once():
+def test_different_failure_on_same_deployment_starts_new_incident_without_restart():
+    now = [datetime(2026, 1, 1, tzinfo=timezone.utc)]
+    orchestrator, diagnostics, executor = build(clock=lambda: now[0])
+    first = orchestrator.handle(replace(make_trigger(), failure_fingerprint="generation-1-image-a"))
+    now[0] += timedelta(minutes=3)
+    second = orchestrator.handle(replace(make_trigger(), failure_fingerprint="generation-3-image-b"))
+    assert not second.deduplicated
+    assert second.incident is not first.incident
+    assert second.incident.status is IncidentStatus.RESOLVED
+    assert diagnostics.calls == 2
+    assert len(executor.actions) == 2
+
+
+def test_same_failure_from_another_pod_is_deduplicated():
+    orchestrator, diagnostics, executor = build()
+    trigger = replace(make_trigger(), failure_fingerprint="same-rollout-and-image")
+    first = orchestrator.handle(trigger)
+    second = orchestrator.handle(replace(trigger, pod="another-replica", correlation_id="duplicate"))
+    assert second.deduplicated
+    assert second.incident is first.incident
+    assert diagnostics.calls == len(executor.actions) == 1
+
+
+def test_same_image_failure_in_a_later_rollout_is_a_new_incident():
+    orchestrator, diagnostics, executor = build()
+    orchestrator.handle(replace(make_trigger(), failure_fingerprint="generation-1-image-a"))
+    result = orchestrator.handle(replace(make_trigger(), failure_fingerprint="generation-3-image-a"))
+    assert not result.deduplicated
+    assert diagnostics.calls == len(executor.actions) == 2
+
+
+@pytest.mark.parametrize("second_fingerprint", ["same", "different"])
+def test_concurrent_signals_execute_the_action_once(second_fingerprint):
     entered, release = threading.Event(), threading.Event()
 
     class SlowDiagnostics(FakeDiagnostics):
@@ -119,14 +153,107 @@ def test_concurrent_signals_execute_the_action_once():
 
     executor = FakeExecutor()
     orchestrator, _, _ = build(diagnostics=SlowDiagnostics(make_facts()), executor=executor)
-    first = threading.Thread(target=lambda: orchestrator.handle(make_trigger()))
+    first = threading.Thread(target=lambda: orchestrator.handle(
+        replace(make_trigger(), failure_fingerprint="same")
+    ))
     first.start()
     assert entered.wait(5)
-    second = orchestrator.handle(make_trigger())  # arrives while the first is in progress
+    second = orchestrator.handle(replace(make_trigger(), failure_fingerprint=second_fingerprint))
     release.set()
     first.join(5)
     assert second.deduplicated
     assert len(executor.actions) == 1
+
+
+def test_cluster_context_is_resolved_before_deduplication():
+    fingerprint = ["revision-1"]
+    orchestrator, diagnostics, _ = build(
+        resolve_trigger=lambda trigger: replace(trigger, failure_fingerprint=fingerprint[0]),
+    )
+    orchestrator.handle(make_trigger())
+    assert orchestrator.handle(make_trigger()).deduplicated
+    fingerprint[0] = "revision-3"
+    assert not orchestrator.handle(make_trigger()).deduplicated
+    assert diagnostics.calls == 2
+
+
+def test_context_lookup_failure_never_runs_diagnostics_or_remediation():
+    def unavailable(trigger):
+        raise RuntimeError("cluster unavailable")
+
+    orchestrator, diagnostics, executor = build(resolve_trigger=unavailable)
+    with pytest.raises(TriggerContextError, match="cluster unavailable") as raised:
+        orchestrator.handle(make_trigger())
+    assert isinstance(raised.value.__cause__, RuntimeError)
+    assert diagnostics.calls == 0
+    assert executor.actions == []
+
+
+@pytest.mark.parametrize("error", [TriggerTargetGone("pod gone"), TriggerOwnershipChanged("moved")])
+def test_typed_context_errors_pass_through_unchanged(error):
+    def lookup(trigger):
+        raise error
+
+    orchestrator, diagnostics, executor = build(resolve_trigger=lookup)
+    with pytest.raises(type(error)) as raised:
+        orchestrator.handle(make_trigger())
+    assert raised.value is error
+    assert diagnostics.calls == 0
+    assert executor.actions == []
+
+
+def test_expired_completed_entries_are_removed_for_other_workloads():
+    now = [datetime(2026, 1, 1, tzinfo=timezone.utc)]
+    orchestrator, _, _ = build(clock=lambda: now[0])
+    orchestrator.handle(make_trigger())
+    now[0] += timedelta(minutes=16)
+    orchestrator.handle(make_trigger(workload="other"))
+    assert [key for key, _ in orchestrator._completed] == ["test-app/other"]
+
+
+def test_interleaved_rollout_notifications_stay_deduplicated():
+    # Rollout 2 is handled while pods of rollout 1 still emit events.
+    now = [datetime(2026, 1, 1, tzinfo=timezone.utc)]
+    orchestrator, diagnostics, executor = build(clock=lambda: now[0])
+    first = orchestrator.handle(replace(make_trigger(), failure_fingerprint="rollout-1"))
+    now[0] += timedelta(minutes=1)
+    second = orchestrator.handle(replace(make_trigger(), failure_fingerprint="rollout-2"))
+    now[0] += timedelta(minutes=1)
+    late_first = orchestrator.handle(replace(make_trigger(), failure_fingerprint="rollout-1"))
+    late_second = orchestrator.handle(replace(make_trigger(), failure_fingerprint="rollout-2"))
+    assert late_first.deduplicated and late_first.incident is first.incident
+    assert late_second.deduplicated and late_second.incident is second.incident
+    assert diagnostics.calls == len(executor.actions) == 2
+
+
+def test_each_fingerprint_expires_on_its_own_cooldown():
+    now = [datetime(2026, 1, 1, tzinfo=timezone.utc)]
+    orchestrator, diagnostics, _ = build(clock=lambda: now[0])
+    orchestrator.handle(replace(make_trigger(), failure_fingerprint="rollout-1"))
+    now[0] += timedelta(minutes=10)
+    orchestrator.handle(replace(make_trigger(), failure_fingerprint="rollout-2"))
+    now[0] += timedelta(minutes=6)  # rollout-1 is 16 minutes old, rollout-2 only 6
+    assert not orchestrator.handle(replace(make_trigger(), failure_fingerprint="rollout-1")).deduplicated
+    assert orchestrator.handle(replace(make_trigger(), failure_fingerprint="rollout-2")).deduplicated
+    assert diagnostics.calls == 3
+
+
+def test_in_flight_entry_is_released_when_handling_raises(monkeypatch):
+    orchestrator, diagnostics, _ = build()
+    original = orchestrator._process
+
+    def broken_once(trigger):
+        monkeypatch.setattr(orchestrator, "_process", original)
+        raise RuntimeError("unexpected")
+
+    monkeypatch.setattr(orchestrator, "_process", broken_once)
+    with pytest.raises(RuntimeError, match="unexpected"):
+        orchestrator.handle(make_trigger())
+    # Neither stuck in flight nor recorded as completed: the next signal is handled.
+    result = orchestrator.handle(make_trigger())
+    assert not result.deduplicated
+    assert result.incident.status is IncidentStatus.RESOLVED
+    assert diagnostics.calls == 1
 
 
 def test_policy_refusal_audit_preserves_original_proposal(caplog):

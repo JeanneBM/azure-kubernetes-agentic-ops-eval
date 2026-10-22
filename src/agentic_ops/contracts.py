@@ -5,6 +5,18 @@ from enum import Enum
 from typing import Mapping
 
 
+class TriggerContextError(Exception):
+    """Live cluster context for a trigger could not be read; nothing was diagnosed or run."""
+
+
+class TriggerTargetGone(TriggerContextError):
+    """The pod or its ReplicaSet no longer exists."""
+
+
+class TriggerOwnershipChanged(TriggerContextError):
+    """The pod is no longer owned by the Deployment named in the trigger."""
+
+
 class IncidentStatus(str, Enum):
     OPEN = "open"  # handling in progress
     RESOLVED = "resolved"
@@ -18,6 +30,8 @@ class IncidentTrigger:
     workload: str
     reason: str
     correlation_id: str
+    # Cluster-derived context; never accepted from a webhook payload or model.
+    failure_fingerprint: str = ""
 
     @property
     def deduplication_key(self) -> str:
