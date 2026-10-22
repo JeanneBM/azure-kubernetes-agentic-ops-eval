@@ -19,6 +19,12 @@ The package version alone does not establish a release date.
 
 ### Fixed
 
+- Increase remediation handoff read timeout to 180 seconds for the 120-second
+  rollout verification budget, validate a shared configurable margin at startup,
+  and load both workloads from one timeout ConfigMap. Escalate uncertain handoffs
+  with execution `null` without retrying the POST; preserve confirmed execution
+  when verification raises. Update security-runner budgets and unknown handling.
+
 - Deduplicate completed incidents by cluster-derived failure and rollout identity
   rather than suppressing every incident on a Deployment during its cooldown.
   Keep completed outcomes per Deployment and fingerprint, so interleaved events

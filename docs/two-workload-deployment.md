@@ -2,6 +2,31 @@
 
 The supplied manifest runs the PoC as two independently authenticated workloads.
 
+## Handoff timeouts and uncertain execution
+
+Both workloads load the same `agentic-ops-timeouts` ConfigMap. Defaults are
+`AGENTIC_OPS_VERIFY_TIMEOUT_SECONDS=120` and
+`AGENTIC_OPS_HANDOFF_TIMEOUT_SECONDS=180`. Startup rejects non-finite/non-positive
+values and requires handoff to exceed verification by more than 30 seconds.
+The HTTP read timeout is the handoff budget; connection, write and pool timeouts
+are 10 seconds. This is an inactivity timeout, not a total wall-clock deadline.
+The margin allows for policy checks, patching, polling and transport, but does not
+guarantee completion if an upstream service stalls. After changing the ConfigMap,
+restart both workloads to load the same values.
+
+`action_executed` in the webhook/audit (and `executed` in the handoff) has three
+values: `true` means execution was confirmed, `false` means no execution was
+reported, and `null` means the handoff outcome could not be confirmed. A timeout,
+transport error, non-success HTTP status or malformed response escalates with
+`null`, never an inferred `false`. The client does not automatically retry the
+remediation POST. Inspect the workload and remediation logs before retrying an
+uncertain operation. A verification exception after a confirmed patch preserves
+`true` and escalates. Consumers must compare explicitly with `true`/`false` rather
+than treating `null` as false; the security runner treats unknown as inconclusive.
+
+Local tests simulate a lost acknowledgement after execution. Live AKS verification
+of the longer handoff and sequential incidents without agent restarts is pending.
+
 | Workload | Identity and Kubernetes permissions | External capability |
 | --- | --- | --- |
 | Diagnostic agent | Read-only access to Pods, Events, ReplicaSets, and Deployments. | Azure AI Foundry inference, read-only ACR manifest evidence, and the authenticated internal remediation handoff. |

@@ -1,6 +1,15 @@
 # Placeholders are substituted before apply; see docs/two-workload-deployment.md.
 # This manifest deliberately runs the diagnostic and remediation agents separately.
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentic-ops-timeouts
+  namespace: agentic-ops
+data:
+  AGENTIC_OPS_VERIFY_TIMEOUT_SECONDS: "120"
+  AGENTIC_OPS_HANDOFF_TIMEOUT_SECONDS: "180"
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: agentic-ops-diagnostic
@@ -165,6 +174,9 @@ spec:
           image: "${AGENTIC_OPS_IMAGE}"
           ports:
             - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: agentic-ops-timeouts
           env:
             - name: AGENT_TELEMETRY_STDOUT
               value: "1"
@@ -229,6 +241,9 @@ spec:
           image: "${AGENTIC_OPS_IMAGE}"
           ports:
             - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: agentic-ops-timeouts
           env:
             - name: AGENT_TELEMETRY_STDOUT
               value: "1"

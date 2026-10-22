@@ -127,8 +127,10 @@ def build_app() -> FastAPI:
     from .foundry import FoundryDiagnosticProvider
     from .safety import SelfCurePolicy
     from .watcher import PodWatcher
+    from .timeouts import Timeouts
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
+    timeouts = Timeouts.from_env()
 
     namespace = os.environ["AGENTIC_OPS_NAMESPACE"]
     registries = [r for r in os.environ["AGENTIC_OPS_ALLOWED_REGISTRIES"].split(",") if r.strip()]
@@ -143,7 +145,7 @@ def build_app() -> FastAPI:
     )
     policy = SelfCurePolicy(AcrRegistry(), namespace=namespace, allowed_registries=registries)
     orchestrator = IncidentOrchestrator(
-        diagnostics, AksActionExecutor(apps), policy,
+        diagnostics, AksActionExecutor(apps, verify_timeout=timeouts.verify), policy,
         resolve_trigger=lambda trigger: resolve_incident_trigger(core, apps, trigger),
     )
     watcher = PodWatcher(core, apps, namespace, orchestrator.handle)

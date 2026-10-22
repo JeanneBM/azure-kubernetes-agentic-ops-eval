@@ -15,6 +15,7 @@ from .contracts import (
 
 from .safety import StaleActionError
 from .telemetry import tool
+from .timeouts import DEFAULT_VERIFY_TIMEOUT
 
 PULL_REASONS = frozenset({"ImagePullBackOff", "ErrImagePull"})
 
@@ -184,7 +185,7 @@ class AksActionExecutor:
         self,
         apps: client.AppsV1Api | None = None,
         *,
-        verify_timeout: float = 120.0,
+        verify_timeout: float = DEFAULT_VERIFY_TIMEOUT,
         poll_interval: float = 3.0,
         sleep: Callable[[float], None] = time.sleep,
         monotonic: Callable[[], float] = time.monotonic,

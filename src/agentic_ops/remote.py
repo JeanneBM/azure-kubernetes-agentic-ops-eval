@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import hmac
-from typing import Any
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictBool, model_validator
 
 from .agents import RemediationAgent, RemediationOutcome, SafeRemediationAgent
 from .contracts import ActionRequest, Evidence, Facts, IncidentTrigger, PullFailure
 from .safety import PolicyViolation, StaleActionError
 from .telemetry import tool
+from .timeouts import DEFAULT_HANDOFF_TIMEOUT, DEFAULT_VERIFY_TIMEOUT, validate_timeouts
 
 
 class ActionPayload(BaseModel):
@@ -74,18 +74,35 @@ class HandoffPayload(BaseModel):
         )
 
 
+class HandoffResponse(BaseModel):
+    executed: StrictBool | None
+    successful: StrictBool
+    action: ActionPayload | None = None
+    reason: str = ""
+
+    @model_validator(mode="after")
+    def consistent_outcome(self):
+        if self.successful and self.executed is not True:
+            raise ValueError("successful remediation requires confirmed execution")
+        return self
+
+
 class HttpRemediationAgent(RemediationAgent):
     """Client used by the diagnostic workload to hand off typed facts internally."""
 
     def __init__(
-        self, endpoint: str, token: str, namespace: str, *, http_client: httpx.Client | None = None
+        self, endpoint: str, token: str, namespace: str, *, http_client: httpx.Client | None = None,
+        handoff_timeout: float = DEFAULT_HANDOFF_TIMEOUT,
+        verify_timeout: float = DEFAULT_VERIFY_TIMEOUT,
     ) -> None:
         if not endpoint or not token or not namespace:
             raise ValueError("endpoint, token, and namespace are required")
+        validate_timeouts(verify_timeout, handoff_timeout)
         self._endpoint = endpoint.rstrip("/")
         self._token = token
         self._namespace = namespace
-        self._client = http_client or httpx.Client(timeout=90)
+        self._timeout = httpx.Timeout(handoff_timeout, connect=10.0, write=10.0, pool=10.0)
+        self._client = http_client or httpx.Client(timeout=self._timeout)
 
     def manages(self, namespace: str) -> bool:
         return namespace == self._namespace
@@ -100,22 +117,28 @@ class HttpRemediationAgent(RemediationAgent):
             facts=FactsPayload.from_facts(facts),
         )
         tool('remediate', {'namespace': trigger.namespace, 'workload': trigger.workload, 'correlation_id': trigger.correlation_id})
-        response = self._client.post(
-            f"{self._endpoint}/internal/v1/remediate",
-            headers={"X-Agent-Token": self._token},
-            json=payload.model_dump(),
-        )
-        response.raise_for_status()
-        data: dict[str, Any] = response.json()
-        action_data = data.get("action")
-        action = None
-        if action_data is not None:
-            action = ActionRequest(str(action_data["name"]), dict(action_data["parameters"]))
+        try:
+            response = self._client.post(
+                f"{self._endpoint}/internal/v1/remediate",
+                headers={"X-Agent-Token": self._token},
+                json=payload.model_dump(), timeout=self._timeout,
+            )
+            response.raise_for_status()
+            data = HandoffResponse.model_validate(response.json())
+        except (httpx.HTTPError, ValueError) as error:
+            # The request may already have patched the Deployment. Never replay it
+            # automatically or turn a missing/invalid acknowledgement into False.
+            return RemediationOutcome(
+                action=None, executed=None, successful=False,
+                reason=f"handoff outcome unknown ({type(error).__name__}); "
+                       "verify the workload and remediation logs before retrying",
+            )
+        action = ActionRequest(data.action.name, data.action.parameters) if data.action else None
         return RemediationOutcome(
             action=action,
-            executed=bool(data["executed"]),
-            successful=bool(data["successful"]),
-            reason=str(data.get("reason", "")),
+            executed=data.executed,
+            successful=data.successful,
+            reason=data.reason,
         )
 
 
