@@ -27,6 +27,10 @@ SECRET_KEYS = {
     "client-key-data", "client-certificate-data", "certificate-authority-data",
 }
 SECRET_ENV = re.compile(r"(?i)(?:TOKEN|PASSWORD|SECRET|API_KEY|APIKEY|CONNECTION_STRING)")
+SECRET_FIELD = re.compile(
+    r"(?i)(?:api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token|"
+    r"password|passwd|authorization|token|secret|connection[_-]?string)$"
+)
 SECRET_ASSIGNMENT = re.compile(
     r"""(?ix)
     (?P<prefix>
@@ -49,6 +53,11 @@ def redact_assignment(match):
 def unredacted_assignment(value):
     for match in SECRET_ASSIGNMENT.finditer(value):
         captured = match.group("quoted") if match.group("quote") else match.group("bare")
+        # SDK snapshots include optional metadata such as
+        # automount_service_account_token: null/false. These JSON literals
+        # are configuration, not credential contents. Quoted values still count.
+        if not match.group("quote") and captured in ("null", "true", "false"):
+            continue
         if captured and captured not in ("REDACTED_SECRET", "REDACTED_TOKEN"):
             return True
     return False
@@ -124,12 +133,15 @@ class Sanitizer:
             output = {}
             is_secret = value.get("kind") == "Secret"
             for key, item in value.items():
+                safe_key = self.text(key)
                 if key.lower() in SECRET_KEYS or (is_secret and key in ("data", "stringData")):
-                    output[key] = "REDACTED_SECRET"
+                    output[safe_key] = "REDACTED_SECRET"
                 elif key == "value" and SECRET_ENV.search(str(value.get("name", ""))):
-                    output[key] = "REDACTED_SECRET"
+                    output[safe_key] = "REDACTED_SECRET"
+                elif SECRET_FIELD.search(key) and item is not None and not isinstance(item, (dict, list, bool)):
+                    output[safe_key] = "REDACTED_SECRET"
                 else:
-                    output[key] = self.json_value(item)
+                    output[safe_key] = self.json_value(item)
             return output
         if isinstance(value, list):
             return [self.json_value(item) for item in value]
@@ -230,4 +242,3 @@ if __name__ == "__main__":
     parser.add_argument("--destination", required=True)
     args = parser.parse_args()
     package(args.source, args.destination)
-
