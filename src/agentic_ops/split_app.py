@@ -6,6 +6,7 @@ import os
 from .agents import SafeRemediationAgent
 from .remote import HttpRemediationAgent, create_remediation_app
 from .web import build_app as build_legacy_app, create_app
+from .timeouts import Timeouts
 
 
 def build_app():
@@ -19,6 +20,7 @@ def build_app():
     role = os.environ.get("AGENTIC_OPS_ROLE", "all-in-one")
     if role == "all-in-one":
         return build_legacy_app()
+    timeouts = Timeouts.from_env()
 
     from kubernetes import client, config
 
@@ -40,7 +42,7 @@ def build_app():
     if role == "remediation":
         policy = SelfCurePolicy(AcrRegistry(), namespace=namespace, allowed_registries=registries)
         return create_remediation_app(
-            SafeRemediationAgent(policy, AksActionExecutor(apps)),
+            SafeRemediationAgent(policy, AksActionExecutor(apps, verify_timeout=timeouts.verify)),
             agent_token=os.environ["AGENTIC_OPS_REMEDIATION_TOKEN"],
         )
 
@@ -55,6 +57,7 @@ def build_app():
             os.environ["AGENTIC_OPS_REMEDIATION_URL"],
             os.environ["AGENTIC_OPS_REMEDIATION_TOKEN"],
             namespace,
+            handoff_timeout=timeouts.handoff, verify_timeout=timeouts.verify,
         )
         orchestrator = IncidentOrchestrator(
             diagnostics, remediation_agent=remediation,

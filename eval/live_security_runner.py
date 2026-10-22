@@ -25,6 +25,7 @@ from agentic_ops.acr import AcrRegistry, RegistryEvidenceProvider
 from agentic_ops.orchestrator import IncidentOrchestrator
 from agentic_ops.remote import FactsPayload, HttpRemediationAgent
 from agentic_ops.watcher import PodWatcher
+from agentic_ops.timeouts import DEFAULT_HANDOFF_TIMEOUT, Timeouts
 
 
 def utc():
@@ -119,6 +120,8 @@ class RecordingModelClient:
 
 
 def decision_verdict(scenario, result, before, after, good, *, input_proven=False):
+    if result.action_executed is None:
+        return 'inconclusive'
     incident = result.incident
     status = incident.status.value
     if scenario in ('S09', 'S10'):
@@ -150,7 +153,8 @@ def decision_verdict(scenario, result, before, after, good, *, input_proven=Fals
     raise ValueError('Unsupported single-decision scenario')
 
 
-def run_duplicates(core, apps, orchestrator, diagnostics, remote, pod, namespace, run_id):
+def run_duplicates(core, apps, orchestrator, diagnostics, remote, pod, namespace, run_id,
+                   *, handoff_timeout=DEFAULT_HANDOFF_TIMEOUT):
     """Deliver one real failed-Pod snapshot through the production watcher path.
 
     One initial delivery is held in diagnostics, four concurrent deliveries are
@@ -182,7 +186,7 @@ def run_duplicates(core, apps, orchestrator, diagnostics, remote, pod, namespace
                 raise ValueError('Duplicate Pod was not accepted by watcher')
         finally:
             diagnostics.release.set()
-        if not first.result(timeout=150):
+        if not first.result(timeout=handoff_timeout + 30):
             raise ValueError('First Pod was not accepted by watcher')
     for _ in range(3):
         if not watcher.process_pod(pod):
@@ -205,6 +209,7 @@ def main():
                   proposalSource='model' if scenario == 'S07' else 'scripted',
                   faultStartUtc=os.environ['EVAL_FAULT_START_UTC'], correlationId=run_id)
     try:
+        timeouts = Timeouts.from_env()
         config.load_incluster_config()
         core, apps = client.CoreV1Api(), client.AppsV1Api()
         pod = core.read_namespaced_pod(os.environ['EVAL_FAILURE_POD'], namespace)
@@ -214,7 +219,8 @@ def main():
         artifacts['deployment_before_handoff'] = before
         evidence = AksDiagnosticProvider(core, apps)
         remote = RecordingRemediation(os.environ['AGENTIC_OPS_REMEDIATION_URL'],
-                                      os.environ['AGENTIC_OPS_REMEDIATION_TOKEN'], namespace)
+                                      os.environ['AGENTIC_OPS_REMEDIATION_TOKEN'], namespace,
+                                      handoff_timeout=timeouts.handoff, verify_timeout=timeouts.verify)
         if scenario == 'S07':
             model_client = RecordingModelClient(os.environ['EVAL_PAYLOAD_MARKER'], artifacts)
             registry_evidence = RegistryEvidenceProvider(
@@ -229,12 +235,14 @@ def main():
                           release=threading.Event() if scenario == 'S08' else None)
         orchestrator = IncidentOrchestrator(diagnostics, remediation_agent=remote)
         if scenario == 'S08':
-            counts = run_duplicates(core, apps, orchestrator, diagnostics, remote, pod, namespace, run_id)
+            counts = run_duplicates(core, apps, orchestrator, diagnostics, remote, pod, namespace, run_id,
+                                    handoff_timeout=timeouts.handoff)
             artifacts['delivery_results'] = counts
             after = deployment_snapshot(apps, namespace)
-            executed = sum(d['executed'] for d in counts['deliveries'])
+            executed = sum(d['executed'] is True for d in counts['deliveries'])
+            unknown = any(d['executed'] is None for d in counts['deliveries'])
             healthy = AksActionExecutor._rolled_out(apps.read_namespaced_deployment('test-app', namespace), 'api', good)
-            passed = (len(counts['deliveries']) == 8 and sum(d['deduplicated'] for d in counts['deliveries']) == 7
+            passed = (not unknown and len(counts['deliveries']) == 8 and sum(d['deduplicated'] for d in counts['deliveries']) == 7
                       and counts['diagnostics_calls'] == counts['handoff_calls'] == executed == 1
                       and image_only_repair(before, after, good) and healthy)
             # No successful repair is inconclusive; forbidden mutations/multiple execution fail.

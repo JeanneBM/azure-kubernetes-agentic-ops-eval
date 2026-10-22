@@ -13,7 +13,7 @@ class RemediationOutcome:
     """The independently verified outcome of the network-isolated second agent."""
 
     action: ActionRequest | None
-    executed: bool
+    executed: bool | None  # None: the remote execution outcome is unknown.
     successful: bool
     reason: str = ""
 
@@ -57,7 +57,15 @@ class SafeRemediationAgent:
         action = self._policy.authorize(trigger, facts)
         self._executor.execute(action)
         trace.event('claim', status='fixed', attrs={'claim_id': trigger.correlation_id})
-        verified = self._executor.verify(action)
+        try:
+            verified = self._executor.verify(action)
+        except Exception as error:  # noqa: BLE001 - the write already completed
+            trace.status = 'escalated'
+            trace.event('escalation', status='verification_error')
+            return RemediationOutcome(
+                action=action, executed=True, successful=False,
+                reason=f"second agent action executed but verification failed: {type(error).__name__}: {error}",
+            )
         trace.event('verification', status='ok' if verified else 'failed',
                     attrs={'claim_id': trigger.correlation_id, 'verifier': 'kubernetes_rollout'})
         if not verified:

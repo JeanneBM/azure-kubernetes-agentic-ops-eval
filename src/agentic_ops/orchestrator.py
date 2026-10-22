@@ -29,7 +29,7 @@ class DiagnosticProvider(Protocol):
 class IncidentResult:
     incident: Incident
     deduplicated: bool = False
-    action_executed: bool = False
+    action_executed: bool | None = False
 
 
 class IncidentOrchestrator:
@@ -131,7 +131,7 @@ class IncidentOrchestrator:
         self._audit(incident, executed)
         return IncidentResult(incident, action_executed=executed)
 
-    def _process(self, trigger: IncidentTrigger) -> tuple[Incident, bool]:
+    def _process(self, trigger: IncidentTrigger) -> tuple[Incident, bool | None]:
         facts = Facts((), 0.0)
         action: ActionRequest | None = None
         executed = False
@@ -196,7 +196,7 @@ class IncidentOrchestrator:
         )
 
     @staticmethod
-    def _audit(incident: Incident, executed: bool) -> None:
+    def _audit(incident: Incident, executed: bool | None) -> None:
         audit.info(json.dumps({
             "event": "two_agent_incident_decision",
             "correlation_id": incident.trigger.correlation_id,

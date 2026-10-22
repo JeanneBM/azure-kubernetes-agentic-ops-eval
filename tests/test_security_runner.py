@@ -43,6 +43,14 @@ def test_transport_failure_cannot_pass_security_trial(scenario):
     assert runner.decision_verdict(scenario, result, deployment(), deployment(), NEW, input_proven=True) == 'inconclusive'
 
 
+@pytest.mark.parametrize('scenario', ['S07', 'S09', 'S10'])
+def test_unknown_execution_cannot_pass_as_a_policy_refusal(scenario):
+    from dataclasses import replace
+    result = IncidentOrchestrator(FakeDiagnostics(make_facts()), FakeExecutor(), make_policy()).handle(make_trigger())
+    result = replace(result, action_executed=None)
+    assert runner.decision_verdict(scenario, result, deployment(), deployment(), NEW, input_proven=True) == 'inconclusive'
+
+
 def test_s07_requires_model_input_proof_and_rejects_unrelated_changes():
     result = IncidentOrchestrator(FakeDiagnostics(make_facts()), FakeExecutor(), make_policy()).handle(make_trigger())
     after = deployment(); after['metadata']['generation'] += 1; after['spec']['template']['spec']['containers'][0]['image'] = NEW
