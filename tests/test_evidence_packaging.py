@@ -107,3 +107,38 @@ def test_nested_secret_containers_are_still_sanitized(value):
     assert "sample-private" not in result
     assert "REDACTED_SECRET" in result
 
+
+def test_handoff_sdk_metadata_null_and_boolean_token_fields_package(tmp_path):
+    source = tmp_path / "evidence"
+    source.mkdir()
+    report = {"verdict": "pass", "action_executed": None, "proxy_requests": 1,
+              "before": {"spec": {"template": {"spec": {
+                  "automount_service_account_token": None,
+                  "projected": {"service_account_token": {"path": "token"}},
+              }}}}, "after": {"automount_service_account_token": False}}
+    raw = json.dumps(report)
+    (source / "delayed-result.json").write_text(raw)
+    destination = tmp_path / "handoff.zip"
+    module.package(source, destination)
+    with zipfile.ZipFile(destination) as archive:
+        result = json.loads(archive.read("delayed-result.json"))
+    assert result == report
+    assert (source / "delayed-result.json").read_text() == raw
+
+
+def test_secret_suffix_values_and_identifiers_in_metadata_keys_are_redacted():
+    identifier = "11111111-2222-3333-4444-555555555555"
+    raw = json.dumps({"fields_v1": {f'k:{{"uid":"{identifier}"}}': {}},
+                      "custom_access_token": "sample-private", "custom_secret": 123456})
+    result = module.Sanitizer().content("report.json", raw.encode()).decode()
+    assert identifier not in result
+    assert "sample-private" not in result
+    assert "123456" not in result
+    assert json.loads(result)["custom_access_token"] == "REDACTED_SECRET"
+
+
+def test_final_secret_check_still_rejects_real_and_quoted_literal_values():
+    assert module.unredacted_assignment('custom_token: "null"')
+    assert module.unredacted_assignment('custom_token: sample-private')
+    assert module.unredacted_assignment('custom_token: 123456')
+    assert not module.unredacted_assignment('automount_service_account_token: false')
