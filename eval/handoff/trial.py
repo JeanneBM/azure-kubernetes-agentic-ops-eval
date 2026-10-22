@@ -9,7 +9,18 @@ import socket
 import threading
 import time
 from dataclasses import replace
+from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+
+def encode_report(report):
+    """SDK to_dict snapshots contain datetime values, including nested managed fields."""
+    def encode_date(value):
+        if isinstance(value, (date, datetime)):
+            return value.isoformat()
+        raise TypeError(f"Unsupported report value: {type(value).__name__}")
+
+    return json.dumps(report, default=encode_date)
 
 
 class HandoffProxy:
@@ -175,7 +186,7 @@ def main():
     except Exception as error:
         # Error types only: exception strings from HTTP libraries may contain endpoints.
         report["error"] = type(error).__name__
-    print(json.dumps(report), flush=True)
+    print(encode_report(report), flush=True)
     return 0 if report["verdict"] == "pass" else 1
 
 
