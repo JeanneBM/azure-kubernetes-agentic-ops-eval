@@ -1,3 +1,17 @@
+## Final S/K/P catalog
+
+Run `python scripts/run_protocol_checks.py` for separate offline verdicts and
+JSON/Markdown reports for S01-S10, K01-K03 and P01-P08.
+See [final evaluation scope and commands](../docs/final-evaluation.md).
+
+New coverage: `scenarios/test_known_limits.py` (K01-K03),
+`scenarios/test_protocol_contracts.py` (P01-P08), and
+`scenarios/test_s07_injected_event.py` (controlled S07 injection).
+Existing security-runner tests supply the selected S08-S10 offline checks.
+`test_protocol_report.py` verifies that known failures and skipped tests are not
+reported as passes. K02 is a demonstrated known safety failure: pytest xfail,
+**AGENT_FAIL** in the protocol report. No live run is implied.
+
 # Test organization
 
 | Location | Purpose |
