@@ -10,7 +10,11 @@ git pull
 
 This launches `test-s01.ps1` through `test-s10.ps1` as separate PowerShell
 processes, waiting for each script to finish and then pausing for 60 seconds.
-Each script creates its own evidence and anonymized ZIP under `eval/evidence`.
+Each script creates its own evidence and anonymized ZIP in a fresh scenario directory
+under `.local/evidence/sequences/<UTC>-<id>/`. The launcher saves console logs
+and JSON/CSV/Markdown summaries, including tests not run after an early stop.
+PASS requires both exit code zero and a matching `result.json` with verdict `pass`;
+missing, malformed or mismatched results are reported as inconclusive errors.
 There is no combined batch archive. S07–S10 receive `-PrepareBaseline`.
 The launcher requires existing recorded lab state and does not provision resources.
 
@@ -48,3 +52,15 @@ These are functional trials. Preparation can restart workloads and diagnostic ag
 so do not interpret the sequence as a warmed latency benchmark. Download ZIP evidence
 before deleting the environment. Delete the lab after testing with the repository's
 delete-environment-resource-group.ps1 script.
+
+## Protocol coverage
+
+For the full repeated A/C protocol, live K cases and infrastructure probes, use
+the [new full campaign](full-evaluation.md). This legacy command runs S01-S10 live functional trials, one attempt each. It does not
+implement the complete repeated A/C benchmark in evaluation-scenarios.md.
+K01-K03 and P01-P08 currently have offline implementations only; run
+`python scripts/run_protocol_checks.py` separately and label those results offline.
+S06/S08/S09/S10 use controlled proposals against live remediation, not model
+accuracy trials. S08 does not cover cross-replica overlapping webhook delivery.
+Run controlled handoff integration separately with `./scripts/tests/test-handoff.ps1`.
+No AKS pass is claimed by adding or locally checking these scripts.

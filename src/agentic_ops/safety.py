@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Protocol
+from typing import Iterable, Protocol, Mapping
+import json
+import os
 
 from .contracts import ActionRequest, Facts, IncidentTrigger
 
@@ -92,7 +94,14 @@ class SelfCurePolicy:
         namespace: str,
         allowed_registries: Iterable[str],
         max_edit_distance: int = 2,
+        intended_images: Mapping[str, str] | None = None,
     ) -> None:
+        if intended_images is None:
+            intended_images = json.loads(os.environ.get("AGENTIC_OPS_INTENDED_IMAGES", "{}"))
+        if not isinstance(intended_images, dict) or any(
+                not isinstance(k, str) or not isinstance(v, str) for k, v in intended_images.items()):
+            raise ValueError("intended_images must map workload/container to an explicit image")
+        self._intended_images = dict(intended_images)
         self._registry = registry
         self._namespace = namespace
         self._allowed_registries = frozenset(r.lower() for r in allowed_registries)
@@ -141,6 +150,10 @@ class SelfCurePolicy:
             raise PolicyViolation("Current image exists in the registry; the pull failure is not a typo")
         if not self._registry.exists(new):
             raise PolicyViolation(f"Corrected image {new} was not found in the registry")
+
+        intended = self._intended_images.get(f"{trigger.workload}/{failure.container}")
+        if intended is None or str(new) != intended:
+            raise PolicyViolation("Proposed image is not the trusted intended image for this workload/container")
 
         return ActionRequest(
             "fix_image",

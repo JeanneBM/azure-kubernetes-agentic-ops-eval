@@ -14,7 +14,7 @@ from .contracts import (
 )
 
 from .safety import StaleActionError
-from .telemetry import tool
+from .telemetry import tool, emit
 from .timeouts import DEFAULT_VERIFY_TIMEOUT
 
 PULL_REASONS = frozenset({"ImagePullBackOff", "ErrImagePull"})
@@ -215,7 +215,18 @@ class AksActionExecutor:
             {"name": p["container"], "image": p["new_image"]}
         ]}}}}
         tool('kubectl_patch', dict(action.parameters))
-        self._apps.patch_namespaced_deployment(p["deployment"], p["namespace"], patch)
+        # Optimistic concurrency makes overlapping requests safe across replicas.
+        # resourceVersion is checked by Kubernetes atomically with this write.
+        version = getattr(deployment.metadata, "resource_version", None)
+        if isinstance(version, str) and version:
+            patch["metadata"] = {"resourceVersion": version}
+        try:
+            self._apps.patch_namespaced_deployment(p["deployment"], p["namespace"], patch)
+        except client.exceptions.ApiException as error:
+            if error.status == 409:
+                raise StaleActionError("Deployment changed during authorization; concurrent patch rejected") from error
+            raise
+        emit("patch_accepted", attrs={"namespace": p["namespace"], "deployment": p["deployment"]})
 
     def verify(self, action: ActionRequest) -> bool:
         p = action.parameters
