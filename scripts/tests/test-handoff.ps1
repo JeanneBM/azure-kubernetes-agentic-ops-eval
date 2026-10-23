@@ -30,7 +30,7 @@ $source=Join-Path $root ('.local/evidence/handoff/'+$runName)
 & $pythonPath @prefix (Join-Path $root 'eval/handoff/run.py') --resource-group $ResourceGroup --evidence-dir $source
 $trialExit=$LASTEXITCODE
 if (Test-Path (Join-Path $source 'summary.json')) {
-    $destination=Join-Path $root ("eval/evidence/handoff-"+$runName+'-anonymized.zip')
+    $destination=Join-Path $root ("eval/evidence/handoff/handoff-"+$runName+'-anonymized.zip')
     & (Join-Path $root 'scripts/evidence/package-evidence.ps1') -SourceDirectory $source -DestinationPath $destination
     Write-Host "Archive: $destination"
 }

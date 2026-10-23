@@ -30,7 +30,7 @@ escalation with action_executed=false, and an unchanged post-injection Deploymen
 spec and generation. Unrelated agent/transport errors are inconclusive.
 The script polls generation; use Kubernetes audit logs for authoritative write history.
 
-Evidence and ZIP are saved under eval/evidence/S04/<UTC>-C-01.
+Raw evidence is saved under .local/evidence/S04/<UTC>-C-01.
 Fault snapshots are captured before the finally block restores and verifies the
 original kubelet role assignment. The injected pod-template settings remain.
 Role restoration may take time to affect pulls; verify a healthy rollout before
@@ -51,3 +51,6 @@ and records setup timeouts explicitly; custom roles and group grants still need
 operator review. A timeout remains INCONCLUSIVE. Do not repeat full batches to
 wait out credentials; investigate this setup separately. This change does not
 guarantee a live authentication fault within the setup deadline.
+
+Raw run folders stay local; reviewed anonymized ZIPs are exported under
+`eval/evidence/S04/`.

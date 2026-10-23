@@ -20,7 +20,7 @@ It injects tset-app:1.4.2, waits up to 180 seconds (configurable with
 A failed or timed-out run can leave the injected image in place. Prepare a
 healthy baseline before another run.
 
-Evidence is written to eval/evidence/S01/<UTC-run-id>-C-01/ and a sibling ZIP.
+Evidence is written to .local/evidence/S01/<UTC-run-id>-C-01/.
 An optional -EvidenceRoot overrides the output directory. Files include source
 revision when git is available, current context, command exit codes, injection
 output, before/after Deployment snapshots, best-effort failing Pod capture,
@@ -42,3 +42,6 @@ redact files before publishing; kubeconfig and Secrets are never exported.
 This script does not claim that a live run has occurred merely by being added.
 
 Evidence ZIP names start with the scenario ID: `S01-<UTC-run-id>-C-01.zip`.
+
+Raw run folders stay local; reviewed anonymized ZIPs are exported under
+`eval/evidence/S01/`.

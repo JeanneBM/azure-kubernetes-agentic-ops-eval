@@ -7,12 +7,25 @@ This directory is separate from the mocked checks in `tests/scenarios/`.
 ## Archive delivery
 
 Default test runs keep raw working evidence under `.local/evidence/` and write only
-finished ZIP archives directly to `eval/evidence/`. Every exported archive name ends
+finished ZIP archives to scenario-specific folders under `eval/evidence/`. Every exported archive name ends
 with `-anonymized.zip`, for example `S07-20261016T103606233Z-controlled-01-anonymized.zip`.
 Explicit `-EvidenceRoot` overrides remain available for isolated batch collection.
 Existing archives and documentation remain available.
 
-## Layout
+## Published archive folders
+
+| Folder | Contents |
+| --- | --- |
+| `S01/` … `S10/` | Individual scenario attempts, including failures and retries |
+| [batches/](batches/) | Combined S-only batch archives |
+| [handoff/](handoff/) | Agent handoff trials |
+| [continuous/](continuous/) | Continuous-operation captures |
+
+Archive filenames, bytes and recorded verdicts are preserved. A ZIP is evidence
+of an attempt, not proof of a passing result. New campaign exports can use a
+separate named subfolder. Do not commit extracted copies beside their ZIPs.
+
+## Raw working layout
 
 Use `.local/evidence/<scenario-id>/<UTC-run-id>/`, for example
 `.local/evidence/S01/20261006T132600Z-C-01/`.
@@ -39,7 +52,8 @@ the healthy before snapshot alone does not prove the failure occurred.
 
 [`scripts/tests/test-s01.ps1`](../../scripts/tests/test-s01.ps1) captures a live S01 run in
 this layout, including unsuccessful attempts; see [usage](../../docs/live-s01.md).
-Other scenarios can use the manual collection guidance below. Review captured
+Other scenario scripts also capture their own artifacts; the manual guidance below
+is available for supplementary evidence. Review captured
 files before publishing. Script presence alone establishes no live result.
 
 ## Start a run (PowerShell, from the repository root)
@@ -81,6 +95,6 @@ missing log is an evidence gap, not proof that no action occurred.
   Secret exports, environment dumps or unreviewed terminal transcripts.
   Mark redactions consistently, preserving timestamps and relevant decisions.
 
-No live results are asserted by this scaffold. Creating this directory does not
-enable automatic collection by the agents. The separate S01 script explicitly
-collects evidence when an operator runs it; other collection remains manual.
+Recorded trials are summarized in the [evaluation status](../README.md).
+Scenario scripts capture evidence only when explicitly run; archive presence
+does not establish a complete or clean evaluation.

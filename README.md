@@ -10,6 +10,21 @@ application, scenario checks and evidence from live evaluation runs.
 
 **The model proposes; deterministic policy authorizes; execution is verified.**
 
+## Repository map
+
+| Location | Contents |
+| --- | --- |
+| [src/agentic_ops/](src/agentic_ops/) | Runtime code for the diagnostic and remediation agents |
+| [deploy/](deploy/) | Kubernetes manifests |
+| [scripts/](scripts/README.md) | Commands grouped by task |
+| [docs/](docs/README.md) | Setup, operation, architecture and evaluation guides |
+| [tests/](tests/README.md) | Automated regression tests and offline scenario fixtures |
+| [eval/](eval/README.md) | Evaluation harnesses, benchmarks, findings, ledger and published evidence |
+| [evaluation-scenarios.md](evaluation-scenarios.md) | Scenario definitions and scoring protocol |
+
+Generated working files, raw evidence and reports belong under `.local/` and are
+ignored by Git. Reviewed anonymized archives belong under `eval/evidence/`.
+
 ## Finding and running scripts
 
 See the [script directory guide](scripts/README.md) for commands grouped by task.
@@ -64,7 +79,7 @@ for installation, Azure login, UTF-8 setup, sequential tests and cleanup.
 - Imports a demo image and starts a healthy `test-app` workload
   (nginx under a demo image alias).
 - Saves local configuration and kubeconfig under `.local/`, and setup snapshots
-  under `eval/evidence/setup/`.
+  under `.local/evidence/setup/`.
 
 **The script creates billable Azure resources.** It prepares the lab without
 injecting faults or running evaluation scenarios. Existing groups without
@@ -109,7 +124,7 @@ first. For defaults, parameter overrides and implementation details, read the
 
 **Execution findings (2026-10-21):** separate script processes with 60-second
 pauses recorded 9/10 passes; S04 remained inconclusive. Earlier sequential batch
-results varied. See the [dated findings and evidence](eval/execution-pacing-findings.md)
+results varied. See the [dated findings and evidence](eval/findings/execution-pacing-findings.md)
 for readiness failures and the limits of attributing improvement to pauses.
 
 For live S02 (one faulty API container alongside a healthy sidecar), run after setup:
@@ -134,8 +149,9 @@ Run this after loading the setup configuration above. One execution is one
 trial. A failed trial can leave the faulty image in place.
 See the [live S01 guide](docs/live-s01.md) for exact pass criteria.
 
-Store evidence for every live scenario in
-`eval/evidence/<scenario-id>/<UTC-run-id>/`.
+Keep raw evidence for every live scenario in
+`.local/evidence/<scenario-id>/<UTC-run-id>/`; publish reviewed anonymized ZIPs
+under `eval/evidence/<scenario-id>/`.
 Use the [evidence guide](eval/evidence/README.md) and
 [run template](eval/evidence/TEMPLATE.md). Preserve failed attempts and review
 logs for credentials before publishing.

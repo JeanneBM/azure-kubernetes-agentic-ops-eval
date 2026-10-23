@@ -21,7 +21,7 @@ if (-not $Kubeconfig) { throw 'An explicit recorded lab kubeconfig is required.'
 $kubectlProgram=(Get-Command kubectl -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 $azProgram=(Get-Command az -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 if (-not $EvidenceRoot) { $EvidenceRoot=Join-Path $root ".local/evidence/$Scenario" }
-$archiveRoot=if ($PSBoundParameters.ContainsKey('EvidenceRoot') -and $EvidenceRoot) { $EvidenceRoot } else { Join-Path $root 'eval/evidence' }
+$archiveRoot=if ($PSBoundParameters.ContainsKey('EvidenceRoot') -and $EvidenceRoot) { $EvidenceRoot } else { Join-Path $root ("eval/evidence/"+$Scenario) }
 $runId=[Guid]::NewGuid().ToString('N').Substring(0,12)
 $dir=Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-controlled-01')
 $zipPath=Join-Path $archiveRoot ("$Scenario-"+(Split-Path $dir -Leaf)+'-anonymized.zip')

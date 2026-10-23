@@ -103,7 +103,7 @@ try {
         $archives=@(Get-ChildItem -LiteralPath $scenarioDirectory -File -Filter "$scenario-*-anonymized.zip")
         if ($archives.Count -eq 1) {
             try {
-                $archiveRoot=Join-Path $root 'eval/evidence'
+                $archiveRoot=Join-Path $root ("eval/evidence/"+$scenario)
                 New-Item -ItemType Directory -Force -Path $archiveRoot | Out-Null
                 $archivePath=Join-Path $archiveRoot $archives[0].Name
                 if (Test-Path -LiteralPath $archivePath) { throw 'Archive destination already exists.' }
@@ -124,7 +124,7 @@ try {
     Write-Host "`n========== BATCH SUMMARY =========="
     $rows | Format-Table -Property @('scenario','verdict','outcome','durationSeconds') -AutoSize | Out-Host
     foreach ($row in $rows) { if ($row.zip) { Write-Host "$($row.scenario) ZIP: $($row.zip)" } }
-    $bundle=Join-Path (Join-Path $root 'eval/evidence/S01-S10') ($batchId+'-anonymized.zip')
+    $bundle=Join-Path (Join-Path $root 'eval/evidence/batches') ($batchId+'-anonymized.zip')
     $batchArchiveCreated=$false
     try {
         & (Join-Path $PSScriptRoot '../evidence/package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle

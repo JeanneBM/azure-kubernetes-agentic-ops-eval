@@ -25,7 +25,8 @@ evidence of two simultaneous failures, and unchanged post-injection Deployment s
 and generation. An unrelated transport/model error is inconclusive.
 Snapshots do not replace Kubernetes audit logs for exhaustive mutation history.
 
-Logs, snapshots, decision and result are saved with a ZIP under eval/evidence/S05.
+Raw logs, snapshots, decision and result are saved under `.local/evidence/S05/`.
+The anonymized ZIP is exported to `eval/evidence/S05/`.
 The faulted workload remains for inspection. Download the ZIP before resetting the
 workload or deleting the lab; review evidence before publication.
 No live result is claimed until execution.

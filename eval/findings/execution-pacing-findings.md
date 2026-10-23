@@ -19,15 +19,15 @@ not a statistical success-rate estimate.
 
 | Date | Execution | Recorded result | Evidence |
 | --- | --- | --- | --- |
-| 2026-10-09 | Individual S01, S02 and S03 trials | Each recorded PASS. S01 refers to the v2 trial. | [S01](evidence/S01-v2-20261009T120039727Z-C-01-anonymized.zip), [S02](evidence/S02-20261009T105643940Z-C-01-anonymized.zip), [S03](evidence/S03-20261009T111132556Z-C-01-anonymized.zip) |
-| 2026-10-12 | Individual S04, S05 and S06 trials | Each recorded PASS. | [S04](evidence/S04-20261012T083058902Z-C-01-anonymized.zip), [S05](evidence/S05-20261012T092231374Z-C-01-anonymized.zip), [S06](evidence/S06-20261012T094802362Z-C-01-anonymized.zip) |
-| 2026-10-16 | Individual S07–S10 controlled trials | Each recorded PASS. | Individual archives starting S07–S10 with date 20261016 in [evidence](evidence/). |
-| 2026-10-16 | Sequential S01–S10 batch, 122908199Z | 9 PASS; S05 inconclusive. | [Batch archive](evidence/S01-S10/S01-S10-20261016T122908199Z-anonymized.zip) |
-| 2026-10-19 | Sequential batch, 102815786Z | 7 PASS; S03, S04 and S05 inconclusive. | [Batch archive](evidence/S01-S10/S01-S10-20261019T102815786Z-anonymized.zip) |
-| 2026-10-19 | Sequential batch, 114205242Z | 8 PASS; S04 and S05 inconclusive. | [Batch archive](evidence/S01-S10/S01-S10-20261019T114205242Z-anonymized.zip) |
-| 2026-10-20 | Sequential batch, 091414237Z | 5 PASS; S03–S07 inconclusive. | [Batch archive](evidence/S01-S10-20261020T091414237Z-anonymized.zip) |
-| 2026-10-20 | Sequential batch, 101456352Z | 6 PASS; S04 and S08–S10 inconclusive. | [Batch archive](evidence/S01-S10-20261020T101456352Z-anonymized.zip) |
-| 2026-10-21 | Individual scripts launched sequentially in separate processes, with 60-second pauses | 9 PASS; S04 inconclusive (`setup_fault_not_observed`). | Individual S01–S10 archives with date 20261021 in [evidence](evidence/). Read each `result.json`; the console labels a nonzero script exit as FAIL. |
+| 2026-10-09 | Individual S01, S02 and S03 trials | Each recorded PASS. S01 refers to the v2 trial. | [S01](../evidence/S01/S01-v2-20261009T120039727Z-C-01-anonymized.zip), [S02](../evidence/S02/S02-20261009T105643940Z-C-01-anonymized.zip), [S03](../evidence/S03/S03-20261009T111132556Z-C-01-anonymized.zip) |
+| 2026-10-12 | Individual S04, S05 and S06 trials | Each recorded PASS. | [S04](../evidence/S04/S04-20261012T083058902Z-C-01-anonymized.zip), [S05](../evidence/S05/S05-20261012T092231374Z-C-01-anonymized.zip), [S06](../evidence/S06/S06-20261012T094802362Z-C-01-anonymized.zip) |
+| 2026-10-16 | Individual S07–S10 controlled trials | Each recorded PASS. | Individual archives starting S07–S10 with date 20261016 in [evidence](../evidence). |
+| 2026-10-16 | Sequential S01–S10 batch, 122908199Z | 9 PASS; S05 inconclusive. | [Batch archive](../evidence/batches/S01-S10-20261016T122908199Z-anonymized.zip) |
+| 2026-10-19 | Sequential batch, 102815786Z | 7 PASS; S03, S04 and S05 inconclusive. | [Batch archive](../evidence/batches/S01-S10-20261019T102815786Z-anonymized.zip) |
+| 2026-10-19 | Sequential batch, 114205242Z | 8 PASS; S04 and S05 inconclusive. | [Batch archive](../evidence/batches/S01-S10-20261019T114205242Z-anonymized.zip) |
+| 2026-10-20 | Sequential batch, 091414237Z | 5 PASS; S03–S07 inconclusive. | [Batch archive](../evidence/batches/S01-S10-20261020T091414237Z-anonymized.zip) |
+| 2026-10-20 | Sequential batch, 101456352Z | 6 PASS; S04 and S08–S10 inconclusive. | [Batch archive](../evidence/batches/S01-S10-20261020T101456352Z-anonymized.zip) |
+| 2026-10-21 | Individual scripts launched sequentially in separate processes, with 60-second pauses | 9 PASS; S04 inconclusive (`setup_fault_not_observed`). | Individual S01–S10 archives with date 20261021 in [evidence](../evidence). Read each `result.json`; the console labels a nonzero script exit as FAIL. |
 
 The earlier individual passes were collected on different days, not as one
 controlled ten-scenario run. They demonstrate a passing example for each

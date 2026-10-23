@@ -95,7 +95,7 @@ def test_wrappers_pin_images_collect_evidence_and_leave_watcher_paused(tmp_path,
     assert state['diagnostic']['spec']['replicas'] == 0
     record = json.loads(next((root / '.local/evidence').rglob('result.json')).read_text())
     assert record['verdict'] == 'pass'
-    archives = list((root / 'eval/evidence').glob(f'{scenario.upper()}-*-anonymized.zip'))
+    archives = list((root / 'eval/evidence' / scenario.upper()).glob(f'{scenario.upper()}-*-anonymized.zip'))
     assert len(archives) == 1
     assert not list((root / 'eval/evidence').rglob('result.json'))
     assert f'ZIP: {archives[0]}' in result.stdout

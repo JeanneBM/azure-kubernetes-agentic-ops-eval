@@ -22,7 +22,7 @@ $azExecutable = (Get-Command az -CommandType Application -ErrorAction Stop | Sel
 $root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $state = Get-Content (Join-Path $root ".local/$ResourceGroup.json") -Raw | ConvertFrom-Json
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
-$archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRoot } else { Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence' }
+$archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRoot } else { Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence/S04' }
 $zipPath = Join-Path $archiveRoot ("S04-" + (Split-Path $dir -Leaf) + "-anonymized.zip")
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null

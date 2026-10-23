@@ -41,7 +41,7 @@ after the application is healthy. Restoration failures are reported in
 terminal: finally blocks cannot recover from process/host termination.
 
 Raw evidence and a JSON summary go under `.local/evidence/handoff/`; the wrapper
-creates an anonymized ZIP under `eval/evidence/` using the existing sanitizer.
+creates an anonymized ZIP under `eval/evidence/handoff/` using the existing sanitizer.
 Inspect the archive before publishing. The script leaves the Azure lab running;
 delete it with the existing cleanup command when finished. A live result has not
 been recorded merely because local tests passed.

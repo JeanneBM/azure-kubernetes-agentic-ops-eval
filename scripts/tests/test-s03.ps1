@@ -27,7 +27,7 @@ if (-not (Get-Command kubectl -CommandType Application -ErrorAction SilentlyCont
 $goodImage = "$AcrLoginServer/test-app:1.4.2"
 $badImage = $null
 $dir = Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-C-01')
-$archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRoot } else { Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence' }
+$archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRoot } else { Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'eval/evidence/S03' }
 $zipPath = Join-Path $archiveRoot ("S03-" + (Split-Path $dir -Leaf) + "-anonymized.zip")
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null

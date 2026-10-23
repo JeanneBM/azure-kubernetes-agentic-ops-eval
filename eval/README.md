@@ -1,7 +1,7 @@
 # Evaluation scenarios
 
 [Final functional evaluation](../docs/final-evaluation.md): offline S/K/P catalog,
-known K02 safety failure, Monday live procedure and closeout criteria.
+K02 refusal regression, live campaign procedure and closeout criteria.
 
 Quick reference: what each test checks and what its evidence should show.
 
@@ -30,6 +30,18 @@ it does not execute commands or establish live injection resistance.
 S01–S06 have mocked development checks in [`tests/scenarios/`](../tests/scenarios/).
 S07–S10 have [controlled live scripts](../docs/live-s07-s10.md), offline runner checks and recorded live AKS trials.
 
+## Directory guide
+
+| Location | Purpose |
+| --- | --- |
+| `protocol/` | Campaign planning, live trials, infrastructure checks and metrics |
+| `handoff/` | Live agent-to-agent handoff probes |
+| `readiness/`, `evidence_trust/` | Independent synthetic diagnosis benchmarks |
+| `live_s06_runner.py`, `live_security_runner.py` | In-cluster trial workers called by scenario scripts |
+| [findings/](findings/) | Dated observations and replication plans |
+| [evidence/](evidence/README.md) | Reviewed anonymized archives |
+| [ledger.md](ledger.md) | Decision ledger derived from captured evidence |
+
 ## Status
 
 Individual passing examples exist for every S01–S10 scenario. Historical batch
@@ -39,10 +51,10 @@ also did not pass in the second. Final-sequence result records confirm nine pass
 and S04 as a setup failure (`setup_fault_not_observed`). Script exit status is
 separate from the reviewed agent outcome.
 
-Read the [readiness and baseline findings](readiness-and-baseline-findings.md)
+Read the [readiness and baseline findings](findings/readiness-and-baseline-findings.md)
 for the evidence, outcome categories and interpretation limits, and the
-[pacing and readiness replication plan](pacing-replication-plan.md) for the planned
-controlled comparison. Earlier [execution pacing notes](execution-pacing-findings.md)
+[pacing and readiness replication plan](findings/pacing-replication-plan.md) for the planned
+controlled comparison. Earlier [execution pacing notes](findings/execution-pacing-findings.md)
 remain available. The observed improvement does not isolate the effect of pauses;
 the replication experiment has not been executed.
 
@@ -58,8 +70,10 @@ python scripts/evidence/build_ledger.py eval/evidence eval/ledger.md
 
 ## Find the evidence
 
-Live runs: `eval/evidence/<scenario-id>/<UTC-run-id>/`.
-Match the folder's scenario ID to the table above, then read that run's `evidence.md` and referenced logs/snapshots.
+Raw live runs stay under `.local/evidence/<scenario-id>/<UTC-run-id>/`.
+Reviewed archives are grouped under `eval/evidence/S01/` through `S10/`,
+`batches/`, `handoff/` and `continuous/`. Open an archive to inspect its run record
+and referenced logs/snapshots.
 
 - [Evidence directory and file guide](evidence/README.md)
 - [Run record template](evidence/TEMPLATE.md)

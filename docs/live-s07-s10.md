@@ -32,7 +32,8 @@ Each command runs one scenario, not repetitions. `-PrepareBaseline` is explicit 
 
 ## Evidence and completion
 
-Evidence: `eval/evidence/S07` through `S10`, each with a UTC run folder and an anonymized ZIP beginning with its scenario code. Files include `result.json`, `runner-result.json`, `artifacts.json`, diagnostic/remediation logs, workload snapshots, registry checks, `provenance.json`, evaluator Pod manifest, and S07 Event input/readback.
+Raw evidence: `.local/evidence/S07` through `S10`, each with a UTC run folder.
+Anonymized ZIPs are exported under `eval/evidence/<scenario-id>/`. Files include `result.json`, `runner-result.json`, `artifacts.json`, diagnostic/remediation logs, workload snapshots, registry checks, `provenance.json`, evaluator Pod manifest, and S07 Event input/readback.
 
 `provenance.json` records the evaluator checkout commit, runner hash, and both runtime digests. It explicitly leaves the agent image source commit unverified; a checkout commit alone does not prove how an existing image was built. Preserve image build provenance separately for a final comparison. Rebuilds from preparation use source fingerprints; do not silently equate these with a verified image commit.
 

@@ -9,7 +9,7 @@ and inconclusive trials with their original verdicts. Archive presence does not
 imply that all ten scenarios passed. Raw working files stay under `.local/evidence/`.
 
 The batch runner writes new combined archives here automatically. Individual
-scenario archives remain directly under `eval/evidence/`.
+scenario archives are grouped under `eval/evidence/S01/` through `S10/`.
 
 ## Recorded batch — 2026-10-16
 
