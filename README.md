@@ -171,7 +171,7 @@ See the [cleanup script](scripts/environment/delete-environment-resource-group.p
 - One managed namespace and registry; automatic remediation only for image-reference typos.
 - Incident state and deduplication are in memory; each agent runs one replica.
 - Image-only writes are constrained by application policy, not field-level RBAC.
-- Image existence and similarity do not establish service or release intent.
+- Image existence and similarity do not establish service or release intent; the gate now requires a trusted intended-image mapping for the workload/container.
 - Rollout readiness does not verify business functionality.
 - External egress allowlisting requires cluster-specific configuration.
 
@@ -195,7 +195,14 @@ Multiple observed pull failures are rejected before model inference, independent
 of model groundedness. Authenticated checks for the exact failing container/image
 also bypass inference when the current image exists, lookup is unknown, discovery
 is incomplete, or there is no unique verified candidate. These gates never
-construct a repair. A unique candidate still requires a model proposal and the
+construct a repair. In variant C, a unique candidate still requires a model proposal and the
 independent remediation policy; model refusal is preserved. Model-led diagnosis
 quality and live repeatability still require new Azure trials after rebuilding
 and deploying the agent image. Historical evidence is unchanged.
+
+## Full evaluation campaign
+
+See [Full evaluation: one trial at a time](docs/full-evaluation.md) for the runnable
+98-trial protocol: repeated A/C trials, live known-limit fixtures, offline contract
+checks, handoff and live identity/ingress validation. `init` creates the frozen
+plan; `next` runs exactly one trial. Live results remain unclaimed until execution.

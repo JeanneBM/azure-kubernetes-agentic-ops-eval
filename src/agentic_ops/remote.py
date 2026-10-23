@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, StrictBool, model_validator
 
 from .agents import RemediationAgent, RemediationOutcome, SafeRemediationAgent
 from .contracts import ActionRequest, Evidence, Facts, IncidentTrigger, PullFailure
-from .safety import PolicyViolation, StaleActionError
+from .safety import PolicyViolation, StaleActionError, OutOfScope
 from .telemetry import tool
 from .timeouts import DEFAULT_HANDOFF_TIMEOUT, DEFAULT_VERIFY_TIMEOUT, validate_timeouts
 
@@ -161,6 +161,8 @@ def create_remediation_app(agent: SafeRemediationAgent, *, agent_token: str) -> 
     def remediate(payload: HandoffPayload):
         try:
             outcome = agent.remediate(payload.trigger(), payload.facts.to_facts())
+        except OutOfScope as violation:
+            raise HTTPException(status_code=403, detail="namespace outside remediation scope") from violation
         except (PolicyViolation, StaleActionError) as violation:
             # A policy refusal is a valid terminal handoff outcome, not an HTTP failure.
             outcome = RemediationOutcome(

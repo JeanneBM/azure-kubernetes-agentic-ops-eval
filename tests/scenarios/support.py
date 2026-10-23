@@ -144,7 +144,7 @@ def wire(model_image, registry_has=(NEW,), *, sidecar_first=None):
         http_client=httpx.Client(transport=httpx.MockTransport(foundry)), token_provider=lambda: "t",
     )
     policy = SelfCurePolicy(
-        registry(cluster.registry_requests),
+        registry(cluster.registry_requests), intended_images={"test-app/api": NEW},
         namespace="test-app", allowed_registries=["acrprod.azurecr.io"],
     )
     executor = AksActionExecutor(cluster, verify_timeout=5, poll_interval=0, sleep=lambda s: None)

@@ -20,6 +20,7 @@ class FakeRegistry:
 
 
 def make_policy(registry=None, **kwargs):
+    kwargs.setdefault("intended_images", {"test-app/api": NEW})
     return SelfCurePolicy(
         registry or FakeRegistry({NEW}),
         namespace="test-app",

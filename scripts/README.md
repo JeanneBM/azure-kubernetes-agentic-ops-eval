@@ -53,3 +53,9 @@ Scenario evidence is written under `eval/evidence/S01` through `S10`; batch resu
 See the [scenario table](../eval/README.md), [batch guide](../docs/run-all-tests.md), and [setup guide](../docs/clean-environment-setup.md).
 
 Prepared S07–S10 entry points, requirements and limitations: [controlled trial guide](../docs/live-s07-s10.md). These leave diagnostics paused after completion and do not claim live results. The S01–S06 batch runner remains scoped to its six scenarios.
+
+## Complete evaluation
+
+`python scripts/run_evaluation.py init --campaign .local/evaluation/final` creates
+a plan without Azure calls. Repeat `python scripts/run_evaluation.py next --campaign
+.local/evaluation/final` to run one trial at a time. See [full instructions](../docs/full-evaluation.md).

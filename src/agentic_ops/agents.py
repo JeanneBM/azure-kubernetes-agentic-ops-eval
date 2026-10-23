@@ -55,6 +55,7 @@ class SafeRemediationAgent:
     def _remediate(self, trigger, facts, trace):
         trace.tool('policy_check', dict(facts.safe_action.parameters) if facts.safe_action else {})
         action = self._policy.authorize(trigger, facts)
+        trace.event("policy_authorized")
         self._executor.execute(action)
         trace.event('claim', status='fixed', attrs={'claim_id': trigger.correlation_id})
         try:

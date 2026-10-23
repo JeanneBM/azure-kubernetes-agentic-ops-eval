@@ -247,6 +247,8 @@ spec:
           env:
             - name: AGENT_TELEMETRY_STDOUT
               value: "1"
+            - name: AGENTIC_OPS_INTENDED_IMAGES
+              value: '{"test-app/api":"${ACR_LOGIN_SERVER}/test-app:1.4.2"}'
             - name: AGENTIC_OPS_ROLE
               value: remediation
             - name: AGENTIC_OPS_NAMESPACE
