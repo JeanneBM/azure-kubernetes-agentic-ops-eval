@@ -1,5 +1,8 @@
 # Evaluation scenarios
 
+[Final functional evaluation](../docs/final-evaluation.md): offline S/K/P catalog,
+known K02 safety failure, Monday live procedure and closeout criteria.
+
 Quick reference: what each test checks and what its evidence should show.
 
 New independent track: [R01 readiness diagnosis comparison](readiness/README.md)
