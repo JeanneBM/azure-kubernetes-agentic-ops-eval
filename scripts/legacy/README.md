@@ -9,4 +9,4 @@ they do not implement the complete S/K/P/handoff evaluation campaign.
 
 For the full campaign, use `python scripts/evaluation/run_evaluation.py` from the
 repository root and follow the [evaluation guide](../../docs/full-evaluation.md).
-Individual scenario scripts are in [tests/](../tests/).
+Individual scenario scripts are in [scenarios/](../scenarios/).

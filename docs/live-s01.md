@@ -4,7 +4,7 @@ Use PowerShell 7 with kubectl connected to the isolated PoC cluster. Setup and
 test execution are separate: this script provisions no Azure resources.
 
 ```powershell
-./scripts/tests/test-s01.ps1
+./scripts/scenarios/test-s01.ps1
 ```
 
 The script automatically reads the registry and kubeconfig from

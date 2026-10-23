@@ -130,7 +130,7 @@ for readiness failures and the limits of attributing improvement to pauses.
 For live S02 (one faulty API container alongside a healthy sidecar), run after setup:
 
 ~~~powershell
-./scripts/tests/test-s02.ps1
+./scripts/scenarios/test-s02.ps1
 ~~~
 
 The script prepares the sidecar, injects the API image typo and captures recovery
@@ -142,7 +142,7 @@ The automated live S01 trial injects `tset-app:1.4.2` instead of
 
 ~~~powershell
 $registry = ($config.demoImage -split '/')[0]
-./scripts/tests/test-s01.ps1 -AcrLoginServer $registry -Kubeconfig $config.kubeconfig
+./scripts/scenarios/test-s01.ps1 -AcrLoginServer $registry -Kubeconfig $config.kubeconfig
 ~~~
 
 Run this after loading the setup configuration above. One execution is one

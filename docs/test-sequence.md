@@ -62,5 +62,5 @@ K01-K03 and P01-P08 currently have offline implementations only; run
 `python scripts/evaluation/run_protocol_checks.py` separately and label those results offline.
 S06/S08/S09/S10 use controlled proposals against live remediation, not model
 accuracy trials. S08 does not cover cross-replica overlapping webhook delivery.
-Run controlled handoff integration separately with `./scripts/tests/test-handoff.ps1`.
+Run controlled handoff integration separately with `./scripts/scenarios/test-handoff.ps1`.
 No AKS pass is claimed by adding or locally checking these scripts.

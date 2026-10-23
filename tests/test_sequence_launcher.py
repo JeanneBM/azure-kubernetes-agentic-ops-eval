@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skipif(not PWSH, reason='PowerShell 7 is required')
 def test_sequence_requires_matching_evidence_and_success_exit(tmp_path, mode, expected, keep_going):
     scripts = tmp_path / 'scripts/legacy'
     scripts.mkdir(parents=True)
-    scenarios = tmp_path / 'scripts/tests'
+    scenarios = tmp_path / 'scripts/scenarios'
     scenarios.mkdir()
     shutil.copy(ROOT / 'scripts/legacy/run-tests-one-by-one.ps1', scripts)
     state = tmp_path / '.local/rg-agentic-ops-lab.json'

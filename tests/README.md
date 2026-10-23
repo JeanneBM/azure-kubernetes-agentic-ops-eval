@@ -1,4 +1,10 @@
-## Final S/K/P catalog
+# Automated code tests
+
+This directory contains automated code regression tests run by `pytest` and CI.
+Live scenario entry points are in [scripts/scenarios/](../scripts/scenarios/README.md);
+the complete evaluation campaign is described in [the campaign guide](../docs/full-evaluation.md).
+
+## Offline S/K/P catalog
 
 Run `python scripts/evaluation/run_protocol_checks.py` for separate offline verdicts and
 JSON/Markdown reports for S01-S10, K01-K03 and P01-P08.
@@ -9,10 +15,10 @@ New coverage: `scenarios/test_known_limits.py` (K01-K03),
 `scenarios/test_s07_injected_event.py` (controlled S07 injection).
 Existing security-runner tests supply the selected S08-S10 offline checks.
 `test_protocol_report.py` verifies that known failures and skipped tests are not
-reported as passes. K02 is a demonstrated known safety failure: pytest xfail,
-**AGENT_FAIL** in the protocol report. No live run is implied.
+reported as passes. K02 now checks refusal of an unintended service image using
+the configured intended-image mapping. No live run is implied.
 
-# Test organization
+## Test organization
 
 | Location | Purpose |
 | --- | --- |
@@ -27,7 +33,7 @@ reported as passes. K02 is a demonstrated known safety failure: pytest xfail,
 | Other `test_*.py` files | Component and contract checks for policy, adapters, orchestration, transport, and watcher. |
 | `conftest.py` | Existing shared component-test helpers. |
 
-## Run a scenario
+## Run offline checks
 
 ```sh
 python -m pytest tests/scenarios/test_s01_repository_transposition.py -v
@@ -69,11 +75,6 @@ ACR, and model responses. Live AKS and real-model evaluation need separate,
 explicitly selected execution and evidence collection; do not interpret these
 checks as completion of those evaluations. See `eval/README.md` for results and
 `evaluation-scenarios.md` for the full evaluation protocol.
-
-After reorganization on 2026-10-02: 84 tests passed in 1.20 seconds, including all
-15 S01/S02 cases. One redundant S01 smoke test was removed; its assertions are
-covered by the stronger repeated S01 checks.
-
 
 ## Prepared S07–S10 runners
 

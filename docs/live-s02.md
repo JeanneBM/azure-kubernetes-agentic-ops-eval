@@ -3,7 +3,7 @@
 Run from the repository root in PowerShell 7 after environment setup:
 
 ```powershell
-./scripts/tests/test-s02.ps1
+./scripts/scenarios/test-s02.ps1
 ```
 
 By default, registry and kubeconfig are loaded from `.local/rg-agentic-ops-lab.json`.

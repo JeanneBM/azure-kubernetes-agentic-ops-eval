@@ -4,6 +4,9 @@ Run commands from the repository root. Python tools require Python 3.11+;
 PowerShell scripts require PowerShell 7+. Live trials also require an authenticated
 Azure CLI session and `kubectl`.
 
+`tests/` at the repository root contains automated code tests. The `scenarios/`
+folder here contains commands for live agent evaluation on AKS.
+
 ## Where to look
 
 | Task | Folder | Entry point |
@@ -12,7 +15,7 @@ Azure CLI session and `kubectl`.
 | Run offline protocol checks | [evaluation/](evaluation/) | `run_protocol_checks.py` |
 | Create, prepare or remove the Azure lab | [environment/](environment/) | `setup-environment.ps1`, `prepare-test-environment.ps1`, `delete-environment-resource-group.ps1` |
 | Check whether the lab is ready | [validation/](validation/) | `validate_lab.py` |
-| Run one S01–S10 scenario or the handoff probe | [tests/](tests/) | `test-s01.ps1` … `test-s10.ps1`, `test-handoff.ps1` |
+| Run one S01–S10 scenario or the handoff probe | [scenarios/](scenarios/) | `test-s01.ps1` … `test-s10.ps1`, `test-handoff.ps1` |
 | Package, anonymize or summarize evidence | [evidence/](evidence/) | `package-evidence.ps1`, `sanitize-evidence.py`, `build_ledger.py` |
 | Use an older S-only batch launcher | [legacy/](legacy/) | `S01-S06-tests.ps1`, `S01-S10-tests.ps1`, `run-tests-one-by-one.ps1` |
 | Change shared implementation helpers | [internal/](internal/) | Python validation adapters, PowerShell runtime and security-trial helper |
@@ -37,7 +40,7 @@ campaign deliberately rejects changes to its frozen source files.
 ```powershell
 ./scripts/environment/setup-environment.ps1 -SubscriptionId '<YOUR_SUBSCRIPTION_ID>'
 python scripts/validation/validate_lab.py --help
-./scripts/tests/test-s01.ps1
+./scripts/scenarios/test-s01.ps1
 ./scripts/environment/delete-environment-resource-group.ps1 -ResourceGroup rg-agentic-ops-lab
 ```
 
