@@ -267,3 +267,15 @@ def test_runtime_metadata_cannot_describe_a_different_model_than_the_worker_uses
         if entry['name']=='AZURE_AI_FOUNDRY_DEPLOYMENT': entry['value']='other-model'
     with pytest.raises(ValueError,match='endpoint/deployment'):
         validate_runtime_config(state,diagnostic,remediation,'acr.invalid',model)
+
+
+def test_single_trial_uses_production_watcher_and_preserves_request_correlation():
+    from scenarios.support import FakeCluster
+    from eval.protocol.inpod import single_delivery
+    cluster=FakeCluster();orchestrator=Mock();artifacts={}
+    expected=object();orchestrator.handle.return_value=expected
+    request={'namespace':'test-app','pod':cluster.pod.metadata.name,'correlation_id':'campaign-trial'}
+    assert single_delivery(cluster,cluster,orchestrator,request,artifacts) is expected
+    trigger=orchestrator.handle.call_args.args[0]
+    assert trigger.correlation_id=='campaign-trial' and trigger.workload=='test-app'
+    assert 'production PodWatcher' in artifacts['delivery_mode']

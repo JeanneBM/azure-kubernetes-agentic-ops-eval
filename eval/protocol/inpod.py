@@ -149,6 +149,19 @@ def duplicates(core, apps, provider, remote, request, artifacts):
         server.should_exit=True; thread.join(timeout=10)
 
 
+def single_delivery(core,apps,orchestrator,request,artifacts):
+    outcomes=[]
+    def handle(trigger):
+        trigger=replace(trigger,correlation_id=request['correlation_id'])
+        outcomes.append(orchestrator.handle(trigger))
+    pod=core.read_namespaced_pod(request['pod'],request['namespace'])
+    accepted=PodWatcher(core,apps,request['namespace'],handle).process_pod(pod)
+    if not accepted or len(outcomes)!=1:
+        raise ValueError('Observed failed Pod was not accepted by the production watcher')
+    artifacts['delivery_mode']='host-observed failed Pod through production PodWatcher.process_pod'
+    return outcomes[0]
+
+
 def main():
     logging.basicConfig(level=logging.INFO, format='%(message)s')
     artifacts = {'model_calls': [], 'diagnoses': [], 'handoffs': []}
@@ -195,8 +208,7 @@ def main():
             diagnostics=Diagnostics(providers[0], artifacts, stale=request['scenario']=='S06')
             orch=IncidentOrchestrator(diagnostics, remediation_agent=remote,
                                      resolve_trigger=lambda t: resolve_incident_trigger(core, apps, t))
-            result=orch.handle(IncidentTrigger(namespace, request['pod'], 'test-app',
-                                               'ImagePullBackOff', request['correlation_id']))
+            result=single_delivery(core,apps,orch,request,artifacts)
             artifacts['decision'] = dict(status=result.incident.status.value, reason=result.incident.reason,
                 executed=result.action_executed, summary=result.incident.facts.summary)
         terminal['finished_utc']=utc()

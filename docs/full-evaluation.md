@@ -111,7 +111,11 @@ explicit retry after this review.
 
 ## 5. Live fixture and cleanup behavior
 
-The standard S01-S08 workers are warmed **before** injection. The automatic
+The standard S01-S08 workers are warmed **before** injection.
+For S01-S07 and K cases, the independent host observes the fault and delivers
+the failed Pod through the production watcher processing path. Detection latency
+therefore includes controlled host polling/delivery; it is not a continuous
+watch-stream latency benchmark. A and C use the identical delivery path. The automatic
 production watcher is paused so only the selected system under test handles the
 fault. Host credentials create the fixture; evaluator Pods use the diagnostic
 ServiceAccount; writes go exclusively through the actual remediation service.
