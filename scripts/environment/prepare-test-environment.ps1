@@ -10,7 +10,7 @@ param(
     [Parameter(Mandatory)][string]$EvidenceDirectory,
     [ValidateRange(1,100)][int]$MinimumModelCapacity=10
 )
-. (Join-Path $PSScriptRoot 'lab-runtime.ps1')
+. (Join-Path $PSScriptRoot '../internal/lab-runtime.ps1')
 $ErrorActionPreference='Stop'
 $PSNativeCommandUseErrorActionPreference=$false
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent

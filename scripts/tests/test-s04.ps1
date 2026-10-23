@@ -32,7 +32,7 @@ function Invoke-LabAz {
     if ($LASTEXITCODE -ne 0) { throw "Azure CLI failed: $($Arguments[0..2] -join ' ')" }
     if ($output) { $output | Out-String | ConvertFrom-Json }
 }
-. (Join-Path $PSScriptRoot '../environment/lab-runtime.ps1')
+. (Join-Path $PSScriptRoot '../internal/lab-runtime.ps1')
 function Kube {
     param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
     $explicitConfig = $script:state.kubeconfig
@@ -229,6 +229,6 @@ Review evidence for identifiers before publishing. This is one trial, not a benc
     Write-Host "S04: $verdict; outcome: $outcome; kubelet access restored: $restored"
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
     Write-Host "Evidence: $dir"
-    try { & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning "ZIP creation failed: $_" }
+    try { & (Join-Path $PSScriptRoot '../evidence/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning "ZIP creation failed: $_" }
 }
 if ($verdict -ne 'pass') { throw "S04 did not pass ($outcome). Evidence: $dir" }

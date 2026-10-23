@@ -25,7 +25,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $root '.local/rg-agentic-ops-lab.jso
 $pwshProgram = Join-Path $PSHOME $(if ($IsWindows) { 'pwsh.exe' } else { 'pwsh' })
 # Check all selected entry points before starting the first test.
 foreach ($number in $From..$To) {
-    $path = Join-Path $PSScriptRoot ('test-s{0:00}.ps1' -f $number)
+    $path = Join-Path (Join-Path $PSScriptRoot '../tests') ('test-s{0:00}.ps1' -f $number)
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing scenario script: $path" }
 }
 $session = Join-Path $root ('.local/evidence/sequences/' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,6))
@@ -48,7 +48,7 @@ $results = @(
 try {
     foreach ($number in $From..$To) {
         $scenario = 'S{0:00}' -f $number
-        $path = Join-Path $PSScriptRoot ('test-s{0:00}.ps1' -f $number)
+        $path = Join-Path (Join-Path $PSScriptRoot '../tests') ('test-s{0:00}.ps1' -f $number)
         $childArguments = @('-NoProfile', '-NonInteractive', '-File', $path, '-TimeoutSeconds', "$TimeoutSeconds")
         if ($number -ge 7) { $childArguments += '-PrepareBaseline' }
         $evidence = Join-Path $session $scenario

@@ -8,4 +8,4 @@ param(
     [switch]$PrepareBaseline,
     [string]$EvidenceRoot
 )
-& (Join-Path $PSScriptRoot 'run-controlled-security-trial.ps1') -Scenario 'S08' @PSBoundParameters
+& (Join-Path $PSScriptRoot '../internal/run-controlled-security-trial.ps1') -Scenario 'S08' @PSBoundParameters

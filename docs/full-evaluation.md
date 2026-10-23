@@ -15,7 +15,7 @@ and kubectl. Sign in to the intended subscription. Use only the recorded disposa
 git pull --ff-only
 python -m pip install -c constraints.txt -e ".[dev]"
 python -m pytest -q
-python scripts/run_protocol_checks.py
+python scripts/evaluation/run_protocol_checks.py
 ```
 
 Deploy the updated application **before** initializing the campaign. In PowerShell:
@@ -42,8 +42,8 @@ a new campaign. Do not rerun setup or edit code during a final campaign.
 From the repository root, in Bash or PowerShell:
 
 ```sh
-python scripts/run_evaluation.py init --campaign .local/evaluation/final
-python scripts/run_evaluation.py list --campaign .local/evaluation/final
+python scripts/evaluation/run_evaluation.py init --campaign .local/evaluation/final
+python scripts/evaluation/run_evaluation.py list --campaign .local/evaluation/final
 ```
 
 `init` only writes a plan: **no Azure requests or charges**. Default contents:
@@ -64,7 +64,7 @@ the same deployed remediation gate/executor. No-policy execution is never enable
 ## 3. Run exactly one trial
 
 ```sh
-python scripts/run_evaluation.py next --campaign .local/evaluation/final
+python scripts/evaluation/run_evaluation.py next --campaign .local/evaluation/final
 ```
 
 Repeat the same command for the next trial. Every attempt has a new evidence
@@ -75,7 +75,7 @@ the required failure. Setup/warm-up has its own 300-second budget.
 For an unattended sequential run, still with no overlapping trials:
 
 ```sh
-python scripts/run_evaluation.py run --campaign .local/evaluation/final --pause-seconds 60
+python scripts/evaluation/run_evaluation.py run --campaign .local/evaluation/final --pause-seconds 60
 ```
 
 By default a non-PASS result stops the sequence. `--continue-on-failure` allows
@@ -86,7 +86,7 @@ A single-repetition development run uses a separate directory and is not the
 final five-repetition protocol:
 
 ```sh
-python scripts/run_evaluation.py init --campaign .local/evaluation/development --repetitions 1
+python scripts/evaluation/run_evaluation.py init --campaign .local/evaluation/development --repetitions 1
 ```
 
 ## 4. Resume, retry and interruption
@@ -94,8 +94,8 @@ python scripts/run_evaluation.py init --campaign .local/evaluation/development -
 List the plan, inspect the relevant attempt, then explicitly choose an ID:
 
 ```sh
-python scripts/run_evaluation.py next --campaign .local/evaluation/final --trial 085-K02-A
-python scripts/run_evaluation.py next --campaign .local/evaluation/final --trial 085-K02-A --retry
+python scripts/evaluation/run_evaluation.py next --campaign .local/evaluation/final --trial 085-K02-A
+python scripts/evaluation/run_evaluation.py next --campaign .local/evaluation/final --trial 085-K02-A --retry
 ```
 
 The retry creates another attempt; it never rewrites the original. Passing trials
@@ -149,7 +149,7 @@ retained until the explicit deletion step.
 ## 6. Results and measurements
 
 ```sh
-python scripts/run_evaluation.py report --campaign .local/evaluation/final
+python scripts/evaluation/run_evaluation.py report --campaign .local/evaluation/final
 ```
 
 Review `summary.md`, `summary.json`, `campaign.json` and each attempt directory.
@@ -175,7 +175,7 @@ Optional priced reporting accepts a file with explicitly dated prices:
 Replace zeros with the actual prices before use:
 
 ```sh
-python scripts/run_evaluation.py report --campaign .local/evaluation/final --pricing .local/model-pricing.json
+python scripts/evaluation/run_evaluation.py report --campaign .local/evaluation/final --pricing .local/model-pricing.json
 ```
 
 Decision-call token usage is separate from recorded warm-up usage and cloud
@@ -190,7 +190,7 @@ final evaluation, prepare a private copy of `eval/protocol/catalog.json` with
 Do not tune the prompt/policy on the held-out concrete values. Freeze that file:
 
 ```sh
-python scripts/run_evaluation.py init --campaign .local/evaluation/heldout --fixtures .local/heldout-fixtures.json
+python scripts/evaluation/run_evaluation.py init --campaign .local/evaluation/heldout --fixtures .local/heldout-fixtures.json
 ```
 
 The selected fixture contents are copied into the campaign manifest and reused for
@@ -202,7 +202,7 @@ Raw model inputs and application observations are local/private. Use the existin
 anonymizing packager, then inspect its output before publishing:
 
 ```powershell
-./scripts/packaging/package-evidence.ps1 -SourceDirectory .local/evaluation/final -DestinationPath ./eval/evidence/final-evaluation-anonymized.zip
+./scripts/evidence/package-evidence.ps1 -SourceDirectory .local/evaluation/final -DestinationPath ./eval/evidence/final-evaluation-anonymized.zip
 ./scripts/environment/delete-environment-resource-group.ps1 -ResourceGroup rg-agentic-ops-lab
 ```
 

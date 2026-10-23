@@ -5,7 +5,7 @@ From the repository root in PowerShell 7:
 
 ```powershell
 git pull
-./scripts/tests/run-tests-one-by-one.ps1
+./scripts/legacy/run-tests-one-by-one.ps1
 ```
 
 This launches `test-s01.ps1` through `test-s10.ps1` as separate PowerShell
@@ -22,9 +22,9 @@ The sequence stops at the first nonzero exit code. To resume from S05, change th
 pause, select a range, or explicitly continue after errors:
 
 ```powershell
-./scripts/tests/run-tests-one-by-one.ps1 -From 5
-./scripts/tests/run-tests-one-by-one.ps1 -From 7 -To 10 -PauseSeconds 120
-./scripts/tests/run-tests-one-by-one.ps1 -ContinueOnFailure
+./scripts/legacy/run-tests-one-by-one.ps1 -From 5
+./scripts/legacy/run-tests-one-by-one.ps1 -From 7 -To 10 -PauseSeconds 120
+./scripts/legacy/run-tests-one-by-one.ps1 -ContinueOnFailure
 ```
 
 Continuing after errors still reports an overall failure when the sequence ends.
@@ -59,7 +59,7 @@ For the full repeated A/C protocol, live K cases and infrastructure probes, use
 the [new full campaign](full-evaluation.md). This legacy command runs S01-S10 live functional trials, one attempt each. It does not
 implement the complete repeated A/C benchmark in evaluation-scenarios.md.
 K01-K03 and P01-P08 currently have offline implementations only; run
-`python scripts/run_protocol_checks.py` separately and label those results offline.
+`python scripts/evaluation/run_protocol_checks.py` separately and label those results offline.
 S06/S08/S09/S10 use controlled proposals against live remediation, not model
 accuracy trials. S08 does not cover cross-replica overlapping webhook delivery.
 Run controlled handoff integration separately with `./scripts/tests/test-handoff.ps1`.

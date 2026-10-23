@@ -104,7 +104,7 @@ Do not start tests until setup completes successfully.
 After successful setup:
 
 ```bash
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 pwsh -NoProfile -File ./scripts/tests/run-tests-one-by-one.ps1 -ContinueOnFailure
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 pwsh -NoProfile -File ./scripts/legacy/run-tests-one-by-one.ps1 -ContinueOnFailure
 ```
 
 This runs S01–S10 in separate PowerShell processes, with a 60-second pause
@@ -121,8 +121,8 @@ first failure; the final table still lists unrun tests.
 Resume from S05, or select a range and a longer pause:
 
 ```bash
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 pwsh -NoProfile -File ./scripts/tests/run-tests-one-by-one.ps1 -From 5 -ContinueOnFailure
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 pwsh -NoProfile -File ./scripts/tests/run-tests-one-by-one.ps1 -From 7 -To 10 -PauseSeconds 120 -ContinueOnFailure
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 pwsh -NoProfile -File ./scripts/legacy/run-tests-one-by-one.ps1 -From 5 -ContinueOnFailure
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 pwsh -NoProfile -File ./scripts/legacy/run-tests-one-by-one.ps1 -From 7 -To 10 -PauseSeconds 120 -ContinueOnFailure
 ```
 
 Each invocation reports only its selected range. The lab stays active after tests.

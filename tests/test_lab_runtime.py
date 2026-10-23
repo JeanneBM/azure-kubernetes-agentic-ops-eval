@@ -15,7 +15,7 @@ ROOT = Path(__file__).parents[1]
 
 def execute(tmp_path, body, env=None):
     script = tmp_path / 'check.ps1'
-    helper = ROOT / 'scripts/environment/lab-runtime.ps1'
+    helper = ROOT / 'scripts/internal/lab-runtime.ps1'
     script.write_text("$ErrorActionPreference='Stop'\n. '" + str(helper) + "'\n" + body)
     return subprocess.run([PWSH, '-NoProfile', '-File', str(script)],
                           capture_output=True, text=True, env=env, timeout=20)
@@ -81,9 +81,10 @@ print('captured-log')
 def test_batch_runs_each_scenario_in_a_fresh_process_and_keeps_results(tmp_path):
     root = tmp_path / 'repo'
     (root / 'scripts/tests').mkdir(parents=True)
-    (root / 'scripts/packaging').mkdir()
+    (root / 'scripts/evidence').mkdir()
+    (root / 'scripts/legacy').mkdir()
     (root / '.local').mkdir()
-    shutil.copy(ROOT / 'scripts/tests/S01-S10-tests.ps1', root / 'scripts/tests/S01-S10-tests.ps1')
+    shutil.copy(ROOT / 'scripts/legacy/S01-S10-tests.ps1', root / 'scripts/legacy/S01-S10-tests.ps1')
     (root / '.local/rg-agentic-ops-lab.json').write_text(json.dumps({'subscriptionId':'offline'}))
     fixture = r'''
 param([int]$TimeoutSeconds,[string]$EvidenceRoot,[switch]$PrepareBaseline)
@@ -98,7 +99,7 @@ Compress-Archive -Path (Join-Path $dir '*') -DestinationPath (Join-Path $Evidenc
 '''
     for i in range(1, 11):
         (root / f'scripts/tests/test-s{i:02}.ps1').write_text(fixture)
-    (root / 'scripts/packaging/package-evidence.ps1').write_text(r'''
+    (root / 'scripts/evidence/package-evidence.ps1').write_text(r'''
 param([string]$SourceDirectory,[string]$DestinationPath)
 New-Item -ItemType Directory -Force -Path (Split-Path $DestinationPath -Parent) | Out-Null
 Compress-Archive -Path (Join-Path $SourceDirectory '*') -DestinationPath $DestinationPath
@@ -106,7 +107,7 @@ Compress-Archive -Path (Join-Path $SourceDirectory '*') -DestinationPath $Destin
     bindir = tmp_path / 'bin'; bindir.mkdir()
     az = bindir / 'az'; az.write_text('#!/bin/sh\necho true\n'); az.chmod(0o755)
     entry = tmp_path / 'parent.ps1'
-    entry.write_text("$global:poison='parent-state'\n& '" + str(root / 'scripts/tests/S01-S10-tests.ps1') + "'\n")
+    entry.write_text("$global:poison='parent-state'\n& '" + str(root / 'scripts/legacy/S01-S10-tests.ps1') + "'\n")
     result = subprocess.run([PWSH, '-NoProfile', '-File', str(entry)],
         env={**os.environ,'PATH':str(bindir)+os.pathsep+os.environ['PATH']},
         capture_output=True,text=True,timeout=50)

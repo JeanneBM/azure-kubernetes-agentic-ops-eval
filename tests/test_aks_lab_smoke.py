@@ -10,7 +10,7 @@ import pytest
 
 @pytest.fixture
 def adapter(tmp_path, monkeypatch):
-    scripts = Path(__file__).resolve().parents[1] / "scripts"
+    scripts = Path(__file__).resolve().parents[1] / "scripts" / "internal"
     monkeypatch.syspath_prepend(str(scripts))
     spec = importlib.util.spec_from_file_location(
         "aks_smoke_test_adapter", scripts / "aks_validation.py"
