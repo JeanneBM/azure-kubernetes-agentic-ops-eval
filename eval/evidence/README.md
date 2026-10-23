@@ -50,7 +50,7 @@ the healthy before snapshot alone does not prove the failure occurred.
 
 ## Automatic capture for one S01 trial
 
-[`scripts/tests/test-s01.ps1`](../../scripts/tests/test-s01.ps1) captures a live S01 run in
+[`scripts/scenarios/test-s01.ps1`](../../scripts/scenarios/test-s01.ps1) captures a live S01 run in
 this layout, including unsuccessful attempts; see [usage](../../docs/live-s01.md).
 Other scenario scripts also capture their own artifacts; the manual guidance below
 is available for supplementary evidence. Review captured

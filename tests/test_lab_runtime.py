@@ -80,7 +80,7 @@ print('captured-log')
 
 def test_batch_runs_each_scenario_in_a_fresh_process_and_keeps_results(tmp_path):
     root = tmp_path / 'repo'
-    (root / 'scripts/tests').mkdir(parents=True)
+    (root / 'scripts/scenarios').mkdir(parents=True)
     (root / 'scripts/evidence').mkdir()
     (root / 'scripts/legacy').mkdir()
     (root / '.local').mkdir()
@@ -98,7 +98,7 @@ New-Item -ItemType Directory -Force -Path $dir | Out-Null
 Compress-Archive -Path (Join-Path $dir '*') -DestinationPath (Join-Path $EvidenceRoot "$id-offline-anonymized.zip")
 '''
     for i in range(1, 11):
-        (root / f'scripts/tests/test-s{i:02}.ps1').write_text(fixture)
+        (root / f'scripts/scenarios/test-s{i:02}.ps1').write_text(fixture)
     (root / 'scripts/evidence/package-evidence.ps1').write_text(r'''
 param([string]$SourceDirectory,[string]$DestinationPath)
 New-Item -ItemType Directory -Force -Path (Split-Path $DestinationPath -Parent) | Out-Null

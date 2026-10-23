@@ -98,7 +98,7 @@ def existing(row,directory,timeout):
         path=directory/'handoff/summary.json'
     else:
         process=subprocess.run([pwsh,'-NoProfile','-NonInteractive','-File',
-                  str(ROOT/f'scripts/tests/test-{scenario.lower()}.ps1'),'-PrepareBaseline',
+                  str(ROOT/f'scripts/scenarios/test-{scenario.lower()}.ps1'),'-PrepareBaseline',
                   '-TimeoutSeconds',str(max(180,timeout)),'-EvidenceRoot',str(directory)],
                   cwd=ROOT,capture_output=True,text=True,timeout=1800)
         files=list(directory.rglob('result.json'))

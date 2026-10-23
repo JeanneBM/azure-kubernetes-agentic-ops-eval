@@ -3,7 +3,7 @@
 Run from PowerShell 7 in the repository directory after setup-environment.ps1:
 
 ```powershell
-./scripts/tests/test-s04.ps1
+./scripts/scenarios/test-s04.ps1
 ```
 
 Requires Azure CLI, kubectl, the setup state in .local/rg-agentic-ops-lab.json,

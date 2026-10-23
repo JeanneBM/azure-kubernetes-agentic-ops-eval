@@ -5,7 +5,7 @@ From the repository in Git Bash:
 
 ```bash
 git pull --ff-only
-PYTHONUTF8=1 PYTHONIOENCODING=utf-8 pwsh -NoProfile -File ./scripts/tests/test-handoff.ps1
+PYTHONUTF8=1 PYTHONIOENCODING=utf-8 pwsh -NoProfile -File ./scripts/scenarios/test-handoff.ps1
 ```
 
 Requires Python 3.11+, PowerShell 7, kubectl and an authenticated Azure CLI. The

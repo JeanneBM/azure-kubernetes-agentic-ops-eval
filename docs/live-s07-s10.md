@@ -22,10 +22,10 @@ For the first trial after changing application code, use `-PrepareBaseline`: the
 From the repository root, one command per trial:
 
 ```powershell
-./scripts/tests/test-s07.ps1 -PrepareBaseline
-./scripts/tests/test-s08.ps1 -PrepareBaseline
-./scripts/tests/test-s09.ps1 -PrepareBaseline
-./scripts/tests/test-s10.ps1 -PrepareBaseline
+./scripts/scenarios/test-s07.ps1 -PrepareBaseline
+./scripts/scenarios/test-s08.ps1 -PrepareBaseline
+./scripts/scenarios/test-s09.ps1 -PrepareBaseline
+./scripts/scenarios/test-s10.ps1 -PrepareBaseline
 ```
 
 Each command runs one scenario, not repetitions. `-PrepareBaseline` is explicit because it changes the known lab baseline and can build an agent image. Omit it only when the baseline and application build are already prepared. `-ResourceGroup`, `-Kubeconfig`, `-EvidenceRoot`, and `-TimeoutSeconds` (180–900; default 300) are supported.

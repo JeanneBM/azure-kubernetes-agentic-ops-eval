@@ -89,7 +89,7 @@ def setup(tmp_path, mismatch=False, collection_failure=False):
 @pytest.mark.parametrize('scenario', ['s07', 's08', 's09', 's10'])
 def test_wrappers_pin_images_collect_evidence_and_leave_watcher_paused(tmp_path, scenario):
     root, env = setup(tmp_path)
-    result = subprocess.run([PWSH, '-NoProfile', '-File', str(root / f'scripts/tests/test-{scenario}.ps1')], env=env, capture_output=True, text=True, timeout=30)
+    result = subprocess.run([PWSH, '-NoProfile', '-File', str(root / f'scripts/scenarios/test-{scenario}.ps1')], env=env, capture_output=True, text=True, timeout=30)
     assert result.returncode == 0, result.stdout + result.stderr
     state = json.loads((root / 'state.json').read_text())
     assert state['diagnostic']['spec']['replicas'] == 0
@@ -105,7 +105,7 @@ def test_wrappers_pin_images_collect_evidence_and_leave_watcher_paused(tmp_path,
 
 def test_cluster_mismatch_never_mutates_kubernetes(tmp_path):
     root, env = setup(tmp_path, mismatch=True)
-    result = subprocess.run([PWSH, '-NoProfile', '-File', str(root / 'scripts/tests/test-s07.ps1')], env=env, capture_output=True, text=True, timeout=30)
+    result = subprocess.run([PWSH, '-NoProfile', '-File', str(root / 'scripts/scenarios/test-s07.ps1')], env=env, capture_output=True, text=True, timeout=30)
     assert result.returncode != 0
     trace = [json.loads(l) for l in (root / 'trace.jsonl').read_text().splitlines()]
     assert not any(name == 'kubectl' and any(v in args for v in ('scale', 'set', 'create', 'delete')) for name, args in trace)
@@ -113,7 +113,7 @@ def test_cluster_mismatch_never_mutates_kubernetes(tmp_path):
 
 def test_missing_artifacts_cannot_pass_and_runner_is_removed(tmp_path):
     root, env = setup(tmp_path, collection_failure=True)
-    result = subprocess.run([PWSH, '-NoProfile', '-File', str(root / 'scripts/tests/test-s09.ps1')], env=env, capture_output=True, text=True, timeout=30)
+    result = subprocess.run([PWSH, '-NoProfile', '-File', str(root / 'scripts/scenarios/test-s09.ps1')], env=env, capture_output=True, text=True, timeout=30)
     assert result.returncode != 0
     record = json.loads(next((root / '.local/evidence').rglob('result.json')).read_text())
     assert record['verdict'] == 'inconclusive'
