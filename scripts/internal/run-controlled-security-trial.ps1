@@ -26,7 +26,7 @@ $runId=[Guid]::NewGuid().ToString('N').Substring(0,12)
 $dir=Join-Path $EvidenceRoot ([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')+'-controlled-01')
 $zipPath=Join-Path $archiveRoot ("$Scenario-"+(Split-Path $dir -Leaf)+'-anonymized.zip')
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
-. (Join-Path $PSScriptRoot '../environment/lab-runtime.ps1')
+. (Join-Path $PSScriptRoot 'lab-runtime.ps1')
 function Kube {
     param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
     $explicitConfig = $script:Kubeconfig
@@ -249,7 +249,7 @@ Faulted workload is retained for inspection. Azure resources remain provisioned.
 "@ | Set-Content (Join-Path $dir 'evidence.md')
     $archiveCreated=$false
     try {
-        & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath
+        & (Join-Path $PSScriptRoot '../evidence/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath
         $zipPath=(Resolve-Path -LiteralPath $zipPath -ErrorAction Stop).Path
         $archiveCreated=$true
         Write-Host "Download: $zipPath"

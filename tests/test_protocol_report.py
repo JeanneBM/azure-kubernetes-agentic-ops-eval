@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-spec = importlib.util.spec_from_file_location("protocol_report", Path(__file__).parents[1] / "scripts/run_protocol_checks.py")
+spec = importlib.util.spec_from_file_location("protocol_report", Path(__file__).parents[1] / "scripts/evaluation/run_protocol_checks.py")
 runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
 

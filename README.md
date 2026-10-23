@@ -10,9 +10,15 @@ application, scenario checks and evidence from live evaluation runs.
 
 **The model proposes; deterministic policy authorizes; execution is verified.**
 
+## Finding and running scripts
+
+See the [script directory guide](scripts/README.md) for commands grouped by task.
+For the complete evaluation, use `scripts/evaluation/run_evaluation.py`; older
+S-only batch runners are in `scripts/legacy/`.
+
 ## Individual lab reports
 
-Use `python scripts/validate_lab.py smoke` for this repository's existing lab.
+Use `python scripts/validation/validate_lab.py smoke` for this repository's existing lab.
 For setup, smoke, verified deletion, recreation and another smoke/delete,
 use the explicit `cycle` command in the [lab validation guide](docs/lab-validation.md).
 Each run writes its own JSON/Markdown report under `.local/reports/`.

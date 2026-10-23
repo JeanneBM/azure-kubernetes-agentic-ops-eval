@@ -31,7 +31,7 @@ $source=Join-Path $root ('.local/evidence/handoff/'+$runName)
 $trialExit=$LASTEXITCODE
 if (Test-Path (Join-Path $source 'summary.json')) {
     $destination=Join-Path $root ("eval/evidence/handoff-"+$runName+'-anonymized.zip')
-    & (Join-Path $root 'scripts/packaging/package-evidence.ps1') -SourceDirectory $source -DestinationPath $destination
+    & (Join-Path $root 'scripts/evidence/package-evidence.ps1') -SourceDirectory $source -DestinationPath $destination
     Write-Host "Archive: $destination"
 }
 if ($trialExit -ne 0) { throw 'Handoff trials did not both pass. Read summary.json and cleanup_errors before proceeding.' }

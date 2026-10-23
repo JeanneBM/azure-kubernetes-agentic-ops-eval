@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
+SCRIPTS = Path(__file__).resolve().parents[1] / "scripts" / "internal"
 spec = importlib.util.spec_from_file_location(
     "validation_test_contract", SCRIPTS / "lab_validation.py"
 )

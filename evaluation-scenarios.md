@@ -2,7 +2,7 @@
 
 Status: protocol with a runnable [full campaign](docs/full-evaluation.md), not an evaluation result.
 
-The campaign executes one trial at a time using `python scripts/run_evaluation.py next`.
+The campaign executes one trial at a time using `python scripts/evaluation/run_evaluation.py next`.
 It includes the required five-repetition A/C core, live known-limit fixtures,
 offline parser/policy/transport checks and live infrastructure/handoff probes.
 Optional B/D/H comparisons remain follow-up studies.

@@ -3,7 +3,7 @@ import json
 import shutil
 from pathlib import Path
 
-spec = importlib.util.spec_from_file_location('build_ledger', Path(__file__).parents[1] / 'scripts/build_ledger.py')
+spec = importlib.util.spec_from_file_location('build_ledger', Path(__file__).parents[1] / 'scripts/evidence/build_ledger.py')
 ledger = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ledger)
 

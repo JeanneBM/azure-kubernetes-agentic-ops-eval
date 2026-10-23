@@ -31,7 +31,7 @@ $archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRo
 $zipPath = Join-Path $archiveRoot ("S02-" + (Split-Path $dir -Leaf) + "-anonymized.zip")
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null
-. (Join-Path $PSScriptRoot '../environment/lab-runtime.ps1')
+. (Join-Path $PSScriptRoot '../internal/lab-runtime.ps1')
 function Kube {
     param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
     $explicitConfig = $script:Kubeconfig
@@ -190,6 +190,6 @@ Review all files for credentials and personal identifiers before publication.
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
     try { Kube @('get','deployment','test-app','-n','test-app','-o','jsonpath={.spec.template.spec.containers[0].image}') | Out-Host; Kube @('get','pods','-n','test-app') | Out-Host } catch { Write-Warning $_ }
     Write-Host "Evidence: $dir. Take a screenshot of the decision, image and pods."
-    try { & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download before an ephemeral Cloud Shell session ends: $zipPath" } catch { Write-Warning "Could not create ZIP: $_" }
+    try { & (Join-Path $PSScriptRoot '../evidence/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download before an ephemeral Cloud Shell session ends: $zipPath" } catch { Write-Warning "Could not create ZIP: $_" }
 }
 if ($verdict -ne 'pass') { throw "S02 did not pass ($outcome). Evidence: $dir" }

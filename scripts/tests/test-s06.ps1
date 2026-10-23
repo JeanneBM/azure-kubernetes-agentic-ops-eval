@@ -32,7 +32,7 @@ $archiveRoot = if ($PSBoundParameters.ContainsKey('EvidenceRoot')) { $EvidenceRo
 $zipPath = Join-Path $archiveRoot ("S06-" + (Split-Path $dir -Leaf) + "-anonymized.zip")
 New-Item -ItemType Directory -Path $dir -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $dir 'screenshots') | Out-Null
-. (Join-Path $PSScriptRoot '../environment/lab-runtime.ps1')
+. (Join-Path $PSScriptRoot '../internal/lab-runtime.ps1')
 function Kube {
     param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
     $explicitConfig = $script:Kubeconfig
@@ -196,6 +196,6 @@ Review snapshots and logs before publication; use audit logs for exhaustive writ
 "@ | Set-Content (Join-Path $dir 'evidence.md')
     Write-Host "S06: $verdict; outcome: $outcome"
     if ($decision) { $decision | ConvertTo-Json -Depth 100 | Out-Host }
-    try { & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning $_ }
+    try { & (Join-Path $PSScriptRoot '../evidence/package-evidence.ps1') -SourceDirectory $dir -DestinationPath $zipPath; Write-Host "Download: $zipPath" } catch { Write-Warning $_ }
 }
 if ($verdict -ne 'pass') { throw "S06 did not pass ($outcome). Evidence: $dir" }

@@ -18,7 +18,7 @@ $PSNativeCommandUseErrorActionPreference=$false
 $root=Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $scenarios=@('S01','S02','S03','S04','S05','S06')
 foreach ($scenario in $scenarios) {
-    $scriptPath=Join-Path $PSScriptRoot ("test-"+$scenario.ToLower()+".ps1")
+    $scriptPath=Join-Path (Join-Path $PSScriptRoot '../tests') ("test-"+$scenario.ToLower()+".ps1")
     if (-not (Test-Path $scriptPath)) { throw "Missing scenario script: $scriptPath" }
 }
 $azProgram=(Get-Command az -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
@@ -67,7 +67,7 @@ try {
     foreach ($scenario in $scenarios) {
         $scenarioDirectory=Join-Path $batchDirectory $scenario
         New-Item -ItemType Directory -Force -Path $scenarioDirectory | Out-Null
-        $scenarioScript=Join-Path $PSScriptRoot ("test-"+$scenario.ToLower()+".ps1")
+        $scenarioScript=Join-Path (Join-Path $PSScriptRoot '../tests') ("test-"+$scenario.ToLower()+".ps1")
         $started=[DateTime]::UtcNow
         $clock=[Diagnostics.Stopwatch]::StartNew()
         $scenarioError=$null
@@ -107,7 +107,7 @@ try {
     $rows | Format-Table scenario,verdict,outcome,durationSeconds -AutoSize | Out-Host
     $bundle=Join-Path (Join-Path $root 'eval/evidence') ($batchId+'-anonymized.zip')
     try {
-        & (Join-Path $PSScriptRoot '../packaging/package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle
+        & (Join-Path $PSScriptRoot '../evidence/package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle
         Write-Host "Download: $bundle"
     } catch { Write-Warning "Batch ZIP could not be created: $_" }
     Write-Host "Summary: $(Join-Path $batchDirectory 'summary.md')"

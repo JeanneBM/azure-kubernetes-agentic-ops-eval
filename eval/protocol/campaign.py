@@ -13,7 +13,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-from scripts.run_protocol_checks import CATALOG, classify
+from scripts.evaluation.run_protocol_checks import CATALOG, classify
 from eval.protocol.live import LiveTrial, ROOT
 
 
@@ -28,9 +28,9 @@ def write_json(path, value):
 
 def freeze():
     paths=[ROOT/'pyproject.toml',ROOT/'constraints.txt',ROOT/'evaluation-scenarios.md']
-    for directory in ('src','eval/protocol','eval/handoff','tests/scenarios','scripts/tests'):
+    for directory in ('src','eval/protocol','eval/handoff','tests/scenarios','scripts'):
         paths.extend(p for p in (ROOT/directory).rglob('*') if p.suffix in ('.py','.ps1'))
-    paths.extend([ROOT/'scripts/run_protocol_checks.py',ROOT/'eval/protocol/catalog.json'])
+    paths.extend([ROOT/'scripts/evaluation/run_protocol_checks.py',ROOT/'eval/protocol/catalog.json'])
     return {str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(set(paths))}
 
 

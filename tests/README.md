@@ -1,6 +1,6 @@
 ## Final S/K/P catalog
 
-Run `python scripts/run_protocol_checks.py` for separate offline verdicts and
+Run `python scripts/evaluation/run_protocol_checks.py` for separate offline verdicts and
 JSON/Markdown reports for S01-S10, K01-K03 and P01-P08.
 See [final evaluation scope and commands](../docs/final-evaluation.md).
 

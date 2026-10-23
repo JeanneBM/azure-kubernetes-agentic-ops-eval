@@ -9,7 +9,7 @@ semantics and exit codes; the smoke assertions are specific to this project.
 From this repository's root, after its setup and dependency installation:
 
 ```sh
-python scripts/validate_lab.py smoke
+python scripts/validation/validate_lab.py smoke
 ```
 
 Smoke checks: Image-typo repair: a matching agent audit, original Deployment spec, healthy rollout and exactly two Deployment generations (injection + repair). The diagnostic agent is restarted to clear incident deduplication. Smoke mode requires a healthy, single-container baseline and does not manually repair a failed trial.
@@ -25,7 +25,7 @@ resources, tests generation 1, deletes and verifies it, recreates with fresh
 resource names, tests generation 2, then deletes and verifies it again:
 
 ```sh
-python scripts/validate_lab.py cycle --subscription '<YOUR_SUBSCRIPTION_ID>' --confirm-delete rg-agentic-ops-lab
+python scripts/validation/validate_lab.py cycle --subscription '<YOUR_SUBSCRIPTION_ID>' --confirm-delete rg-agentic-ops-lab
 ```
 
 The group name is explicit consent for this command's two cleanup operations.

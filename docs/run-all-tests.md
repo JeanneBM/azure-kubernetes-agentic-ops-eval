@@ -3,7 +3,7 @@
 From PowerShell 7, from any directory (replace the checkout path if necessary):
 
 ```powershell
-& /home/joanna/azure-kubernetes-agentic-ops-eval/scripts/tests/S01-S10-tests.ps1
+& /home/joanna/azure-kubernetes-agentic-ops-eval/scripts/legacy/S01-S10-tests.ps1
 ```
 
 The ten scenarios run sequentially against the shared lab. S01–S06 use their
@@ -31,7 +31,7 @@ The Azure lab remains provisioned; use the cleanup script after saving evidence.
 ## First six scenarios only
 
 ```powershell
-./scripts/tests/S01-S06-tests.ps1
+./scripts/legacy/S01-S06-tests.ps1
 ```
 
 ### Batch lifecycle guards

@@ -53,7 +53,7 @@ See the [decision ledger](ledger.md), including background triggers, transport f
 Regenerate from ZIP archives or extracted run folders; manual comments are preserved:
 
 ```sh
-python scripts/build_ledger.py eval/evidence eval/ledger.md
+python scripts/evidence/build_ledger.py eval/evidence eval/ledger.md
 ```
 
 ## Find the evidence

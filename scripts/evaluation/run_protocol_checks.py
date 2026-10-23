@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 CATALOG = {
     **{f"S{i:02}": [f"tests/scenarios/{name}"] for i, name in enumerate([
         "test_s01_repository_transposition.py", "test_s02_healthy_sidecar.py",
