@@ -23,7 +23,7 @@ Pass requires a matching resolved fix_image decision with action_executed=true,
 correct old/new images and container, a healthy rollout, and full Deployment spec
 equality with the healthy pre-injection baseline, including the sidecar.
 
-Evidence and a sibling ZIP are written under `eval/evidence/S02/` with a new UTC
+Raw evidence is written under `.local/evidence/S02/` with a new UTC
 run ID: preparation/baseline/final snapshots, Pod states, Events, command exit
 codes, both agent logs, decision when available, result.json and evidence.md.
 Failed attempts retain evidence. Capture a screenshot and add it to screenshots/;
@@ -38,3 +38,6 @@ via Deployment may omit older containers after restarts; missing failure capture
 are evidence gaps. Readiness is not business-function verification.
 
 Evidence ZIP names start with the scenario ID: `S02-<UTC-run-id>-C-01.zip`.
+
+Raw run folders stay local; reviewed anonymized ZIPs are exported under
+`eval/evidence/S02/`.

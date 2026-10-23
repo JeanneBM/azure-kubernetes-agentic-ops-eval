@@ -105,7 +105,7 @@ try {
     if ($rows.Count -gt 0) { Save-BatchSummary }
     Write-Host "`n========== BATCH SUMMARY =========="
     $rows | Format-Table scenario,verdict,outcome,durationSeconds -AutoSize | Out-Host
-    $bundle=Join-Path (Join-Path $root 'eval/evidence') ($batchId+'-anonymized.zip')
+    $bundle=Join-Path (Join-Path $root 'eval/evidence/batches') ($batchId+'-anonymized.zip')
     try {
         & (Join-Path $PSScriptRoot '../evidence/package-evidence.ps1') -SourceDirectory $batchDirectory -DestinationPath $bundle
         Write-Host "Download: $bundle"

@@ -7,3 +7,24 @@ __pycache__/
 
 .coverage
 *.egg-info/
+
+# Local tooling, editor files and build outputs
+.env
+.env.*
+!.env.example
+.venv*/
+venv/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+coverage.xml
+junit*.xml
+build/
+dist/
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

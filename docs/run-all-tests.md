@@ -17,8 +17,8 @@ Missing recorded state for an existing resource group is rejected; a missing lab
 can be provisioned using the current subscription or `-SubscriptionId`.
 
 Raw evidence and summaries stay under `.local/evidence/batches/S01-S10-<UTC>/`.
-Each available scenario ZIP is exported directly into `eval/evidence/`, with a
-name ending in `-anonymized.zip`. A combined S01-S10 archive is written there too.
+Each available scenario ZIP is exported into `eval/evidence/<scenario-id>/`, with a
+name ending in `-anonymized.zip`. A combined S01-S10 archive is written to `eval/evidence/batches/`.
 The final output lists full ZIP paths. Missing archives are recorded separately
 from functional verdicts and cause the batch command to report failure.
 

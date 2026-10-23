@@ -40,7 +40,7 @@ def test_archived_evidence_counts_and_manual_comments_survive(tmp_path):
         'S05-20261012T092231374Z-C-01-anonymized.zip',
         'S06-20261012T094802362Z-C-01-anonymized.zip',
     )
-    archives = [root / 'eval/evidence' / name for name in historical_archives]
+    archives = [root / 'eval/evidence' / name[:3] / name for name in historical_archives]
     assert all(p.is_file() for p in archives), 'Historical ledger fixture is missing'
     for archive in archives:
         shutil.copy2(archive, evidence / archive.name)

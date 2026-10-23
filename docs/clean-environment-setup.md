@@ -81,7 +81,7 @@ Configuration contains resource names, endpoint and image references, without
 handoff tokens. `.local` is excluded from git and the ACR build context because
 kubeconfig contains credentials. The handoff token is generated in memory and
 sent through stdin to Kubernetes. Setup Deployment/Pod snapshots are saved in
-`eval/evidence/setup/<UTC-run-id>/`; review identifiers before publishing.
+`.local/evidence/setup/<UTC-run-id>/`; review identifiers before publishing.
 Screenshot the final pod tables as evidence of the healthy initial state.
 These snapshots are setup observations, not scenario pass results.
 
