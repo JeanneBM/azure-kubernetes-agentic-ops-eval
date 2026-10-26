@@ -1,0 +1,15 @@
+{
+  "resourceGroup": "ANON_RESOURCE_008",
+  "runnerSha256": "7E3BB31CBDBCC9A6AB66839362653ACEEC17CB99A1A12468CC991189BEFCECD5",
+  "agentImages": {
+    "remediation": "ANON_RESOURCE_001.azurecr.io/agentic-ops@sha256:c792e4e75dffceb94da93b7e036431f08a95d95fb80ac79f2840a6ebb25ba195",
+    "diagnostic": "ANON_RESOURCE_001.azurecr.io/agentic-ops@sha256:c792e4e75dffceb94da93b7e036431f08a95d95fb80ac79f2840a6ebb25ba195"
+  },
+  "agentSourceCommit": "not independently established",
+  "agentImageDigests": {
+    "remediation": "sha256:c792e4e75dffceb94da93b7e036431f08a95d95fb80ac79f2840a6ebb25ba195",
+    "diagnostic": "sha256:c792e4e75dffceb94da93b7e036431f08a95d95fb80ac79f2840a6ebb25ba195"
+  },
+  "evaluatorCommit": "198324432b352eba5a917e3b5dadfbe30ded5e58",
+  "contextServer": "https://ANON_RESOURCE_006ANON_HOST_001.example.invalid:443"
+}

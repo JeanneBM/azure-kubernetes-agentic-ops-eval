@@ -1,0 +1,437 @@
+{
+  "source_hashes": {
+    "split_app.py": "edf4eef40ba9594a789fac686e68e3b2d354e0b79fce4ea39a0582b66d9b1696",
+    "__init__.py": "ea0a4ac893e368c3c2d689a62b4cffe2e52c52048c3044ef4f3be98df69016ea",
+    "aks.py": "706e94703295e36477b758a7ce6d103b51ec12a883b92b9212014388c5ec27d6",
+    "web.py": "f965c1feb2b9a2ea332ca9259a69f46ee0db51607f81892f96ab87e55135d36c",
+    "orchestrator.py": "2c50fa04f8bbb0801a60d1f5319e46f5c971aa2fe34969b91a3d49243fbde867",
+    "watcher.py": "352ab37145c76d6213f997e19b9cdb0d3ac1d1ee4891680238b42cd6dd7c0a47",
+    "remote.py": "38982a6e8428031fa8f10081f8a6c07fe710fa231150d1328776b6e3a1c04d2c",
+    "acr.py": "d61e6d159fca7b46e059640789f7cf680d9be579a269202bad339a7c5751308e",
+    "baseline.py": "6025aa382f5066265421e163ab1887a11d6f24aed097c6520344dca0c8b4ffa9",
+    "safety.py": "a21c26259492708e63d1b997afb729ad183c8d546aef4bf05e133738220ce233",
+    "timeouts.py": "19d969b41107b613115f1230d87992cce173637dd09e539e118a0b01e5ec18b4",
+    "telemetry.py": "7b659d919141f8a79e74e0c0bc76734c032778c560f6ef0b92ae7c4f354f5ec3",
+    "agents.py": "d4fb4909fa7307dbcc694ba355a9f6b5e521d5e7534242a602fe80d007ea03bb",
+    "contracts.py": "434ff3f61946219c1aff173922407141318cc75e4d772f853f095e9be507e654",
+    "foundry.py": "03a39900e06b74c2e465ee756435b6e26617cdfc707670a22aac58e99cdf6126"
+  },
+  "runtime_image": "ANON_RESOURCE_001.azurecr.io/agentic-ops@sha256:892018a9a3fb6c7060c55f7b56e164030a14cc77aae49821c8c2bf1da534f34f",
+  "model": {
+    "etag": "\"ANON_UUID_007\"",
+    "id": "/subscriptions/ANON_UUID_008/resourceGroups/ANON_RESOURCE_008/providers/Microsoft.CognitiveServices/accounts/ANON_RESOURCE_007/ANON_RESOURCE_005/diagnostic-gpt41nano",
+    "name": "diagnostic-gpt41nano",
+    "properties": {
+      "callRateLimit": null,
+      "capabilities": {
+        "agentsV2": "true",
+        "area": "EUR",
+        "assistants": "true",
+        "chatCompletion": "true",
+        "responses": "true"
+      },
+      "capacitySettings": null,
+      "currentCapacity": 10,
+      "deploymentState": "Running",
+      "dynamicThrottlingEnabled": null,
+      "model": {
+        "callRateLimit": null,
+        "format": "OpenAI",
+        "name": "gpt-4.1-nano",
+        "publisher": null,
+        "source": null,
+        "sourceAccount": null,
+        "version": "2025-04-14"
+      },
+      "parentDeploymentName": null,
+      "provisioningState": "Succeeded",
+      "raiPolicyName": "Microsoft.DefaultV2",
+      "rateLimits": [
+        {
+          "count": 10.0,
+          "dynamicThrottlingEnabled": null,
+          "key": "request",
+          "matchPatterns": null,
+          "minCount": null,
+          "renewalPeriod": 60.0
+        },
+        {
+          "count": 10000.0,
+          "dynamicThrottlingEnabled": null,
+          "key": "token",
+          "matchPatterns": null,
+          "minCount": null,
+          "renewalPeriod": 60.0
+        }
+      ],
+      "routing": null,
+      "scaleSettings": null,
+      "serviceTier": null,
+      "speculativeDecoding": null,
+      "spilloverDeploymentName": null,
+      "versionUpgradeOption": "OnceNewDefaultVersionAvailable"
+    },
+    "resourceGroup": "ANON_RESOURCE_008",
+    "sku": {
+      "capacity": 10,
+      "family": null,
+      "name": "GlobalStandard",
+      "size": null,
+      "tier": null
+    },
+    "systemData": {
+      "createdAt": "2026-10-26T12:25:49.398369+00:00",
+      "createdBy": "ANON_IDENTITY_006",
+      "createdByType": "User",
+      "lastModifiedAt": "2026-10-26T12:25:49.398369+00:00",
+      "lastModifiedBy": "ANON_IDENTITY_006",
+      "lastModifiedByType": "User"
+    },
+    "tags": null,
+    "type": "Microsoft.CognitiveServices/accounts/ANON_RESOURCE_005"
+  },
+  "diagnostic_template": {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+      "annotations": {
+        "deployment.kubernetes.io/revision": "1",
+        "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\": \"apps/v1\", \"kind\": \"Deployment\", \"metadata\": {\"annotations\": {}, \"name\": \"agentic-ops-diagnostic\", \"namespace\": \"agentic-ops\"}, \"spec\": {\"replicas\": 1, \"selector\": {\"matchLabels\": {\"app\": \"agentic-ops\", \"role\": \"diagnostic\"}}, \"strategy\": {\"type\": \"Recreate\"}, \"template\": {\"metadata\": {\"labels\": {\"app\": \"agentic-ops\", \"azure.workload.identity/use\": \"true\", \"role\": \"diagnostic\"}}, \"spec\": {\"containers\": [{\"env\": [{\"name\": \"AGENT_TELEMETRY_STDOUT\", \"value\": \"1\"}, {\"name\": \"AGENTIC_OPS_ROLE\", \"value\": \"diagnostic\"}, {\"name\": \"AGENTIC_OPS_RECORD_MODEL_IO\", \"value\": \"1\"}, {\"name\": \"AGENTIC_OPS_NAMESPACE\", \"value\": \"test-app\"}, {\"name\": \"AGENTIC_OPS_ALLOWED_REGISTRIES\", \"value\": \"ANON_RESOURCE_001.azurecr.io\"}, {\"name\": \"AZURE_AI_FOUNDRY_ENDPOINT\", \"value\": \"https://ANON_RESOURCE_007.openai.azure.com/\"}, {\"name\": \"AZURE_AI_FOUNDRY_DEPLOYMENT\", \"value\": \"diagnostic-gpt41nano\"}, {\"name\": \"AGENTIC_OPS_REMEDIATION_URL\", \"value\": \"http://agentic-ops-remediation.agentic-ops.svc.cluster.local:8080\"}, {\"name\": \"AGENTIC_OPS_REMEDIATION_TOKEN\", \"valueFrom\": {\"secretKeyRef\": {\"key\": \"token\", \"name\": \"agentic-ops-remediation\"}}}, {\"name\": \"AGENTIC_OPS_WEBHOOK_TOKEN\", \"valueFrom\": {\"secretKeyRef\": {\"key\": \"token\", \"name\": \"agentic-ops-webhook\", \"optional\": true}}}], \"envFrom\": [{\"configMapRef\": {\"name\": \"agentic-ops-timeouts\"}}], \"image\": \"ANON_RESOURCE_001.azurecr.io/agentic-ops:eval-20261026123113-7f0944\", \"livenessProbe\": {\"httpGet\": {\"path\": \"/healthz\", \"port\": 8080}}, \"name\": \"diagnostic-agent\", \"ports\": [{\"containerPort\": 8080}], \"readinessProbe\": {\"httpGet\": {\"path\": \"/healthz\", \"port\": 8080}}, \"resources\": {\"limits\": {\"memory\": \"256Mi\"}, \"requests\": {\"cpu\": \"50m\", \"memory\": \"128Mi\"}}}], \"securityContext\": {\"runAsNonRoot\": true}, \"serviceAccountName\": \"agentic-ops-diagnostic\"}}}}"
+      },
+      "creationTimestamp": "2026-10-26T12:33:00Z",
+      "generation": 93,
+      "name": "agentic-ops-diagnostic",
+      "namespace": "agentic-ops",
+      "resourceVersion": "56843",
+      "uid": "ANON_UUID_009"
+    },
+    "spec": {
+      "progressDeadlineSeconds": 600,
+      "replicas": 1,
+      "revisionHistoryLimit": 10,
+      "selector": {
+        "matchLabels": {
+          "app": "agentic-ops",
+          "role": "diagnostic"
+        }
+      },
+      "strategy": {
+        "type": "Recreate"
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "app": "agentic-ops",
+            "azure.workload.identity/use": "true",
+            "role": "diagnostic"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "AGENT_TELEMETRY_STDOUT",
+                  "value": "1"
+                },
+                {
+                  "name": "AGENTIC_OPS_ROLE",
+                  "value": "diagnostic"
+                },
+                {
+                  "name": "AGENTIC_OPS_RECORD_MODEL_IO",
+                  "value": "1"
+                },
+                {
+                  "name": "AGENTIC_OPS_NAMESPACE",
+                  "value": "test-app"
+                },
+                {
+                  "name": "AGENTIC_OPS_ALLOWED_REGISTRIES",
+                  "value": "ANON_RESOURCE_001.azurecr.io"
+                },
+                {
+                  "name": "AZURE_AI_FOUNDRY_ENDPOINT",
+                  "value": "https://ANON_RESOURCE_007.openai.azure.com/"
+                },
+                {
+                  "name": "AZURE_AI_FOUNDRY_DEPLOYMENT",
+                  "value": "diagnostic-gpt41nano"
+                },
+                {
+                  "name": "AGENTIC_OPS_REMEDIATION_URL",
+                  "value": "http://agentic-ops-remediation.agentic-ops.svc.cluster.local:8080"
+                },
+                {
+                  "name": "AGENTIC_OPS_REMEDIATION_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "token",
+                      "name": "agentic-ops-remediation"
+                    }
+                  }
+                },
+                {
+                  "name": "AGENTIC_OPS_WEBHOOK_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "token",
+                      "name": "agentic-ops-webhook",
+                      "optional": true
+                    }
+                  }
+                }
+              ],
+              "envFrom": [
+                {
+                  "configMapRef": {
+                    "name": "agentic-ops-timeouts"
+                  }
+                }
+              ],
+              "image": "ANON_RESOURCE_001.azurecr.io/agentic-ops:eval-20261026123113-7f0944",
+              "imagePullPolicy": "IfNotPresent",
+              "livenessProbe": {
+                "failureThreshold": 3,
+                "httpGet": {
+                  "path": "/healthz",
+                  "port": 8080,
+                  "scheme": "HTTP"
+                },
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 1
+              },
+              "name": "diagnostic-agent",
+              "ports": [
+                {
+                  "containerPort": 8080,
+                  "protocol": "TCP"
+                }
+              ],
+              "readinessProbe": {
+                "failureThreshold": 3,
+                "httpGet": {
+                  "path": "/healthz",
+                  "port": 8080,
+                  "scheme": "HTTP"
+                },
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 1
+              },
+              "resources": {
+                "limits": {
+                  "memory": "256Mi"
+                },
+                "requests": {
+                  "cpu": "50m",
+                  "memory": "128Mi"
+                }
+              },
+              "terminationMessagePath": "/dev/termination-log",
+              "terminationMessagePolicy": "File"
+            }
+          ],
+          "dnsPolicy": "ClusterFirst",
+          "restartPolicy": "Always",
+          "schedulerName": "default-scheduler",
+          "securityContext": {
+            "runAsNonRoot": true
+          },
+          "serviceAccount": "agentic-ops-diagnostic",
+          "serviceAccountName": "agentic-ops-diagnostic",
+          "terminationGracePeriodSeconds": 30
+        }
+      }
+    },
+    "status": {
+      "availableReplicas": 1,
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-10-26T12:33:00Z",
+          "lastUpdateTime": "2026-10-26T12:33:07Z",
+          "message": "ReplicaSet \"agentic-ops-diagnostic-595cd68dbd\" has successfully progressed.",
+          "reason": "NewReplicaSetAvailable",
+          "status": "True",
+          "type": "Progressing"
+        },
+        {
+          "lastTransitionTime": "2026-10-26T15:02:36Z",
+          "lastUpdateTime": "2026-10-26T15:02:36Z",
+          "message": "Deployment has minimum availability.",
+          "reason": "MinimumReplicasAvailable",
+          "status": "True",
+          "type": "Available"
+        }
+      ],
+      "observedGeneration": 93,
+      "readyReplicas": 1,
+      "replicas": 1,
+      "terminatingReplicas": 0,
+      "updatedReplicas": 1
+    }
+  },
+  "remediation_template": {
+    "apiVersion": "apps/v1",
+    "kind": "Deployment",
+    "metadata": {
+      "annotations": {
+        "deployment.kubernetes.io/revision": "1",
+        "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\": \"apps/v1\", \"kind\": \"Deployment\", \"metadata\": {\"annotations\": {}, \"name\": \"agentic-ops-remediation\", \"namespace\": \"agentic-ops\"}, \"spec\": {\"replicas\": 1, \"selector\": {\"matchLabels\": {\"app\": \"agentic-ops\", \"role\": \"remediation\"}}, \"strategy\": {\"type\": \"Recreate\"}, \"template\": {\"metadata\": {\"labels\": {\"app\": \"agentic-ops\", \"azure.workload.identity/use\": \"true\", \"role\": \"remediation\"}}, \"spec\": {\"containers\": [{\"env\": [{\"name\": \"AGENT_TELEMETRY_STDOUT\", \"value\": \"1\"}, {\"name\": \"AGENTIC_OPS_INTENDED_IMAGES\", \"value\": \"{\\\"test-app/api\\\": \\\"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\\\"}\"}, {\"name\": \"AGENTIC_OPS_ROLE\", \"value\": \"remediation\"}, {\"name\": \"AGENTIC_OPS_NAMESPACE\", \"value\": \"test-app\"}, {\"name\": \"AGENTIC_OPS_ALLOWED_REGISTRIES\", \"value\": \"ANON_RESOURCE_001.azurecr.io\"}, {\"name\": \"AGENTIC_OPS_REMEDIATION_TOKEN\", \"valueFrom\": {\"secretKeyRef\": {\"key\": \"token\", \"name\": \"agentic-ops-remediation\"}}}], \"envFrom\": [{\"configMapRef\": {\"name\": \"agentic-ops-timeouts\"}}], \"image\": \"ANON_RESOURCE_001.azurecr.io/agentic-ops:eval-20261026123113-7f0944\", \"livenessProbe\": {\"httpGet\": {\"path\": \"/healthz\", \"port\": 8080}}, \"name\": \"remediation-agent\", \"ports\": [{\"containerPort\": 8080}], \"readinessProbe\": {\"httpGet\": {\"path\": \"/healthz\", \"port\": 8080}}, \"resources\": {\"limits\": {\"memory\": \"256Mi\"}, \"requests\": {\"cpu\": \"50m\", \"memory\": \"128Mi\"}}}], \"securityContext\": {\"runAsNonRoot\": true}, \"serviceAccountName\": \"agentic-ops-remediation\"}}}}"
+      },
+      "creationTimestamp": "2026-10-26T12:33:00Z",
+      "generation": 1,
+      "name": "agentic-ops-remediation",
+      "namespace": "agentic-ops",
+      "resourceVersion": "2766",
+      "uid": "ANON_UUID_010"
+    },
+    "spec": {
+      "progressDeadlineSeconds": 600,
+      "replicas": 1,
+      "revisionHistoryLimit": 10,
+      "selector": {
+        "matchLabels": {
+          "app": "agentic-ops",
+          "role": "remediation"
+        }
+      },
+      "strategy": {
+        "type": "Recreate"
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "app": "agentic-ops",
+            "azure.workload.identity/use": "true",
+            "role": "remediation"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "env": [
+                {
+                  "name": "AGENT_TELEMETRY_STDOUT",
+                  "value": "1"
+                },
+                {
+                  "name": "AGENTIC_OPS_INTENDED_IMAGES",
+                  "value": "{\"test-app/api\": \"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\"}"
+                },
+                {
+                  "name": "AGENTIC_OPS_ROLE",
+                  "value": "remediation"
+                },
+                {
+                  "name": "AGENTIC_OPS_NAMESPACE",
+                  "value": "test-app"
+                },
+                {
+                  "name": "AGENTIC_OPS_ALLOWED_REGISTRIES",
+                  "value": "ANON_RESOURCE_001.azurecr.io"
+                },
+                {
+                  "name": "AGENTIC_OPS_REMEDIATION_TOKEN",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "token",
+                      "name": "agentic-ops-remediation"
+                    }
+                  }
+                }
+              ],
+              "envFrom": [
+                {
+                  "configMapRef": {
+                    "name": "agentic-ops-timeouts"
+                  }
+                }
+              ],
+              "image": "ANON_RESOURCE_001.azurecr.io/agentic-ops:eval-20261026123113-7f0944",
+              "imagePullPolicy": "IfNotPresent",
+              "livenessProbe": {
+                "failureThreshold": 3,
+                "httpGet": {
+                  "path": "/healthz",
+                  "port": 8080,
+                  "scheme": "HTTP"
+                },
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 1
+              },
+              "name": "remediation-agent",
+              "ports": [
+                {
+                  "containerPort": 8080,
+                  "protocol": "TCP"
+                }
+              ],
+              "readinessProbe": {
+                "failureThreshold": 3,
+                "httpGet": {
+                  "path": "/healthz",
+                  "port": 8080,
+                  "scheme": "HTTP"
+                },
+                "periodSeconds": 10,
+                "successThreshold": 1,
+                "timeoutSeconds": 1
+              },
+              "resources": {
+                "limits": {
+                  "memory": "256Mi"
+                },
+                "requests": {
+                  "cpu": "50m",
+                  "memory": "128Mi"
+                }
+              },
+              "terminationMessagePath": "/dev/termination-log",
+              "terminationMessagePolicy": "File"
+            }
+          ],
+          "dnsPolicy": "ClusterFirst",
+          "restartPolicy": "Always",
+          "schedulerName": "default-scheduler",
+          "securityContext": {
+            "runAsNonRoot": true
+          },
+          "serviceAccount": "agentic-ops-remediation",
+          "serviceAccountName": "agentic-ops-remediation",
+          "terminationGracePeriodSeconds": 30
+        }
+      }
+    },
+    "status": {
+      "availableReplicas": 1,
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-10-26T12:33:07Z",
+          "lastUpdateTime": "2026-10-26T12:33:07Z",
+          "message": "Deployment has minimum availability.",
+          "reason": "MinimumReplicasAvailable",
+          "status": "True",
+          "type": "Available"
+        },
+        {
+          "lastTransitionTime": "2026-10-26T12:33:00Z",
+          "lastUpdateTime": "2026-10-26T12:33:07Z",
+          "message": "ReplicaSet \"agentic-ops-remediation-59f9896bcc\" has successfully progressed.",
+          "reason": "NewReplicaSetAvailable",
+          "status": "True",
+          "type": "Progressing"
+        }
+      ],
+      "observedGeneration": 1,
+      "readyReplicas": 1,
+      "replicas": 1,
+      "terminatingReplicas": 0,
+      "updatedReplicas": 1
+    }
+  },
+  "kube_server": "https://ANON_RESOURCE_006ANON_HOST_001.example.invalid:443",
+  "dependency_versions": "aiohappyeyeballs==2.7.1\naiohttp==3.14.3\naiosignal==1.4.0\nannotated-doc==0.0.5\nannotated-types==0.8.0\nanyio==4.15.1\nattrs==26.1.0\nazure-core==1.41.0\nazure-identity==1.25.3\nazure-kubernetes-agentic-ops @ file:///app\ncertifi==2026.7.22\ncffi==2.1.1\ncharset-normalizer==3.5.1\nclick==8.5.0\ncryptography==50.0.1\ndurationpy==0.11\nfastapi==0.141.1\nfrozenlist==1.8.0\nh11==0.16.0\nhttpcore==1.0.9\nhttptools==0.8.0\nhttpx==0.28.1\nidna==3.20\nkubernetes==36.0.3\nmsal==1.39.0\nmsal-extensions==1.3.1\nmultidict==6.9.1\noauthlib==3.3.1\npropcache==0.5.4\npycparser==3.0\npydantic==2.13.5\npydantic_core==2.46.5\nPyJWT==2.15.0\npython-dateutil==2.9.0.post0\npython-dotenv==1.2.3\nPyYAML==6.0.3\nrequests==2.34.2\nrequests-oauthlib==2.0.0\nsix==1.17.0\nstarlette==1.7.0\ntyping-inspection==0.4.4\ntyping_extensions==4.16.0\nurllib3==2.8.0\nuvicorn==0.53.0\nuvloop==0.22.1\nwatchfiles==1.3.0\nwebsocket-client==1.9.2\nwebsockets==17.1\nyarl==1.25.1\n"
+}

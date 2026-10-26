@@ -1,0 +1,16 @@
+{
+  "createdBy": "ANON_UUID_030",
+  "createdOn": "2026-10-26T12:30:46.868299+00:00",
+  "id": "/subscriptions/ANON_UUID_008/resourceGroups/ANON_RESOURCE_008/providers/Microsoft.ContainerRegistry/registries/ANON_RESOURCE_001/providers/Microsoft.Authorization/roleAssignments/ANON_UUID_031",
+  "name": "ANON_UUID_031",
+  "principalId": "ANON_UUID_032",
+  "principalName": "ANON_UUID_033",
+  "principalType": "ServicePrincipal",
+  "resourceGroup": "ANON_RESOURCE_008",
+  "roleDefinitionId": "/subscriptions/ANON_UUID_008/providers/Microsoft.Authorization/roleDefinitions/ANON_UUID_034",
+  "roleDefinitionName": "AcrPull",
+  "scope": "/subscriptions/ANON_UUID_008/resourceGroups/ANON_RESOURCE_008/providers/Microsoft.ContainerRegistry/registries/ANON_RESOURCE_001",
+  "type": "Microsoft.Authorization/roleAssignments",
+  "updatedBy": "ANON_UUID_030",
+  "updatedOn": "2026-10-26T12:30:46.868299+00:00"
+}

@@ -1,0 +1,9 @@
+{
+  "scenario": "K01",
+  "variant": "C",
+  "environment": "live-aks",
+  "verdict": "SETUP_FAIL",
+  "started_utc": "2026-10-26T16:51:44.826512+00:00",
+  "error": "ValueError: Runtime/model/policy configuration drift; start a new campaign",
+  "cleanup_errors": []
+}

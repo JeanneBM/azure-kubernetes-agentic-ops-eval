@@ -1,0 +1,160 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "annotations": {
+      "deployment.kubernetes.io/revision": "2",
+      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\": \"apps/v1\", \"kind\": \"Deployment\", \"metadata\": {\"annotations\": {}, \"name\": \"agentic-ops-remediation\", \"namespace\": \"agentic-ops\"}, \"spec\": {\"replicas\": 1, \"selector\": {\"matchLabels\": {\"app\": \"agentic-ops\", \"role\": \"remediation\"}}, \"strategy\": {\"type\": \"Recreate\"}, \"template\": {\"metadata\": {\"labels\": {\"app\": \"agentic-ops\", \"azure.workload.identity/use\": \"true\", \"role\": \"remediation\"}}, \"spec\": {\"containers\": [{\"env\": [{\"name\": \"AGENT_TELEMETRY_STDOUT\", \"value\": \"1\"}, {\"name\": \"AGENTIC_OPS_INTENDED_IMAGES\", \"value\": \"{\\\"test-app/api\\\": \\\"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\\\"}\"}, {\"name\": \"AGENTIC_OPS_ROLE\", \"value\": \"remediation\"}, {\"name\": \"AGENTIC_OPS_NAMESPACE\", \"value\": \"test-app\"}, {\"name\": \"AGENTIC_OPS_ALLOWED_REGISTRIES\", \"value\": \"ANON_RESOURCE_001.azurecr.io\"}, {\"name\": \"AGENTIC_OPS_REMEDIATION_TOKEN\", \"valueFrom\": {\"secretKeyRef\": {\"key\": \"token\", \"name\": \"agentic-ops-remediation\"}}}], \"envFrom\": [{\"configMapRef\": {\"name\": \"agentic-ops-timeouts\"}}], \"image\": \"ANON_RESOURCE_001.azurecr.io/agentic-ops:eval-20261026123113-7f0944\", \"livenessProbe\": {\"httpGet\": {\"path\": \"/healthz\", \"port\": 8080}}, \"name\": \"remediation-agent\", \"ports\": [{\"containerPort\": 8080}], \"readinessProbe\": {\"httpGet\": {\"path\": \"/healthz\", \"port\": 8080}}, \"resources\": {\"limits\": {\"memory\": \"256Mi\"}, \"requests\": {\"cpu\": \"50m\", \"memory\": \"128Mi\"}}}], \"securityContext\": {\"runAsNonRoot\": true}, \"serviceAccountName\": \"agentic-ops-remediation\"}}}}"
+    },
+    "creationTimestamp": "2026-10-26T12:33:00Z",
+    "generation": 2,
+    "name": "agentic-ops-remediation",
+    "namespace": "agentic-ops",
+    "resourceVersion": "95592",
+    "uid": "ANON_UUID_010"
+  },
+  "spec": {
+    "progressDeadlineSeconds": 600,
+    "replicas": 1,
+    "revisionHistoryLimit": 10,
+    "selector": {
+      "matchLabels": {
+        "app": "agentic-ops",
+        "role": "remediation"
+      }
+    },
+    "strategy": {
+      "type": "Recreate"
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "agentic-ops",
+          "azure.workload.identity/use": "true",
+          "role": "remediation"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "AGENT_TELEMETRY_STDOUT",
+                "value": "1"
+              },
+              {
+                "name": "AGENTIC_OPS_INTENDED_IMAGES",
+                "value": "{\"test-app/api\": \"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\"}"
+              },
+              {
+                "name": "AGENTIC_OPS_ROLE",
+                "value": "remediation"
+              },
+              {
+                "name": "AGENTIC_OPS_NAMESPACE",
+                "value": "test-app"
+              },
+              {
+                "name": "AGENTIC_OPS_ALLOWED_REGISTRIES",
+                "value": "ANON_RESOURCE_001.azurecr.io"
+              },
+              {
+                "name": "AGENTIC_OPS_REMEDIATION_TOKEN",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "token",
+                    "name": "agentic-ops-remediation"
+                  }
+                }
+              }
+            ],
+            "envFrom": [
+              {
+                "configMapRef": {
+                  "name": "agentic-ops-timeouts"
+                }
+              }
+            ],
+            "image": "ANON_RESOURCE_001.azurecr.io/agentic-ops:trial-c6b2ca710829107a",
+            "imagePullPolicy": "IfNotPresent",
+            "livenessProbe": {
+              "failureThreshold": 3,
+              "httpGet": {
+                "path": "/healthz",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 1
+            },
+            "name": "remediation-agent",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "failureThreshold": 3,
+              "httpGet": {
+                "path": "/healthz",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 1
+            },
+            "resources": {
+              "limits": {
+                "memory": "256Mi"
+              },
+              "requests": {
+                "cpu": "50m",
+                "memory": "128Mi"
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File"
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+          "runAsNonRoot": true
+        },
+        "serviceAccount": "agentic-ops-remediation",
+        "serviceAccountName": "agentic-ops-remediation",
+        "terminationGracePeriodSeconds": 30
+      }
+    }
+  },
+  "status": {
+    "availableReplicas": 1,
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-26T16:47:17Z",
+        "lastUpdateTime": "2026-10-26T16:47:17Z",
+        "message": "Deployment has minimum availability.",
+        "reason": "MinimumReplicasAvailable",
+        "status": "True",
+        "type": "Available"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T12:33:00Z",
+        "lastUpdateTime": "2026-10-26T16:47:17Z",
+        "message": "ReplicaSet \"agentic-ops-remediation-f4876f8b5\" has successfully progressed.",
+        "reason": "NewReplicaSetAvailable",
+        "status": "True",
+        "type": "Progressing"
+      }
+    ],
+    "observedGeneration": 2,
+    "readyReplicas": 1,
+    "replicas": 1,
+    "terminatingReplicas": 0,
+    "updatedReplicas": 1
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "etag": "\"ANON_UUID_007\"",
+  "id": "/subscriptions/ANON_UUID_008/resourceGroups/ANON_RESOURCE_008/providers/Microsoft.CognitiveServices/accounts/ANON_RESOURCE_007/ANON_RESOURCE_005/diagnostic-gpt41nano",
+  "name": "diagnostic-gpt41nano",
+  "properties": {
+    "callRateLimit": null,
+    "capabilities": {
+      "agentsV2": "true",
+      "area": "EUR",
+      "assistants": "true",
+      "chatCompletion": "true",
+      "responses": "true"
+    },
+    "capacitySettings": null,
+    "currentCapacity": 10,
+    "deploymentState": "Running",
+    "dynamicThrottlingEnabled": null,
+    "model": {
+      "callRateLimit": null,
+      "format": "OpenAI",
+      "name": "gpt-4.1-nano",
+      "publisher": null,
+      "source": null,
+      "sourceAccount": null,
+      "version": "2025-04-14"
+    },
+    "parentDeploymentName": null,
+    "provisioningState": "Succeeded",
+    "raiPolicyName": "Microsoft.DefaultV2",
+    "rateLimits": [
+      {
+        "count": 10.0,
+        "dynamicThrottlingEnabled": null,
+        "key": "request",
+        "matchPatterns": null,
+        "minCount": null,
+        "renewalPeriod": 60.0
+      },
+      {
+        "count": 10000.0,
+        "dynamicThrottlingEnabled": null,
+        "key": "token",
+        "matchPatterns": null,
+        "minCount": null,
+        "renewalPeriod": 60.0
+      }
+    ],
+    "routing": null,
+    "scaleSettings": null,
+    "serviceTier": null,
+    "speculativeDecoding": null,
+    "spilloverDeploymentName": null,
+    "versionUpgradeOption": "OnceNewDefaultVersionAvailable"
+  },
+  "resourceGroup": "ANON_RESOURCE_008",
+  "sku": {
+    "capacity": 10,
+    "family": null,
+    "name": "GlobalStandard",
+    "size": null,
+    "tier": null
+  },
+  "systemData": {
+    "createdAt": "2026-10-26T13:25:49.398369+01:00",
+    "createdBy": "ANON_IDENTITY_006",
+    "createdByType": "User",
+    "lastModifiedAt": "2026-10-26T13:25:49.398369+01:00",
+    "lastModifiedBy": "ANON_IDENTITY_006",
+    "lastModifiedByType": "User"
+  },
+  "tags": null,
+  "type": "Microsoft.CognitiveServices/accounts/ANON_RESOURCE_005"
+}

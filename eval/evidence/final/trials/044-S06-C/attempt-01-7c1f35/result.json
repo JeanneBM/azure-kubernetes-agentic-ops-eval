@@ -1,0 +1,93 @@
+{
+  "scenario": "S06",
+  "variant": "C",
+  "environment": "live-aks",
+  "verdict": "PASS",
+  "started_utc": "2026-10-26T14:56:46.468711+00:00",
+  "error": null,
+  "timing": {
+    "timestamps": {
+      "t0": "2026-10-26T14:57:04.905179+00:00",
+      "t_failure": "2026-10-26T14:57:08.277681+00:00",
+      "t_detect": "2026-10-26T14:57:09.874413+00:00",
+      "t_proposal": "2026-10-26T14:57:11.480067+00:00",
+      "t_authorized": "2026-10-26T14:57:14.460915+00:00",
+      "t_patch": null,
+      "t_healthy": null,
+      "t_escalated": "2026-10-26T14:57:14.487810+00:00"
+    },
+    "intervals": {
+      "injection_to_recovery": null,
+      "failure_to_recovery": null,
+      "detection": 1.596732,
+      "diagnosis": 1.605654,
+      "authorization": 2.980848,
+      "rollout": null
+    },
+    "clock_note": "Host observations use host UTC and monotonic durations; agent events use pod epoch clocks. Negative cross-clock intervals are unavailable. No NTP accuracy claim."
+  },
+  "warmup_usage": {
+    "completion_tokens": 2,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "latency_checkpoint": {
+      "engine_tbt_ms": 2,
+      "engine_ttft_ms": 14,
+      "engine_ttlt_ms": 19,
+      "pre_inference_ms": 106,
+      "service_tbt_ms": 2,
+      "service_ttft_ms": 812,
+      "service_ttlt_ms": 817,
+      "user_visible_ttft_ms": 705
+    },
+    "prompt_tokens": 10,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    },
+    "total_tokens": 12
+  },
+  "reason": "Correct abstention",
+  "t0": "2026-10-26T14:57:04.905179+00:00",
+  "t_failure": "2026-10-26T14:57:08.277681+00:00",
+  "finished_utc": "2026-10-26T14:57:16.570145+00:00",
+  "observation_to_completion_seconds": 8.297000000020489,
+  "injection_to_completion_seconds": 11.672000000020489,
+  "diagnoses": 1,
+  "handoff_attempts": 1,
+  "successful_mutations": 0,
+  "model_calls": 1,
+  "usage": [
+    {
+      "completion_tokens": 151,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": 0,
+        "audio_tokens": 0,
+        "reasoning_tokens": 0,
+        "rejected_prediction_tokens": 0
+      },
+      "latency_checkpoint": {
+        "engine_tbt_ms": 3,
+        "engine_ttft_ms": 25,
+        "engine_ttlt_ms": 441,
+        "pre_inference_ms": 122,
+        "service_tbt_ms": 4,
+        "service_ttft_ms": 578,
+        "service_ttlt_ms": 1243,
+        "user_visible_ttft_ms": 456
+      },
+      "prompt_tokens": 1384,
+      "prompt_tokens_details": {
+        "audio_tokens": 0,
+        "cached_tokens": 0
+      },
+      "total_tokens": 1535
+    }
+  ],
+  "outcome": "escalated",
+  "cleanup_errors": []
+}

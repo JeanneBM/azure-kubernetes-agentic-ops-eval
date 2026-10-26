@@ -1,0 +1,384 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Pod",
+      "metadata": {
+        "creationTimestamp": "2026-10-26T16:47:03Z",
+        "generateName": "agentic-ops-diagnostic-6b8fc8b5fb-",
+        "generation": 1,
+        "labels": {
+          "app": "agentic-ops",
+          "azure.workload.identity/use": "true",
+          "pod-template-hash": "6b8fc8b5fb",
+          "role": "diagnostic",
+          "topology.kubernetes.io/region": "polandcentral",
+          "topology.kubernetes.io/zone": "0"
+        },
+        "name": "agentic-ops-diagnostic-6b8fc8b5fb-9sbq8",
+        "namespace": "agentic-ops",
+        "ownerReferences": [
+          {
+            "apiVersion": "apps/v1",
+            "blockOwnerDeletion": true,
+            "controller": true,
+            "kind": "ReplicaSet",
+            "name": "agentic-ops-diagnostic-6b8fc8b5fb",
+            "uid": "ANON_UUID_301"
+          }
+        ],
+        "resourceVersion": "95580",
+        "uid": "ANON_UUID_302"
+      },
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "AGENT_TELEMETRY_STDOUT",
+                "value": "1"
+              },
+              {
+                "name": "AGENTIC_OPS_ROLE",
+                "value": "diagnostic"
+              },
+              {
+                "name": "AGENTIC_OPS_RECORD_MODEL_IO",
+                "value": "1"
+              },
+              {
+                "name": "AGENTIC_OPS_NAMESPACE",
+                "value": "test-app"
+              },
+              {
+                "name": "AGENTIC_OPS_ALLOWED_REGISTRIES",
+                "value": "ANON_RESOURCE_001.azurecr.io"
+              },
+              {
+                "name": "AZURE_AI_FOUNDRY_ENDPOINT",
+                "value": "https://ANON_RESOURCE_007.openai.azure.com/"
+              },
+              {
+                "name": "AZURE_AI_FOUNDRY_DEPLOYMENT",
+                "value": "diagnostic-gpt41nano"
+              },
+              {
+                "name": "AGENTIC_OPS_REMEDIATION_URL",
+                "value": "http://agentic-ops-remediation.agentic-ops.svc.cluster.local:8080"
+              },
+              {
+                "name": "AGENTIC_OPS_REMEDIATION_TOKEN",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "token",
+                    "name": "agentic-ops-remediation"
+                  }
+                }
+              },
+              {
+                "name": "AGENTIC_OPS_WEBHOOK_TOKEN",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "token",
+                    "name": "agentic-ops-webhook",
+                    "optional": true
+                  }
+                }
+              },
+              {
+                "name": "AZURE_CLIENT_ID",
+                "value": "ANON_UUID_300"
+              },
+              {
+                "name": "AZURE_TENANT_ID",
+                "value": "ANON_UUID_298"
+              },
+              {
+                "name": "AZURE_FEDERATED_TOKEN_FILE",
+                "value": "REDACTED_SECRET"
+              },
+              {
+                "name": "AZURE_AUTHORITY_HOST",
+                "value": "https://login.microsoftonline.com/"
+              }
+            ],
+            "envFrom": [
+              {
+                "configMapRef": {
+                  "name": "agentic-ops-timeouts"
+                }
+              }
+            ],
+            "image": "ANON_RESOURCE_001.azurecr.io/agentic-ops:trial-c6b2ca710829107a",
+            "imagePullPolicy": "IfNotPresent",
+            "livenessProbe": {
+              "failureThreshold": 3,
+              "httpGet": {
+                "path": "/healthz",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 1
+            },
+            "name": "diagnostic-agent",
+            "ports": [
+              {
+                "containerPort": 8080,
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "failureThreshold": 3,
+              "httpGet": {
+                "path": "/healthz",
+                "port": 8080,
+                "scheme": "HTTP"
+              },
+              "periodSeconds": 10,
+              "successThreshold": 1,
+              "timeoutSeconds": 1
+            },
+            "resources": {
+              "limits": {
+                "memory": "256Mi"
+              },
+              "requests": {
+                "cpu": "50m",
+                "memory": "128Mi"
+              }
+            },
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "volumeMounts": [
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-wmbxc",
+                "readOnly": true
+              },
+              {
+                "mountPath": "/var/run/secrets/azure/tokens",
+                "name": "azure-identity-token",
+                "readOnly": true
+              }
+            ]
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "enableServiceLinks": true,
+        "nodeName": "ANON_IDENTITY_005",
+        "preemptionPolicy": "PreemptLowerPriority",
+        "priority": 0,
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {
+          "runAsNonRoot": true
+        },
+        "serviceAccount": "agentic-ops-diagnostic",
+        "serviceAccountName": "agentic-ops-diagnostic",
+        "terminationGracePeriodSeconds": 30,
+        "tolerations": [
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          },
+          {
+            "effect": "NoExecute",
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "tolerationSeconds": 300
+          },
+          {
+            "effect": "NoSchedule",
+            "key": "node.kubernetes.io/memory-pressure",
+            "operator": "Exists"
+          }
+        ],
+        "volumes": [
+          {
+            "name": "kube-api-access-wmbxc",
+            "projected": {
+              "defaultMode": 420,
+              "sources": [
+                {
+                  "serviceAccountToken": {
+                    "expirationSeconds": 3607,
+                    "path": "token"
+                  }
+                },
+                {
+                  "configMap": {
+                    "items": [
+                      {
+                        "key": "ca.crt",
+                        "path": "ca.crt"
+                      }
+                    ],
+                    "name": "kube-root-ca.crt"
+                  }
+                },
+                {
+                  "downwardAPI": {
+                    "items": [
+                      {
+                        "fieldRef": {
+                          "apiVersion": "v1",
+                          "fieldPath": "metadata.namespace"
+                        },
+                        "path": "namespace"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "azure-identity-token",
+            "projected": {
+              "defaultMode": 420,
+              "sources": [
+                {
+                  "serviceAccountToken": {
+                    "audience": "api://AzureADTokenExchange",
+                    "expirationSeconds": 3600,
+                    "path": "azure-identity-token"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "status": {
+        "allocatedResources": {
+          "cpu": "50m",
+          "memory": "128Mi"
+        },
+        "conditions": [
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-10-26T16:47:04Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodReadyToStartContainers"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-10-26T16:47:03Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "Initialized"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-10-26T16:47:17Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "Ready"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-10-26T16:47:17Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "ContainersReady"
+          },
+          {
+            "lastProbeTime": null,
+            "lastTransitionTime": "2026-10-26T16:47:03Z",
+            "observedGeneration": 1,
+            "status": "True",
+            "type": "PodScheduled"
+          }
+        ],
+        "containerStatuses": [
+          {
+            "allocatedResources": {
+              "cpu": "50m",
+              "memory": "128Mi"
+            },
+            "containerID": "containerd://1e9681c39750f9415b0c371c212c776164d444c81374f81a800c4d37255c3603",
+            "image": "ANON_RESOURCE_001.azurecr.io/agentic-ops:trial-c6b2ca710829107a",
+            "imageID": "ANON_RESOURCE_001.azurecr.io/agentic-ops@sha256:c792e4e75dffceb94da93b7e036431f08a95d95fb80ac79f2840a6ebb25ba195",
+            "lastState": {},
+            "name": "diagnostic-agent",
+            "ready": true,
+            "resources": {
+              "limits": {
+                "memory": "256Mi"
+              },
+              "requests": {
+                "cpu": "50m",
+                "memory": "128Mi"
+              }
+            },
+            "restartCount": 0,
+            "started": true,
+            "state": {
+              "running": {
+                "startedAt": "2026-10-26T16:47:06Z"
+              }
+            },
+            "user": {
+              "linux": {
+                "gid": 0,
+                "supplementalGroups": [
+                  0
+                ],
+                "uid": 10001
+              }
+            },
+            "volumeMounts": [
+              {
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+                "name": "kube-api-access-wmbxc",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              },
+              {
+                "mountPath": "/var/run/secrets/azure/tokens",
+                "name": "azure-identity-token",
+                "readOnly": true,
+                "recursiveReadOnly": "Disabled"
+              }
+            ]
+          }
+        ],
+        "hostIP": "ANON_IP_001",
+        "hostIPs": [
+          {
+            "ip": "ANON_IP_001"
+          }
+        ],
+        "observedGeneration": 1,
+        "phase": "Running",
+        "podIP": "ANON_IP_010",
+        "podIPs": [
+          {
+            "ip": "ANON_IP_010"
+          }
+        ],
+        "qosClass": "Burstable",
+        "resources": {
+          "limits": {
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "28m",
+            "memory": "128Mi"
+          }
+        },
+        "startTime": "2026-10-26T16:47:03Z"
+      }
+    }
+  ],
+  "kind": "List",
+  "metadata": {
+    "resourceVersion": ""
+  }
+}

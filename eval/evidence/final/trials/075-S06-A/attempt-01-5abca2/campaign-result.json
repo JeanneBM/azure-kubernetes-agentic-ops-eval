@@ -1,0 +1,45 @@
+{
+  "row_id": "075-S06-A",
+  "started_utc": "2026-10-26T16:29:58.046311+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\075-S06-A\\attempt-01-5abca2",
+  "verdict": "PASS",
+  "scenario": "S06",
+  "variant": "A",
+  "environment": "live-aks",
+  "error": null,
+  "timing": {
+    "timestamps": {
+      "t0": "2026-10-26T16:30:15.601042+00:00",
+      "t_failure": "2026-10-26T16:30:17.225821+00:00",
+      "t_detect": "2026-10-26T16:30:18.715193+00:00",
+      "t_proposal": "2026-10-26T16:30:18.820350+00:00",
+      "t_authorized": "2026-10-26T16:30:20.985950+00:00",
+      "t_patch": null,
+      "t_healthy": null,
+      "t_escalated": "2026-10-26T16:30:21.020031+00:00"
+    },
+    "intervals": {
+      "injection_to_recovery": null,
+      "failure_to_recovery": null,
+      "detection": 1.489372,
+      "diagnosis": 0.105157,
+      "authorization": 2.1656,
+      "rollout": null
+    },
+    "clock_note": "Host observations use host UTC and monotonic durations; agent events use pod epoch clocks. Negative cross-clock intervals are unavailable. No NTP accuracy claim."
+  },
+  "warmup_usage": null,
+  "reason": "Correct abstention",
+  "t0": "2026-10-26T16:30:15.601042+00:00",
+  "t_failure": "2026-10-26T16:30:17.225821+00:00",
+  "finished_utc": "2026-10-26T16:31:10.362817+00:00",
+  "observation_to_completion_seconds": 6.0310000000172295,
+  "injection_to_completion_seconds": 7.6560000000172295,
+  "diagnoses": 1,
+  "handoff_attempts": 1,
+  "successful_mutations": 0,
+  "model_calls": 0,
+  "usage": [],
+  "outcome": "escalated",
+  "cleanup_errors": []
+}

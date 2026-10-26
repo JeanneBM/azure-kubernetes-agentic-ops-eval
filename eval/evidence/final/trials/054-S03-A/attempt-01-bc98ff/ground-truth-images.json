@@ -1,0 +1,6 @@
+{
+  "scenario": "S03",
+  "intended_image": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2",
+  "injected_image": "ANON_RESOURCE_001.azurecr.io/absent-63fc5553a228:1.4.2",
+  "desired_outcome": "escalated"
+}

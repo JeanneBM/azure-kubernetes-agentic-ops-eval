@@ -1,0 +1,9 @@
+{
+  "scenario": "S08",
+  "variant": "C",
+  "environment": "live-aks",
+  "verdict": "TIMEOUT",
+  "started_utc": "2026-10-26T13:28:30.847054+00:00",
+  "error": "Decision deadline expired after observed failure",
+  "cleanup_errors": []
+}

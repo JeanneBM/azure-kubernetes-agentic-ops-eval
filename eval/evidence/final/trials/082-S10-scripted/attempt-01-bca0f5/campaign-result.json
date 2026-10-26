@@ -1,0 +1,8 @@
+{
+  "row_id": "082-S10-scripted",
+  "started_utc": "2026-10-26T16:49:26.213233+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\082-S10-scripted\\attempt-01-bca0f5",
+  "verdict": "INCONCLUSIVE",
+  "error": "ValueError: Runtime/model/policy configuration drift; start a new campaign",
+  "finished_utc": "2026-10-26T16:49:35.484914+00:00"
+}

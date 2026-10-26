@@ -1,0 +1,133 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "name": "protocol-a4e53681bc4a",
+    "namespace": "agentic-ops",
+    "labels": {
+      "app": "agentic-ops",
+      "azure.workload.identity/use": "true",
+      "role": "diagnostic",
+      "eval": "handoff"
+    }
+  },
+  "spec": {
+    "containers": [
+      {
+        "env": [
+          {
+            "name": "AGENT_TELEMETRY_STDOUT",
+            "value": "1"
+          },
+          {
+            "name": "AGENTIC_OPS_ROLE",
+            "value": "diagnostic"
+          },
+          {
+            "name": "AGENTIC_OPS_RECORD_MODEL_IO",
+            "value": "1"
+          },
+          {
+            "name": "AGENTIC_OPS_NAMESPACE",
+            "value": "test-app"
+          },
+          {
+            "name": "AGENTIC_OPS_ALLOWED_REGISTRIES",
+            "value": "ANON_RESOURCE_001.azurecr.io"
+          },
+          {
+            "name": "AZURE_AI_FOUNDRY_ENDPOINT",
+            "value": "https://ANON_RESOURCE_007.openai.azure.com/"
+          },
+          {
+            "name": "AZURE_AI_FOUNDRY_DEPLOYMENT",
+            "value": "diagnostic-gpt41nano"
+          },
+          {
+            "name": "AGENTIC_OPS_REMEDIATION_URL",
+            "value": "http://agentic-ops-remediation.agentic-ops.svc.cluster.local:8080"
+          },
+          {
+            "name": "AGENTIC_OPS_REMEDIATION_TOKEN",
+            "valueFrom": {
+              "secretKeyRef": {
+                "key": "token",
+                "name": "agentic-ops-remediation"
+              }
+            }
+          },
+          {
+            "name": "AGENTIC_OPS_WEBHOOK_TOKEN",
+            "valueFrom": {
+              "secretKeyRef": {
+                "key": "token",
+                "name": "agentic-ops-webhook",
+                "optional": true
+              }
+            }
+          },
+          {
+            "name": "EVAL_VARIANT",
+            "value": "C"
+          },
+          {
+            "name": "EVAL_GOOD_IMAGE",
+            "value": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2"
+          },
+          {
+            "name": "AGENT_TELEMETRY_STDOUT",
+            "value": "1"
+          },
+          {
+            "name": "EVAL_CONTROL_TIMEOUT",
+            "value": "900"
+          }
+        ],
+        "envFrom": [
+          {
+            "configMapRef": {
+              "name": "agentic-ops-timeouts"
+            }
+          }
+        ],
+        "image": "ANON_RESOURCE_001.azurecr.io/agentic-ops@sha256:892018a9a3fb6c7060c55f7b56e164030a14cc77aae49821c8c2bf1da534f34f",
+        "imagePullPolicy": "IfNotPresent",
+        "name": "diagnostic-agent",
+        "ports": [
+          {
+            "containerPort": 8080,
+            "protocol": "TCP"
+          }
+        ],
+        "resources": {
+          "limits": {
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "50m",
+            "memory": "128Mi"
+          }
+        },
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "command": [
+          "python",
+          "-u",
+          "-c",
+          "\"\"\"Read-only diagnostic trial worker. Host owns fault injection; live remote owns writes.\n\nWarm before injection, then wait for a host-supplied request. All artifacts are\nwritten before the terminal marker. No cloud/cluster mutation credentials added.\n\"\"\"\nfrom __future__ import annotations\nimport json\nimport logging\nimport os\nimport threading\nimport time\nfrom concurrent.futures import ThreadPoolExecutor\nfrom dataclasses import asdict, replace\nfrom datetime import datetime, timezone\nfrom pathlib import Path\n\nimport httpx\nfrom kubernetes import client, config\n\nfrom agentic_ops.acr import AcrRegistry, RegistryEvidenceProvider\nfrom agentic_ops.aks import AksDiagnosticProvider, resolve_incident_trigger, resolve_pod_workload\nfrom agentic_ops.baseline import BaselineDiagnosticProvider\nfrom agentic_ops.contracts import IncidentTrigger, Facts\nfrom agentic_ops.foundry import FoundryDiagnosticProvider\nfrom agentic_ops.orchestrator import IncidentOrchestrator\nfrom agentic_ops.remote import HttpRemediationAgent, FactsPayload\nfrom agentic_ops.web import create_app\nfrom agentic_ops.watcher import PodWatcher\n\n\ndef utc():\n    return datetime.now(timezone.utc).isoformat()\n\n\ndef wait_file(path, seconds=240):\n    deadline = time.monotonic() + seconds\n    while time.monotonic() < deadline:\n        if Path(path).exists():\n            return json.loads(Path(path).read_text())\n        time.sleep(.2)\n    raise TimeoutError(f'Control file unavailable: {path}')\n\n\nclass ModelRecorder:\n    def __init__(self, artifacts):\n        self.artifacts = artifacts\n        self.client = httpx.Client(timeout=30)\n    def post(self, url, **kwargs):\n        item = {'request': kwargs['json'], 'request_utc': utc()}\n        self.artifacts['model_calls'].append(item)\n        response = self.client.post(url, **kwargs)\n        item.update(response_utc=utc(), http_status=response.status_code)\n        if response.is_success:\n            item['response'] = response.json()\n        return response\n\n\nclass Diagnostics:\n    def __init__(self, provider, artifacts, *, barrier=None, stale=False, control_directory=\"/tmp\"):\n        self.provider, self.artifacts = provider, artifacts\n        self.barrier, self.stale = barrier, stale\n        self.control_directory=Path(control_directory)\n    def collect(self, trigger):\n        started = time.monotonic()\n        facts = self.provider.collect(trigger)\n        self.artifacts['diagnoses'].append(dict(\n            utc=utc(), seconds=time.monotonic()-started, correlation_id=trigger.correlation_id,\n            facts=FactsPayload.from_facts(facts).model_dump()))\n        if self.stale and facts.safe_action is not None:\n            (self.control_directory/'proposal-ready.json').write_text(json.dumps({'utc': utc()}))\n            wait_file(self.control_directory/'release.json')\n        if self.barrier:\n            self.barrier.wait(timeout=45)\n        return facts\n\n\nclass Remote(HttpRemediationAgent):\n    def __init__(self, artifacts, *args, **kwargs):\n        super().__init__(*args, **kwargs)\n        self.artifacts = artifacts\n    def remediate(self, trigger, facts):\n        record = dict(correlation_id=trigger.correlation_id, utc=utc(),\n                      facts=FactsPayload.from_facts(facts).model_dump())\n        self.artifacts['handoffs'].append(record)\n        result = super().remediate(trigger, facts)\n        record.update(finished_utc=utc(), outcome=asdict(result))\n        return result\n\n\ndef duplicates(core, apps, provider, remote, request, artifacts):\n    \"\"\"Each invocation lives in a distinct Kubernetes Pod/process.\"\"\"\n    import uvicorn\n    ns,pod=request['namespace'],request['pod']\n    diagnostics=Diagnostics(provider,artifacts,stale=True,control_directory=request.get(\"control_directory\",\"/tmp\"))\n    orch=IncidentOrchestrator(diagnostics,remediation_agent=remote,\n        resolve_trigger=lambda t:resolve_incident_trigger(core,apps,t))\n    app=create_app(orch,resolve_workload=lambda n,p:resolve_pod_workload(core,apps,n,p),\n                   webhook_token='REDACTED_SECRET')\n    server=uvicorn.Server(uvicorn.Config(app,host='ANON_IP_119',port=request.get('listen_port',18081),\n                                       log_level='warning',lifespan='off'))\n    thread=threading.Thread(target=server.run,daemon=True)\n    thread.start()\n    try:\n        deadline=time.monotonic()+15\n        while not server.started:\n            if time.monotonic()>deadline: raise TimeoutError('Webhook listener did not start')\n            time.sleep(.05)\n        if request['replica']=='secondary':\n            wait_file(Path(request.get('control_directory','/tmp'))/'finish.json',seconds=300)\n            return\n        peer=request['peer_url']\n        pod_object=core.read_namespaced_pod(pod,ns)\n        delivered=[]\n        def watch_delivery():\n            def handle(t):\n                t=replace(t,correlation_id=request['correlation_id']+'-watch')\n                result=orch.handle(t)\n                delivered.append(dict(source='watcher',executed=result.action_executed,\n                                      deduplicated=result.deduplicated,status=result.incident.status.value))\n            return PodWatcher(core,apps,ns,handle).process_pod(pod_object)\n        def webhook():\n            payload=dict(namespace=ns,pod=pod,workload='test-app',reason='ImagePullBackOff',\n                         correlation_id=request['correlation_id']+'-peer-http')\n            # Peer may still be processing its host control file. Retry only the\n            # read-only readiness request, never an incident POST.\n            deadline=time.monotonic()+30\n            with httpx.Client(timeout=210,trust_env=False) as http:\n                while True:\n                    try:\n                        response=http.get(peer+'/healthz',timeout=2)\n                        response.raise_for_status(); break\n                    except httpx.HTTPError:\n                        if time.monotonic()>deadline: raise\n                        time.sleep(.2)\n                response=http.post(peer+'/api/v1/incidents',json=payload,\n                                   headers={'X-Webhook-Token':'REDACTED_SECRET'})\n            if response.status_code in (404,409,422):\n                delivered.append(dict(source='peer-webhook',status='target_gone_or_changed',\n                                      http_status=response.status_code)); return\n            response.raise_for_status()\n            delivered.append(dict(source='peer-webhook',**response.json()))\n        with ThreadPoolExecutor(max_workers=2) as pool:\n            first=pool.submit(watch_delivery); second=pool.submit(webhook)\n            first.result(timeout=240); second.result(timeout=240)\n        watch_delivery(); webhook()\n        artifacts['deliveries']=delivered\n        artifacts['delivery_scope']='two actual Kubernetes Pods and independent processes; watcher plus pod-to-pod HTTP webhook; overlapping and sequential delivery'\n    finally:\n        server.should_exit=True; thread.join(timeout=10)\n\n\ndef single_delivery(core,apps,orchestrator,request,artifacts):\n    outcomes=[]\n    def handle(trigger):\n        trigger=replace(trigger,correlation_id=request['correlation_id'])\n        outcomes.append(orchestrator.handle(trigger))\n    pod=core.read_namespaced_pod(request['pod'],request['namespace'])\n    accepted=PodWatcher(core,apps,request['namespace'],handle).process_pod(pod)\n    if not accepted or len(outcomes)!=1:\n        raise ValueError('Observed failed Pod was not accepted by the production watcher')\n    artifacts['delivery_mode']='host-observed failed Pod through production PodWatcher.process_pod'\n    return outcomes[0]\n\n\ndef main():\n    logging.basicConfig(level=logging.INFO, format='%(message)s')\n    artifacts = {'model_calls': [], 'diagnoses': [], 'handoffs': []}\n    terminal = {'event':'protocol_terminal', 'worker_error':None}\n    try:\n        config.load_incluster_config()\n        core, apps = client.CoreV1Api(), client.AppsV1Api()\n        namespace = os.environ['AGENTIC_OPS_NAMESPACE']\n        if namespace != 'test-app': raise ValueError('Only test-app lab namespace is supported')\n        registry = AcrRegistry()\n        from agentic_ops.safety import parse_image\n        if not registry.exists(parse_image(os.environ['EVAL_GOOD_IMAGE'])):\n            raise ValueError('Baseline image is missing')\n        # Prime registry credentials and model access before t0. Warm-up is excluded.\n        variant = os.environ['EVAL_VARIANT']\n        recorder = ModelRecorder(artifacts)\n        providers=[]\n        for _ in range(1):\n            evidence = RegistryEvidenceProvider(AksDiagnosticProvider(core, apps), registry,\n                namespace=namespace, allowed_registries=os.environ['AGENTIC_OPS_ALLOWED_REGISTRIES'].split(','))\n            providers.append(BaselineDiagnosticProvider(evidence) if variant == 'A' else\n                FoundryDiagnosticProvider(evidence, endpoint=os.environ['AZURE_AI_FOUNDRY_ENDPOINT'],\n                    deployment=os.environ['AZURE_AI_FOUNDRY_DEPLOYMENT'], http_client=recorder))\n        if variant == 'C':\n            # Token acquisition happens before injection; paid warm-up also recorded.\n            token = REDACTED_SECRET[0]._token()\n            response = recorder.client.post(\n                f\"{providers[0]._endpoint}/openai/ANON_RESOURCE_005/{providers[0]._deployment}/chat/completions\",\n                params={'api-version':providers[0]._api_version}, headers={'Authorization':REDACTED_SECRET'Bearer {token}'},\n                json={'messages':[{'role':'user','content':'Reply OK.'}], 'temperature':0, 'max_tokens':8})\n            response.raise_for_status()\n            artifacts['warmup_usage'] = response.json().get('usage')\n        ready = dict(event='protocol_ready', utc=utc())\n        print(json.dumps(ready), flush=True)\n        request = wait_file('/tmp/request.json', seconds=int(os.environ.get('EVAL_CONTROL_TIMEOUT','1200')))\n        artifacts['request'] = request\n        if request['scenario']=='S08':\n            remote=Remote(artifacts, os.environ['AGENTIC_OPS_REMEDIATION_URL'],\n                          os.environ['AGENTIC_OPS_REMEDIATION_TOKEN'], namespace)\n            duplicates(core, apps, providers[0], remote, request, artifacts)\n        else:\n            remote=Remote(artifacts, os.environ['AGENTIC_OPS_REMEDIATION_URL'],\n                          os.environ['AGENTIC_OPS_REMEDIATION_TOKEN'], namespace)\n            diagnostics=Diagnostics(providers[0], artifacts, stale=request['scenario']=='S06')\n            orch=IncidentOrchestrator(diagnostics, remediation_agent=remote,\n                                     resolve_trigger=lambda t: resolve_incident_trigger(core, apps, t))\n            result=single_delivery(core,apps,orch,request,artifacts)\n            artifacts['decision'] = dict(status=result.incident.status.value, reason=result.incident.reason,\n                executed=result.action_executed, summary=result.incident.facts.summary)\n        terminal['finished_utc']=utc()\n    except Exception as error:\n        terminal['worker_error']=f'{type(error).__name__}: {error}'\n    finally:\n        artifacts['terminal']=terminal\n        Path('/tmp/protocol-artifacts.json').write_text(json.dumps(artifacts))\n        print(json.dumps(terminal), flush=True)\n        time.sleep(600)  # host collects then deletes the worker\n\n\nif __name__=='__main__':\n    main()\n"
+        ],
+        "args": []
+      }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "restartPolicy": "Never",
+    "schedulerName": "default-scheduler",
+    "securityContext": {
+      "runAsNonRoot": true
+    },
+    "serviceAccount": "agentic-ops-diagnostic",
+    "serviceAccountName": "agentic-ops-diagnostic",
+    "terminationGracePeriodSeconds": 30,
+    "activeDeadlineSeconds": 1980
+  }
+}

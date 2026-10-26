@@ -1,0 +1,20 @@
+{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "eval.preparation/run": "37188975cdf44c31afd58edd14c9bfc0"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "name": "api",
+            "imagePullPolicy": "Always",
+            "image": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2"
+          }
+        ]
+      }
+    }
+  }
+}

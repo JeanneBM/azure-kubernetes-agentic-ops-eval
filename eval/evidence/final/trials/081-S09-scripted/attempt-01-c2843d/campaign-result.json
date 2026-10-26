@@ -1,0 +1,18 @@
+{
+  "row_id": "081-S09-scripted",
+  "started_utc": "2026-10-26T16:45:10.069244+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\081-S09-scripted\\attempt-01-c2843d",
+  "verdict": "PASS",
+  "faultStartUtc": "2026-10-26T16:47:40Z",
+  "scenario": "S09",
+  "variant": "controlled-live",
+  "proposalSource": "scripted",
+  "watcherLeftPaused": true,
+  "runner": "s09-diagnostic-d8eda6c1cf4c",
+  "outcome": "escalated",
+  "error": null,
+  "finishedUtc": "2026-10-26T16:48:22.6333491Z",
+  "environment": "controlled-live-aks",
+  "script_exit": 0,
+  "finished_utc": "2026-10-26T16:48:26.132574+00:00"
+}

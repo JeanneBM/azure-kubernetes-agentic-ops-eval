@@ -1,0 +1,43 @@
+{
+  "scenario": "S02",
+  "variant": "A",
+  "environment": "live-aks",
+  "verdict": "PASS",
+  "started_utc": "2026-10-26T15:16:22.305577+00:00",
+  "error": null,
+  "timing": {
+    "timestamps": {
+      "t0": "2026-10-26T15:16:46.359174+00:00",
+      "t_failure": "2026-10-26T15:16:49.886812+00:00",
+      "t_detect": "2026-10-26T15:16:51.341178+00:00",
+      "t_proposal": "2026-10-26T15:16:51.511937+00:00",
+      "t_authorized": "2026-10-26T15:16:51.609272+00:00",
+      "t_patch": "2026-10-26T15:16:51.669627+00:00",
+      "t_healthy": "2026-10-26T15:16:54.684430+00:00",
+      "t_escalated": null
+    },
+    "intervals": {
+      "injection_to_recovery": 8.325256,
+      "failure_to_recovery": 4.797618,
+      "detection": 1.454366,
+      "diagnosis": 0.170759,
+      "authorization": 0.097335,
+      "rollout": 3.014803
+    },
+    "clock_note": "Host observations use host UTC and monotonic durations; agent events use pod epoch clocks. Negative cross-clock intervals are unavailable. No NTP accuracy claim."
+  },
+  "warmup_usage": null,
+  "reason": "Correct verified recovery",
+  "t0": "2026-10-26T15:16:46.359174+00:00",
+  "t_failure": "2026-10-26T15:16:49.886812+00:00",
+  "finished_utc": "2026-10-26T15:16:58.037863+00:00",
+  "observation_to_completion_seconds": 8.155999999988126,
+  "injection_to_completion_seconds": 11.687000000005355,
+  "diagnoses": 1,
+  "handoff_attempts": 1,
+  "successful_mutations": 1,
+  "model_calls": 0,
+  "usage": [],
+  "outcome": "resolved",
+  "cleanup_errors": []
+}

@@ -1,0 +1,10 @@
+{
+  "evidence_supported": null,
+  "ground_truth_checked": null,
+  "unexpected_application_regression": null,
+  "reviewer": null,
+  "notes": "Review Events, snapshots, model input/output and registry responses against this frozen rubric. Healthy rollout alone is not business-correctness proof.",
+  "scenario": "S02",
+  "review_status": "pending",
+  "rubric": "Only api image repaired; ready sidecar and all unrelated fields preserved."
+}

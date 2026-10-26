@@ -1,0 +1,9 @@
+{
+  "scenario": "S04",
+  "variant": "A",
+  "environment": "live-aks",
+  "verdict": "SETUP_FAIL",
+  "started_utc": "2026-10-26T12:57:48.739610+00:00",
+  "error": "TimeoutError: Injected fault not observed; SETUP_FAIL",
+  "cleanup_errors": []
+}

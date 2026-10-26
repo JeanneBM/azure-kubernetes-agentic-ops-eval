@@ -1,0 +1,12 @@
+{
+  "faultStartUtc": "2026-10-26T16:47:40Z",
+  "verdict": "pass",
+  "scenario": "S09",
+  "variant": "controlled-live",
+  "proposalSource": "scripted",
+  "watcherLeftPaused": true,
+  "runner": "s09-diagnostic-d8eda6c1cf4c",
+  "outcome": "escalated",
+  "error": null,
+  "finishedUtc": "2026-10-26T16:48:22.6333491Z"
+}

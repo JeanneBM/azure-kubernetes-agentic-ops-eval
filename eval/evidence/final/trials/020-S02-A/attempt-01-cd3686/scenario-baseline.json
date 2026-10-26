@@ -1,0 +1,121 @@
+{
+  "apiVersion": "apps/v1",
+  "kind": "Deployment",
+  "metadata": {
+    "annotations": {
+      "deployment.kubernetes.io/revision": "53",
+      "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\": \"apps/v1\", \"kind\": \"Deployment\", \"metadata\": {\"annotations\": {}, \"name\": \"test-app\", \"namespace\": \"test-app\"}, \"spec\": {\"replicas\": 2, \"selector\": {\"matchLabels\": {\"app\": \"test-app\"}}, \"template\": {\"metadata\": {\"labels\": {\"app\": \"test-app\"}}, \"spec\": {\"containers\": [{\"image\": \"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\", \"name\": \"api\", \"ports\": [{\"containerPort\": 80}]}]}}}}"
+    },
+    "creationTimestamp": "2026-10-26T12:32:51Z",
+    "generation": 53,
+    "name": "test-app",
+    "namespace": "test-app",
+    "resourceVersion": "27298",
+    "uid": "ANON_UUID_001"
+  },
+  "spec": {
+    "progressDeadlineSeconds": 600,
+    "replicas": 2,
+    "revisionHistoryLimit": 10,
+    "selector": {
+      "matchLabels": {
+        "app": "test-app"
+      }
+    },
+    "strategy": {
+      "rollingUpdate": {
+        "maxSurge": "25%",
+        "maxUnavailable": "25%"
+      },
+      "type": "RollingUpdate"
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "test-app"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "api",
+            "ports": [
+              {
+                "containerPort": 80,
+                "protocol": "TCP"
+              }
+            ],
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File"
+          },
+          {
+            "args": [
+              "printf '%s' 'events {} http { server { listen 9090; location / { return 200; } } }' > /tmp/eval-sidecar.conf; exec nginx -c /tmp/eval-sidecar.conf -g 'daemon off;'"
+            ],
+            "command": [
+              "/bin/sh",
+              "-c"
+            ],
+            "image": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "healthy-sidecar",
+            "ports": [
+              {
+                "containerPort": 9090,
+                "protocol": "TCP"
+              }
+            ],
+            "readinessProbe": {
+              "failureThreshold": 3,
+              "httpGet": {
+                "path": "/",
+                "port": 9090,
+                "scheme": "HTTP"
+              },
+              "periodSeconds": 2,
+              "successThreshold": 1,
+              "timeoutSeconds": 1
+            },
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File"
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "terminationGracePeriodSeconds": 30
+      }
+    }
+  },
+  "status": {
+    "availableReplicas": 2,
+    "conditions": [
+      {
+        "lastTransitionTime": "2026-10-26T12:32:55Z",
+        "lastUpdateTime": "2026-10-26T12:32:55Z",
+        "message": "Deployment has minimum availability.",
+        "reason": "MinimumReplicasAvailable",
+        "status": "True",
+        "type": "Available"
+      },
+      {
+        "lastTransitionTime": "2026-10-26T12:32:51Z",
+        "lastUpdateTime": "2026-10-26T13:41:34Z",
+        "message": "ReplicaSet \"test-app-586d6d57f8\" has successfully progressed.",
+        "reason": "NewReplicaSetAvailable",
+        "status": "True",
+        "type": "Progressing"
+      }
+    ],
+    "observedGeneration": 53,
+    "readyReplicas": 2,
+    "replicas": 2,
+    "terminatingReplicas": 0,
+    "updatedReplicas": 2
+  }
+}

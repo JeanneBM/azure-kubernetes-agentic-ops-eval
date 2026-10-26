@@ -1,0 +1,93 @@
+{
+  "model_calls": [],
+  "diagnoses": [
+    {
+      "utc": "2026-10-26T13:14:51.421209+00:00",
+      "seconds": 0.02686141599997427,
+      "correlation_id": "protocol-0f9c5ce9adf1",
+      "facts": {
+        "evidence": [
+          {
+            "name": "pod-phase",
+            "value": "Pending",
+            "source": "k8s://pod/test-app/test-app-9c4984484-c9ts5"
+          },
+          {
+            "name": "pod-containers",
+            "value": "api:ready=False,restarts=0,state={'running': None, 'terminated': None, 'waiting': {'message': '[rpc error: code = NotFound desc = failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2: not found, failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: failed to authorize: failed to fetch anonymous token: REDACTED_SECRET status from GET request to https://ANON_RESOURCE_001.azurecr.io/oauth2/token?scope=repository%3Atset-app%3Apull&service=ANON_RESOURCE_001.azurecr.io: 401 Unauthorized]', 'reason': 'ErrImagePull'}}; second-failure:ready=False,restarts=0,state={'running': None, 'terminated': None, 'waiting': {'message': '[rpc error: code = NotFound desc = failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2\": failed to resolve image: ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2: not found, failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2\": failed to resolve image: failed to authorize: failed to fetch anonymous token: REDACTED_SECRET status from GET request to https://ANON_RESOURCE_001.azurecr.io/oauth2/token?scope=repository%3Aabsent-1e727f3212d3%3Apull&service=ANON_RESOURCE_001.azurecr.io: 401 Unauthorized]', 'reason': 'ErrImagePull'}}",
+            "source": "k8s://pod/test-app/test-app-9c4984484-c9ts5/status"
+          },
+          {
+            "name": "pod-events",
+            "value": "Scheduled: Successfully assigned test-app/test-app-9c4984484-c9ts5 to ANON_IDENTITY_005; Pulling: Pulling image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\"; Failed: Failed to pull image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": [rpc error: code = NotFound desc = failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2: not found, failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: failed to authorize: failed to fetch anonymous token: REDACTED_SECRET status from GET request to https://ANON_RESOURCE_001.azurecr.io/oauth2/token?scope=repository%3Atset-app%3Apull&service=ANON_RESOURCE_001.azurecr.io: 401 Unauthorized]; Failed: Error: ErrImagePull; Pulling: Pulling image \"ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2\"; Failed: Failed to pull image \"ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2\": [rpc error: code = NotFound desc = failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2\": failed to resolve image: ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2: not found, failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2\": failed to resolve image: failed to authorize: failed to fetch anonymous token: REDACTED_SECRET status from GET request to https://ANON_RESOURCE_001.azurecr.io/oauth2/token?scope=repository%3Aabsent-1e727f3212d3%3Apull&service=ANON_RESOURCE_001.azurecr.io: 401 Unauthorized]; Failed: Error: ErrImagePull; BackOff: Back-off pulling image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\"; Failed: Error: ImagePullBackOff; BackOff: Back-off pulling image \"ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2\"; Failed: Error: ImagePullBackOff",
+            "source": "k8s://events/test-app/test-app-9c4984484-c9ts5"
+          },
+          {
+            "name": "image-pull-failures",
+            "value": "container=api image=ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2; container=second-failure image=ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2",
+            "source": "k8s://pod/test-app/test-app-9c4984484-c9ts5/spec"
+          }
+        ],
+        "groundedness": 1.0,
+        "safe_action": null,
+        "summary": "Multiple containers fail to pull; human review required.",
+        "pull_failures": [
+          {
+            "container": "api",
+            "image": "ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2"
+          },
+          {
+            "container": "second-failure",
+            "image": "ANON_RESOURCE_001.azurecr.io/absent-1e727f3212d3:1.4.2"
+          }
+        ]
+      }
+    }
+  ],
+  "handoffs": [],
+  "warmup_usage": {
+    "completion_tokens": 2,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "latency_checkpoint": {
+      "engine_tbt_ms": 2,
+      "engine_ttft_ms": 17,
+      "engine_ttlt_ms": 23,
+      "pre_inference_ms": 184,
+      "service_tbt_ms": 15,
+      "service_ttft_ms": 653,
+      "service_ttlt_ms": 683,
+      "user_visible_ttft_ms": 469
+    },
+    "prompt_tokens": 10,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    },
+    "total_tokens": 12
+  },
+  "request": {
+    "scenario": "S05",
+    "variant": "C",
+    "namespace": "test-app",
+    "pod": "test-app-9c4984484-c9ts5",
+    "correlation_id": "protocol-0f9c5ce9adf1",
+    "marker": "injection-2772f196cae945029cc90624a896c2e7"
+  },
+  "delivery_mode": "host-observed failed Pod through production PodWatcher.process_pod",
+  "decision": {
+    "status": "escalated",
+    "reason": "diagnostic agent policy: Expected exactly one container failing to pull, found 2",
+    "executed": false,
+    "summary": "Multiple containers fail to pull; human review required."
+  },
+  "terminal": {
+    "event": "protocol_terminal",
+    "worker_error": null,
+    "finished_utc": "2026-10-26T13:14:51.421603+00:00"
+  }
+}

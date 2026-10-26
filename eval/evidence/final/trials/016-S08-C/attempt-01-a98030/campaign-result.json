@@ -1,0 +1,12 @@
+{
+  "row_id": "016-S08-C",
+  "started_utc": "2026-10-26T13:28:30.847054+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\016-S08-C\\attempt-01-a98030",
+  "verdict": "TIMEOUT",
+  "scenario": "S08",
+  "variant": "C",
+  "environment": "live-aks",
+  "error": "Decision deadline expired after observed failure",
+  "cleanup_errors": [],
+  "finished_utc": "2026-10-26T13:33:19.696922+00:00"
+}

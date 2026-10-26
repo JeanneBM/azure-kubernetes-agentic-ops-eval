@@ -1,0 +1,11 @@
+{
+  "row_id": "098-INFRA-probe",
+  "started_utc": "2026-10-26T17:07:00.543644+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\098-INFRA-probe\\attempt-01-0a6229",
+  "verdict": "SETUP_FAIL",
+  "environment": "live-aks",
+  "checks": {},
+  "error": "ValueError: Runtime/model/policy configuration drift; start a new campaign",
+  "cleanup_errors": [],
+  "finished_utc": "2026-10-26T17:07:09.395418+00:00"
+}

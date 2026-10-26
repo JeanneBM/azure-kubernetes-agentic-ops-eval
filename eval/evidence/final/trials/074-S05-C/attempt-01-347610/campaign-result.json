@@ -1,0 +1,69 @@
+{
+  "row_id": "074-S05-C",
+  "started_utc": "2026-10-26T16:27:44.591507+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\074-S05-C\\attempt-01-347610",
+  "verdict": "PASS",
+  "scenario": "S05",
+  "variant": "C",
+  "environment": "live-aks",
+  "error": null,
+  "timing": {
+    "timestamps": {
+      "t0": "2026-10-26T16:28:04.876981+00:00",
+      "t_failure": "2026-10-26T16:28:07.922276+00:00",
+      "t_detect": "2026-10-26T16:28:09.312109+00:00",
+      "t_proposal": "2026-10-26T16:28:09.344505+00:00",
+      "t_authorized": null,
+      "t_patch": null,
+      "t_healthy": null,
+      "t_escalated": "2026-10-26T16:28:09.344731+00:00"
+    },
+    "intervals": {
+      "injection_to_recovery": null,
+      "failure_to_recovery": null,
+      "detection": 1.389833,
+      "diagnosis": 0.032396,
+      "authorization": null,
+      "rollout": null
+    },
+    "clock_note": "Host observations use host UTC and monotonic durations; agent events use pod epoch clocks. Negative cross-clock intervals are unavailable. No NTP accuracy claim."
+  },
+  "warmup_usage": {
+    "completion_tokens": 2,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "latency_checkpoint": {
+      "engine_tbt_ms": 2,
+      "engine_ttft_ms": 15,
+      "engine_ttlt_ms": 21,
+      "pre_inference_ms": 77,
+      "service_tbt_ms": 1,
+      "service_ttft_ms": 350,
+      "service_ttlt_ms": 353,
+      "user_visible_ttft_ms": 273
+    },
+    "prompt_tokens": 10,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    },
+    "total_tokens": 12
+  },
+  "reason": "Correct abstention",
+  "t0": "2026-10-26T16:28:04.876981+00:00",
+  "t_failure": "2026-10-26T16:28:07.922276+00:00",
+  "finished_utc": "2026-10-26T16:28:57.974738+00:00",
+  "observation_to_completion_seconds": 4.625,
+  "injection_to_completion_seconds": 7.6710000000020955,
+  "diagnoses": 1,
+  "handoff_attempts": 0,
+  "successful_mutations": 0,
+  "model_calls": 0,
+  "usage": [],
+  "outcome": "escalated",
+  "cleanup_errors": []
+}

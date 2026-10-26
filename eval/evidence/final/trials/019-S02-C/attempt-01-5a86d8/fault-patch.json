@@ -1,0 +1,79 @@
+{
+  "spec": {
+    "progressDeadlineSeconds": 600,
+    "replicas": 2,
+    "revisionHistoryLimit": 10,
+    "selector": {
+      "matchLabels": {
+        "app": "test-app"
+      }
+    },
+    "strategy": {
+      "rollingUpdate": {
+        "maxSurge": "25%",
+        "maxUnavailable": "25%"
+      },
+      "type": "RollingUpdate"
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "app": "test-app"
+        },
+        "annotations": {
+          "eval.protocol/run": "protocol-07ced4321479"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "image": "ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "api",
+            "ports": [
+              {
+                "containerPort": 80,
+                "protocol": "TCP"
+              }
+            ],
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File"
+          },
+          {
+            "image": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2",
+            "imagePullPolicy": "IfNotPresent",
+            "name": "healthy-sidecar",
+            "ports": [
+              {
+                "containerPort": 9090
+              }
+            ],
+            "resources": {},
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "command": [
+              "/bin/sh",
+              "-c"
+            ],
+            "args": [
+              "printf '%s' 'events {} http { server { listen 9090; location / { return 200; } } }' > /tmp/eval-sidecar.conf; exec nginx -c /tmp/eval-sidecar.conf -g 'daemon off;'"
+            ],
+            "readinessProbe": {
+              "httpGet": {
+                "path": "/",
+                "port": 9090
+              },
+              "periodSeconds": 2
+            }
+          }
+        ],
+        "dnsPolicy": "ClusterFirst",
+        "restartPolicy": "Always",
+        "schedulerName": "default-scheduler",
+        "securityContext": {},
+        "terminationGracePeriodSeconds": 30
+      }
+    }
+  }
+}

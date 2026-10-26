@@ -1,0 +1,10 @@
+{
+  "row_id": "092-P04-scripted",
+  "started_utc": "2026-10-26T17:00:39.565021+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\092-P04-scripted\\attempt-01-7b4eca",
+  "verdict": "PASS",
+  "cases": 2,
+  "pytest_exit": 0,
+  "environment": "offline-mocked",
+  "finished_utc": "2026-10-26T17:00:41.144693+00:00"
+}

@@ -1,0 +1,138 @@
+{
+  "model_calls": [],
+  "diagnoses": [
+    {
+      "utc": "2026-10-26T12:49:30.160915+00:00",
+      "seconds": 0.11455276199990294,
+      "correlation_id": "protocol-90e905d625bb",
+      "facts": {
+        "evidence": [
+          {
+            "name": "pod-phase",
+            "value": "Pending",
+            "source": "k8s://pod/test-app/test-app-68c9b8dfb9-f2ggq"
+          },
+          {
+            "name": "pod-containers",
+            "value": "api:ready=False,restarts=0,state={'running': None, 'terminated': None, 'waiting': {'message': 'Back-off pulling image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": ErrImagePull: [rpc error: code = NotFound desc = failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2: not found, failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: failed to authorize: failed to fetch anonymous token: REDACTED_SECRET status from GET request to https://ANON_RESOURCE_001.azurecr.io/oauth2/token?scope=repository%3Atset-app%3Apull&service=ANON_RESOURCE_001.azurecr.io: 401 Unauthorized]', 'reason': 'ImagePullBackOff'}}; healthy-sidecar:ready=True,restarts=0,state={'running': {'started_at': datetime.datetime(2026, 10, 26, 12, 49, 26, tzinfo=tzlocal())}, 'terminated': None, 'waiting': None}",
+            "source": "k8s://pod/test-app/test-app-68c9b8dfb9-f2ggq/status"
+          },
+          {
+            "name": "pod-events",
+            "value": "Scheduled: Successfully assigned test-app/test-app-68c9b8dfb9-f2ggq to ANON_IDENTITY_005; Pulling: Pulling image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\"; Failed: Failed to pull image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": [rpc error: code = NotFound desc = failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2: not found, failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: failed to authorize: failed to fetch anonymous token: REDACTED_SECRET status from GET request to https://ANON_RESOURCE_001.azurecr.io/oauth2/token?scope=repository%3Atset-app%3Apull&service=ANON_RESOURCE_001.azurecr.io: 401 Unauthorized]; Failed: Error: ErrImagePull; Pulled: Container image \"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\" already present on machine and can be accessed by the pod; Created: Container created; Started: Container started; BackOff: Back-off pulling image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\"; Failed: Error: ImagePullBackOff",
+            "source": "k8s://events/test-app/test-app-68c9b8dfb9-f2ggq"
+          },
+          {
+            "name": "image-pull-failures",
+            "value": "container=api image=ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2",
+            "source": "k8s://pod/test-app/test-app-68c9b8dfb9-f2ggq/spec"
+          },
+          {
+            "name": "authenticated-registry-manifest",
+            "value": "{\"container\": \"api\", \"image\": \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\", \"status\": \"missing\", \"identity\": \"diagnostic\", \"candidate_status\": \"complete\", \"verified_candidates\": [\"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\"], \"kubelet_access\": \"not_verified\"}",
+            "source": "acr://ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2"
+          }
+        ],
+        "groundedness": 1.0,
+        "safe_action": {
+          "name": "fix_image",
+          "parameters": {
+            "image": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2"
+          }
+        },
+        "summary": "Deterministic unique-candidate baseline; independent execution policy still applies.",
+        "pull_failures": [
+          {
+            "container": "api",
+            "image": "ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2"
+          }
+        ]
+      }
+    }
+  ],
+  "handoffs": [
+    {
+      "correlation_id": "protocol-90e905d625bb",
+      "utc": "2026-10-26T12:49:30.161059+00:00",
+      "facts": {
+        "evidence": [
+          {
+            "name": "pod-phase",
+            "value": "Pending",
+            "source": "k8s://pod/test-app/test-app-68c9b8dfb9-f2ggq"
+          },
+          {
+            "name": "pod-containers",
+            "value": "api:ready=False,restarts=0,state={'running': None, 'terminated': None, 'waiting': {'message': 'Back-off pulling image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": ErrImagePull: [rpc error: code = NotFound desc = failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2: not found, failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: failed to authorize: failed to fetch anonymous token: REDACTED_SECRET status from GET request to https://ANON_RESOURCE_001.azurecr.io/oauth2/token?scope=repository%3Atset-app%3Apull&service=ANON_RESOURCE_001.azurecr.io: 401 Unauthorized]', 'reason': 'ImagePullBackOff'}}; healthy-sidecar:ready=True,restarts=0,state={'running': {'started_at': datetime.datetime(2026, 10, 26, 12, 49, 26, tzinfo=tzlocal())}, 'terminated': None, 'waiting': None}",
+            "source": "k8s://pod/test-app/test-app-68c9b8dfb9-f2ggq/status"
+          },
+          {
+            "name": "pod-events",
+            "value": "Scheduled: Successfully assigned test-app/test-app-68c9b8dfb9-f2ggq to ANON_IDENTITY_005; Pulling: Pulling image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\"; Failed: Failed to pull image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": [rpc error: code = NotFound desc = failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2: not found, failed to pull and unpack image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\": failed to resolve image: failed to authorize: failed to fetch anonymous token: REDACTED_SECRET status from GET request to https://ANON_RESOURCE_001.azurecr.io/oauth2/token?scope=repository%3Atset-app%3Apull&service=ANON_RESOURCE_001.azurecr.io: 401 Unauthorized]; Failed: Error: ErrImagePull; Pulled: Container image \"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\" already present on machine and can be accessed by the pod; Created: Container created; Started: Container started; BackOff: Back-off pulling image \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\"; Failed: Error: ImagePullBackOff",
+            "source": "k8s://events/test-app/test-app-68c9b8dfb9-f2ggq"
+          },
+          {
+            "name": "image-pull-failures",
+            "value": "container=api image=ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2",
+            "source": "k8s://pod/test-app/test-app-68c9b8dfb9-f2ggq/spec"
+          },
+          {
+            "name": "authenticated-registry-manifest",
+            "value": "{\"container\": \"api\", \"image\": \"ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2\", \"status\": \"missing\", \"identity\": \"diagnostic\", \"candidate_status\": \"complete\", \"verified_candidates\": [\"ANON_RESOURCE_001.azurecr.io/test-app:1.4.2\"], \"kubelet_access\": \"not_verified\"}",
+            "source": "acr://ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2"
+          }
+        ],
+        "groundedness": 1.0,
+        "safe_action": {
+          "name": "fix_image",
+          "parameters": {
+            "image": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2"
+          }
+        },
+        "summary": "Deterministic unique-candidate baseline; independent execution policy still applies.",
+        "pull_failures": [
+          {
+            "container": "api",
+            "image": "ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2"
+          }
+        ]
+      },
+      "finished_utc": "2026-10-26T12:49:33.322446+00:00",
+      "outcome": {
+        "action": {
+          "name": "fix_image",
+          "parameters": {
+            "namespace": "test-app",
+            "deployment": "test-app",
+            "container": "api",
+            "old_image": "ANON_RESOURCE_001.azurecr.io/tset-app:1.4.2",
+            "new_image": "ANON_RESOURCE_001.azurecr.io/test-app:1.4.2"
+          }
+        },
+        "executed": true,
+        "successful": true,
+        "reason": ""
+      }
+    }
+  ],
+  "request": {
+    "scenario": "S02",
+    "variant": "A",
+    "namespace": "test-app",
+    "pod": "test-app-68c9b8dfb9-f2ggq",
+    "correlation_id": "protocol-90e905d625bb",
+    "marker": "injection-5c8dc24b6aba4a48b732635c1c044acf"
+  },
+  "delivery_mode": "host-observed failed Pod through production PodWatcher.process_pod",
+  "decision": {
+    "status": "resolved",
+    "reason": "",
+    "executed": true,
+    "summary": "Deterministic unique-candidate baseline; independent execution policy still applies."
+  },
+  "terminal": {
+    "event": "protocol_terminal",
+    "worker_error": null,
+    "finished_utc": "2026-10-26T12:49:33.322874+00:00"
+  }
+}

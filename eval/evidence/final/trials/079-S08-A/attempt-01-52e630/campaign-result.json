@@ -1,0 +1,45 @@
+{
+  "row_id": "079-S08-A",
+  "started_utc": "2026-10-26T16:39:07.787875+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\079-S08-A\\attempt-01-52e630",
+  "verdict": "PASS",
+  "scenario": "S08",
+  "variant": "A",
+  "environment": "live-aks",
+  "error": null,
+  "timing": {
+    "timestamps": {
+      "t0": "2026-10-26T16:39:30.996216+00:00",
+      "t_failure": "2026-10-26T16:39:34.062398+00:00",
+      "t_detect": "2026-10-26T16:39:36.889398+00:00",
+      "t_proposal": "2026-10-26T16:39:37.035464+00:00",
+      "t_authorized": "2026-10-26T16:39:39.322264+00:00",
+      "t_patch": "2026-10-26T16:39:39.375634+00:00",
+      "t_healthy": "2026-10-26T16:39:42.391170+00:00",
+      "t_escalated": "2026-10-26T16:39:40.140030+00:00"
+    },
+    "intervals": {
+      "injection_to_recovery": 11.394954,
+      "failure_to_recovery": 8.328772,
+      "detection": 2.827,
+      "diagnosis": 0.146066,
+      "authorization": 2.2868,
+      "rollout": 3.015536
+    },
+    "clock_note": "Host observations use host UTC and monotonic durations; agent events use pod epoch clocks. Negative cross-clock intervals are unavailable. No NTP accuracy claim."
+  },
+  "warmup_usage": null,
+  "reason": "Correct verified recovery",
+  "t0": "2026-10-26T16:39:30.996216+00:00",
+  "t_failure": "2026-10-26T16:39:34.062398+00:00",
+  "finished_utc": "2026-10-26T16:41:07.281853+00:00",
+  "observation_to_completion_seconds": 14.171999999991385,
+  "injection_to_completion_seconds": 17.23399999999674,
+  "diagnoses": 2,
+  "handoff_attempts": 2,
+  "successful_mutations": 1,
+  "model_calls": 0,
+  "usage": [],
+  "outcome": "duplicate_delivery_checked",
+  "cleanup_errors": []
+}

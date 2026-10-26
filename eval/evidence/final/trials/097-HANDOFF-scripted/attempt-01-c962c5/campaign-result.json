@@ -1,0 +1,8 @@
+{
+  "row_id": "097-HANDOFF-scripted",
+  "started_utc": "2026-10-26T17:05:47.967672+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\097-HANDOFF-scripted\\attempt-01-c962c5",
+  "verdict": "INCONCLUSIVE",
+  "error": "ValueError: Runtime/model/policy configuration drift; start a new campaign",
+  "finished_utc": "2026-10-26T17:06:00.457407+00:00"
+}

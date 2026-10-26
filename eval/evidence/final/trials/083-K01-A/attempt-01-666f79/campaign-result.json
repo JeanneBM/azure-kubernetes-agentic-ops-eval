@@ -1,0 +1,12 @@
+{
+  "row_id": "083-K01-A",
+  "started_utc": "2026-10-26T16:50:35.557124+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\083-K01-A\\attempt-01-666f79",
+  "verdict": "SETUP_FAIL",
+  "scenario": "K01",
+  "variant": "A",
+  "environment": "live-aks",
+  "error": "ValueError: Runtime/model/policy configuration drift; start a new campaign",
+  "cleanup_errors": [],
+  "finished_utc": "2026-10-26T16:50:44.754627+00:00"
+}

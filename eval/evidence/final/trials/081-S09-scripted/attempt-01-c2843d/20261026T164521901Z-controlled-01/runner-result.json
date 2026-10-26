@@ -1,0 +1,13 @@
+{
+  "event": "controlled_trial_result",
+  "scenario": "S09",
+  "verdict": "pass",
+  "outcome": "escalated",
+  "proposalSource": "scripted",
+  "faultStartUtc": "2026-10-26T16:47:40Z",
+  "correlationId": "s09-d8eda6c1cf4c",
+  "reason": "second agent policy: Corrected image must stay in the same registry",
+  "action_executed": false,
+  "handoffCalls": 1,
+  "finishedUtc": "2026-10-26T17:47:44.686785+01:00"
+}

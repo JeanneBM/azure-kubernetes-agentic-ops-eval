@@ -1,0 +1,12 @@
+{
+  "row_id": "071-S04-A",
+  "started_utc": "2026-10-26T16:10:38.552193+00:00",
+  "directory": "C:\\Users\\ANON_USER\\azure-kubernetes-agentic-ops-eval\\.local\\evaluation\\final\\trials\\071-S04-A\\attempt-01-1e7c9f",
+  "verdict": "SETUP_FAIL",
+  "scenario": "S04",
+  "variant": "A",
+  "environment": "live-aks",
+  "error": "TimeoutError: Injected fault not observed; SETUP_FAIL",
+  "cleanup_errors": [],
+  "finished_utc": "2026-10-26T16:16:58.788395+00:00"
+}

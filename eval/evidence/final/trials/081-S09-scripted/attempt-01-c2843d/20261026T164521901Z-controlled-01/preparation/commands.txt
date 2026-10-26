@@ -1,0 +1,4 @@
+2026-10-26T16:47:17.0514722Z kubectl get deployment/agentic-ops-diagnostic -n agentic-ops -o json [exit=0 attempt=1]
+2026-10-26T16:47:17.4202604Z kubectl get pods -n agentic-ops -l app=agentic-ops,role=diagnostic -o json [exit=0 attempt=1]
+2026-10-26T16:47:18.7687088Z kubectl get deployment/agentic-ops-remediation -n agentic-ops -o json [exit=0 attempt=1]
+2026-10-26T16:47:19.1095549Z kubectl get pods -n agentic-ops -l app=agentic-ops,role=remediation -o json [exit=0 attempt=1]
