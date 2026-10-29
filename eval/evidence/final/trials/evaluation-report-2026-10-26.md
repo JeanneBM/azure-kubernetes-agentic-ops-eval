@@ -51,9 +51,16 @@ runtime belongs in the continuation project.
 The probe records evaluator commit
 `198324432b352eba5a917e3b5dadfbe30ded5e58`.
 Commit `20f5dcc01a926891826c603d5447b71dd4da7452` published evidence; it is not
-the evaluator source baseline. The original campaign-level `campaign.json` and
-`summary.md` are not published here. Their frozen-file hashes and
-`source_commit` must be verified from the original files before formal closeout.
+the evaluator source baseline. The original campaign-level [campaign.json](../campaign.json),
+[summary.json](../summary.json) and [summary.md](../summary.md) are now published
+as sanitized copies. They confirm `source_commit` as `198324432b352eba5a917e3b5dadfbe30ded5e58`
+and preserve all **65 frozen-file hashes**. Crucially, `working_tree_dirty` is
+**true**: the commit alone is not an exact description of the evaluated source
+state. The recorded hashes identify the frozen inputs but do not recover local
+changes or independently establish the rebuilt S09 image's source. Anonymization
+changes environment identifiers and local paths; recorded source hashes, trial
+outcomes and the dirty-state flag are preserved. Generated summaries retain the
+original S09 PASS and must be interpreted with the runtime caveat above.
 
 ## What remains unproven
 
