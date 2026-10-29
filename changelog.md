@@ -9,6 +9,17 @@ The package version alone does not establish a release date.
 
 ## [Unreleased]
 
+### Evaluation closeout preparation — 2026-10-29
+
+- Publish and correct the 26 October 98-outcome campaign summary; identify the
+  evaluated model, evaluator commit and S09 runtime provenance mismatch.
+- Link final findings and the Lab continuation from the README; distinguish the
+  AI-edited environment illustration from collected evaluation evidence.
+- Add automated security scans, SBOM, dependency updates and container/manifest
+  hardening. These changes postdate the live campaign.
+- Formal closeout remains incomplete: original campaign metadata, human-review
+  disposition and cleanup confirmation require resolution before release/archive.
+
 ### Changed
 
 - Live S01 now loads setup registry/kubeconfig automatically, reports collection
