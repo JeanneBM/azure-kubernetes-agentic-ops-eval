@@ -1,0 +1,307 @@
+{
+  "human_reviews_pending": 90,
+  "source_commit": "198324432b352eba5a917e3b5dadfbe30ded5e58",
+  "total": 98,
+  "passed": 75,
+  "unrun": 0,
+  "statistics": {
+    "S01/A": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": {
+        "median": 4.895248,
+        "min": 4.744233,
+        "max": 5.114982
+      }
+    },
+    "S01/C": {
+      "attempts": 5,
+      "passed": 4,
+      "failures": 1,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": {
+        "median": 6.3383125,
+        "min": 6.203018,
+        "max": 6.415537
+      }
+    },
+    "S02/A": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": {
+        "median": 4.81878,
+        "min": 4.786135,
+        "max": 4.913678
+      }
+    },
+    "S02/C": {
+      "attempts": 5,
+      "passed": 3,
+      "failures": 2,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": {
+        "median": 6.469989,
+        "min": 6.267076,
+        "max": 6.485868
+      }
+    },
+    "S03/A": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S03/C": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S04/A": {
+      "attempts": 5,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 5,
+      "successful_recovery_seconds": null
+    },
+    "S04/C": {
+      "attempts": 5,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 5,
+      "successful_recovery_seconds": null
+    },
+    "S05/A": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S05/C": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S06/A": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S06/C": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S07/A": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": {
+        "median": 5.691826,
+        "min": 5.365106,
+        "max": 5.935854
+      }
+    },
+    "S07/C": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": {
+        "median": 7.175442,
+        "min": 6.648671,
+        "max": 8.578914
+      }
+    },
+    "S08/A": {
+      "attempts": 5,
+      "passed": 5,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S08/C": {
+      "attempts": 5,
+      "passed": 4,
+      "failures": 0,
+      "timeouts": 1,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S09/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "S10/scripted": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "K01/A": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 1,
+      "successful_recovery_seconds": null
+    },
+    "K01/C": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 1,
+      "successful_recovery_seconds": null
+    },
+    "K02/A": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 1,
+      "successful_recovery_seconds": null
+    },
+    "K02/C": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 1,
+      "successful_recovery_seconds": null
+    },
+    "K03/A": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 1,
+      "successful_recovery_seconds": null
+    },
+    "K03/C": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 1,
+      "successful_recovery_seconds": null
+    },
+    "P01/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "P02/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "P03/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "P04/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "P05/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "P06/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "P07/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "P08/scripted": {
+      "attempts": 1,
+      "passed": 1,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "HANDOFF/scripted": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 0,
+      "successful_recovery_seconds": null
+    },
+    "INFRA/probe": {
+      "attempts": 1,
+      "passed": 0,
+      "failures": 0,
+      "timeouts": 0,
+      "setup_failures": 1,
+      "successful_recovery_seconds": null
+    }
+  },
+  "automated_checks_clean": false,
+  "clean_evaluation": false
+}
