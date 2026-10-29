@@ -1,8 +1,10 @@
 # Azure Kubernetes Agentic Ops — Evaluation
 
-> **Test workload:** `test-app` is a disposable nginx placeholder used only for fault injection and recovery checks. It has no business logic, payment processing, business data or extra backend. `tset-app` is the deliberately misspelled image alias used in the recovery scenario.
+[![Tests](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/test.yml)
 
-[![Tests](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/test.yml/badge.svg)](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/test.yml)
+[![Security](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/security.yml)
+
+> **Test workload:** `test-app` is a disposable nginx placeholder used only for fault injection and recovery checks. It has no business logic, payment processing, business data or extra backend. `tset-app` is the deliberately misspelled image alias used in the recovery scenario.
 
 A two-agent AKS proof of concept for LLM-assisted diagnosis and policy-controlled
 remediation of container image-reference errors. This repository contains the
@@ -64,6 +66,12 @@ deterministic script. See the [evaluation protocol](evaluation-scenarios.md).
 ## Security
 
 Security controls separate model proposals from authorization and cluster writes.
+
+The [Security workflow](.github/workflows/security.yml) runs Bandit SAST, pip-audit,
+Trivy secrets/IaC/container scans and CycloneDX SBOM generation. Both security
+jobs must pass. Reports are retained for 14 days; checks run on pushes to main,
+pull requests, weekly and on manual dispatch. A passing badge reflects these
+checks, not complete security validation of the live system.
 
 | Boundary | Implemented control |
 | --- | --- |
