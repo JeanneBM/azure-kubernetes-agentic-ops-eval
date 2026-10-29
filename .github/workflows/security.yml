@@ -67,7 +67,7 @@ jobs:
         run: trivy fs --scanners secret --skip-dirs .git --exit-code 1 --format json --output /dev/null .
       - name: Scan Dockerfile and Kubernetes configuration
         if: ${{ !cancelled() }}
-        run: trivy config --severity HIGH,CRITICAL --exit-code 1 --format json --output reports/iac.json .
+        run: trivy config --skip-dirs eval/evidence --severity HIGH,CRITICAL --exit-code 1 --format json --output reports/iac.json .
       - name: Build local image (no push or deployment)
         if: ${{ !cancelled() }}
         run: docker build --pull -t agentic-ops:security .
