@@ -61,6 +61,42 @@ The evaluation aims to measure correct recovery, safe abstention and response
 time. A successful demo alone does not establish a speed advantage over a
 deterministic script. See the [evaluation protocol](evaluation-scenarios.md).
 
+## Security
+
+Security controls separate model proposals from authorization and cluster writes.
+
+| Boundary | Implemented control |
+| --- | --- |
+| Identity and permissions | Separate Kubernetes ServiceAccounts and Azure Workload Identities. Diagnostics reads cluster evidence; only remediation can patch Deployments. The OpenAI inference role belongs only to diagnostics. |
+| Agent handoff | Token-authenticated internal remediation API with ingress NetworkPolicy restricting access to the diagnostic pod label. |
+| Mutation authorization | Independent deterministic policy checks the allowed registry, workload/container intent, image existence and proposal scope before execution. Missing or conflicting intended-image configuration refuses execution. |
+| State and execution | Stale-action checks, rollout verification and escalation on failed checks. An uncertain handoff is recorded as an unknown execution outcome, rather than assumed to mean no mutation. |
+| Evidence and telemetry | Published evidence is sanitized. Runtime telemetry excludes raw prompts, tool arguments, pod log bodies and credentials. |
+
+### Security evaluation and remaining gaps
+
+The [26 October campaign report](eval/evidence/final/trials/evaluation-report-2026-10-26.md)
+records S06 stale-action and S07 injected-Event checks passing automated criteria
+in all five repetitions per variant. The controlled live S09 registry-change
+probe also passed. S08 duplicate delivery passed 5/5 for A and 4/5 for C, with
+one C timeout. These results apply to the exercised fixtures and delivery scope;
+they do not establish general prompt-injection resistance or full architecture safety.
+
+S10, K01–K03, HANDOFF and INFRA were blocked by configuration drift, and all ten
+S04 attempts failed to establish the intended fault. All 90 available human-review
+forms remain pending in the published report. The K02 intended-image restriction
+has an offline refusal regression; full live validation remains open.
+
+Deployment patch permission is broader than the image-only application policy;
+Kubernetes RBAC does not enforce that field boundary. Stale-action checks do not
+prove atomic protection between read and patch. Public-egress allowlisting requires
+cluster-specific network controls, and in-memory deduplication does not establish
+cross-replica protection.
+
+See [deployment security boundaries](docs/two-workload-deployment.md),
+[security and scenario criteria](evaluation-scenarios.md), and
+[closeout requirements](docs/final-evaluation.md).
+
 ## Start the environment
 
 Use **PowerShell 7**, Azure CLI, kubectl and git. Azure Cloud Shell in PowerShell
