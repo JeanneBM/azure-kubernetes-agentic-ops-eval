@@ -71,7 +71,9 @@ The [Security workflow](.github/workflows/security.yml) runs Bandit SAST, pip-au
 Trivy secrets/IaC/container scans and CycloneDX SBOM generation. Both security
 jobs must pass. Reports are retained for 14 days; checks run on pushes to main,
 pull requests, weekly and on manual dispatch. A passing badge reflects these
-checks, not complete security validation of the live system.
+checks, not complete security validation of the live system. IaC scanning excludes
+immutable snapshots under `eval/evidence/`; these record historical deployments
+and are not current deployment manifests. Secret scanning still includes that directory.
 
 | Boundary | Implemented control |
 | --- | --- |
