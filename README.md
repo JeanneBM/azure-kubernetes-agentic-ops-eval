@@ -12,6 +12,21 @@ application, scenario checks and evidence from live evaluation runs.
 
 **The model proposes; deterministic policy authorizes; execution is verified.**
 
+## Final result
+
+The [26 October 2026 report](eval/evidence/final/trials/evaluation-report-2026-10-26.md)
+records 98 outcomes: **75 PASS, 17 SETUP_FAIL, 3 AGENT_FAIL, 1 TIMEOUT and
+2 INCONCLUSIVE**. Excluding S04 setup failures, A achieved **35/35 PASS** and C
+**31/35 PASS**. C used **gpt-4.1-nano (2025-04-14)**; it did not improve outcomes
+over deterministic correction in this narrow task.
+
+S09 passed on a rebuilt image outside the frozen campaign runtime. Later live
+probes were blocked by drift. Human reviews and original campaign metadata remain
+outstanding; this repository is not yet formally closed.
+Further development continues in [Agentic Ops Lab](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-lab).
+Current security hardening postdates the campaign and is not validated by its
+historical Azure evidence.
+
 ## Repository map
 
 | Location | Contents |
@@ -150,7 +165,7 @@ Completion prints `READY FOR TESTS`.
 ![Azure lab resources prepared for scenario testing](docs/images/test-environment.png)
 
 AKS, ACR, Azure OpenAI and separate agent identities, with supporting network
-resources. Image edited for presentation; live scenario evidence is recorded separately.
+resources. AI-edited presentation illustration, not a raw Azure screenshot or evaluation evidence. Live scenario evidence is recorded separately.
 
 Load the saved configuration to inspect the lab:
 
@@ -168,7 +183,7 @@ first. For defaults, parameter overrides and implementation details, read the
 
 ## Run scenarios and collect evidence
 
-**Execution findings (2026-10-21):** separate script processes with 60-second
+**Historical execution findings (2026-10-21; final results above):** separate script processes with 60-second
 pauses recorded 9/10 passes; S04 remained inconclusive. Earlier sequential batch
 results varied. See the [dated findings and evidence](eval/findings/execution-pacing-findings.md)
 for readiness failures and the limits of attributing improvement to pauses.
@@ -273,4 +288,4 @@ and deploying the agent image. Historical evidence is unchanged.
 See [Full evaluation: one trial at a time](docs/full-evaluation.md) for the runnable
 98-trial protocol: repeated A/C trials, live known-limit fixtures, offline contract
 checks, handoff and live identity/ingress validation. `init` creates the frozen
-plan; `next` runs exactly one trial. Live results remain unclaimed until execution.
+plan; `next` runs exactly one trial. Recorded campaign results and validation gaps are documented in the [final report](eval/evidence/final/trials/evaluation-report-2026-10-26.md).
