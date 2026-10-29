@@ -9,6 +9,20 @@ The package version alone does not establish a release date.
 
 ## [Unreleased]
 
+No further feature development is planned in this repository.
+
+## [0.2.0] — 2026-10-29
+
+### Closeout
+
+- Close the experiment without human review, preserving 90 incomplete forms and
+  all historical verdicts. Record accepted validation and cleanup-evidence gaps.
+- Publish sanitized campaign metadata and correct S09 runtime provenance,
+  evaluator source commit, dirty working tree and model scope.
+- Confirm the sequential test branch changes already exist on main with current
+  paths; retain their history without reintroducing obsolete scripts.
+- Add MIT licensing and release/continuation documentation.
+
 ### Evaluation closeout preparation — 2026-10-29
 
 - Publish and correct the 26 October 98-outcome campaign summary; identify the
@@ -17,8 +31,8 @@ The package version alone does not establish a release date.
   AI-edited environment illustration from collected evaluation evidence.
 - Add automated security scans, SBOM, dependency updates and container/manifest
   hardening. These changes postdate the live campaign.
-- Formal closeout remains incomplete: original campaign metadata, human-review
-  disposition and cleanup confirmation require resolution before release/archive.
+- Original campaign metadata is published. Final human-review disposition is
+  closed without human review. Cloud cleanup remains independently unverified.
 
 ### Changed
 

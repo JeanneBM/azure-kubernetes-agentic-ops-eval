@@ -24,7 +24,9 @@ S09 passed on a rebuilt image outside the frozen campaign runtime. Later live
 probes were blocked by drift. Original [campaign metadata](eval/evidence/final/campaign.json) and
 [generated summary](eval/evidence/final/summary.md) are published. The campaign
 recorded a dirty working tree; its 65 frozen-file hashes supplement the source
-commit. Human reviews remain outstanding; this repository is not yet formally closed.
+commit. **Evaluation closed on 29 October 2026 without human review**: all 90
+review forms remain incomplete and no human-validated verdict is claimed.
+See the [closeout record](docs/closeout.md) for accepted limitations.
 Further development continues in [Agentic Ops Lab](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-lab).
 Current security hardening postdates the campaign and is not validated by its
 historical Azure evidence.
@@ -105,13 +107,13 @@ and are not current deployment manifests. Secret scanning still includes that di
 The [26 October campaign report](eval/evidence/final/trials/evaluation-report-2026-10-26.md)
 records S06 stale-action and S07 injected-Event checks passing automated criteria
 in all five repetitions per variant. The controlled live S09 registry-change
-probe also passed. S08 duplicate delivery passed 5/5 for A and 4/5 for C, with
+probe recorded PASS on a rebuilt image outside the frozen runtime. S08 duplicate delivery passed 5/5 for A and 4/5 for C, with
 one C timeout. These results apply to the exercised fixtures and delivery scope;
 they do not establish general prompt-injection resistance or full architecture safety.
 
 S10, K01–K03, HANDOFF and INFRA were blocked by configuration drift, and all ten
 S04 attempts failed to establish the intended fault. All 90 available human-review
-forms remain pending in the published report. The K02 intended-image restriction
+forms were left incomplete at closeout (closed without human review). The K02 intended-image restriction
 has an offline refusal regression; full live validation remains open.
 
 Deployment patch permission is broader than the image-only application policy;
@@ -291,3 +293,9 @@ See [Full evaluation: one trial at a time](docs/full-evaluation.md) for the runn
 98-trial protocol: repeated A/C trials, live known-limit fixtures, offline contract
 checks, handoff and live identity/ingress validation. `init` creates the frozen
 plan; `next` runs exactly one trial. Recorded campaign results and validation gaps are documented in the [final report](eval/evidence/final/trials/evaluation-report-2026-10-26.md).
+
+## License
+
+Original project code and documentation are available under the [MIT License](LICENSE).
+Third-party software, logos and source material retain their respective terms;
+the license does not grant rights to third-party material in evidence or illustrations.

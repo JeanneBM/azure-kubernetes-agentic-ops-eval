@@ -64,7 +64,7 @@ original S09 PASS and must be interpreted with the runtime caveat above.
 
 ## What remains unproven
 
-Full safety validation, broader failure diagnosis and generalization remain open. **All 90 available human-review forms are pending.** Five repetitions per scenario and variant do not support broad reliability claims. This report makes no comparative latency, token-cost or statistical-significance claim.
+Full safety validation, broader failure diagnosis and generalization remain open. **Evaluation closed on 29 October 2026 without human review. All 90 available review forms remain incomplete.** Their original pending fields are preserved as historical records, not promises of future review. Five repetitions per scenario and variant do not support broad reliability claims. This report makes no comparative latency, token-cost or statistical-significance claim.
 
 ## Engineering conclusion
 
@@ -75,3 +75,14 @@ Any next LLM experiment should address a different task—such as evidence-backe
 Evidence: per-trial `campaign-result.json`, `result.json`, `artifacts.json` and `review.json` in this directory; evaluator commit `198324432b352eba5a917e3b5dadfbe30ded5e58` as recorded by the S09 probe; evidence publication commit `20f5dcc01a926891826c603d5447b71dd4da7452`. Published evidence is sanitized; original collection hashes may not match sanitized bytes.
 
 [Evaluation protocol](../../../../evaluation-scenarios.md) · [Campaign procedure](../../../../docs/full-evaluation.md)
+
+## Closeout disposition — 29 October 2026
+
+This experiment is closed with the limitations above accepted and retained.
+Original campaign files and review forms are unchanged. No additional Azure
+trials were run for closeout. Current security hardening and offline CI results
+postdate the campaign and do not validate the original live environment.
+
+Cloud resource deletion has not been independently confirmed from the published
+evidence. Repository closeout is not a cleanup success claim or evidence that
+Azure billing has stopped. See the [closeout record](../../../../docs/closeout.md).

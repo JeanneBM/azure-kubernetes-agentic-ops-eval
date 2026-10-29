@@ -1,5 +1,9 @@
 # Evaluation scenarios
 
+**Evaluation closed on 29 October 2026 without human review.**
+See the [final report](evidence/final/trials/evaluation-report-2026-10-26.md) and
+[closeout record](../docs/closeout.md). Dated status notes below are historical.
+
 [Final functional evaluation](../docs/final-evaluation.md): offline S/K/P catalog,
 K02 refusal regression, live campaign procedure and closeout criteria.
 
