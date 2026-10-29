@@ -21,8 +21,10 @@ records 98 outcomes: **75 PASS, 17 SETUP_FAIL, 3 AGENT_FAIL, 1 TIMEOUT and
 over deterministic correction in this narrow task.
 
 S09 passed on a rebuilt image outside the frozen campaign runtime. Later live
-probes were blocked by drift. Human reviews and original campaign metadata remain
-outstanding; this repository is not yet formally closed.
+probes were blocked by drift. Original [campaign metadata](eval/evidence/final/campaign.json) and
+[generated summary](eval/evidence/final/summary.md) are published. The campaign
+recorded a dirty working tree; its 65 frozen-file hashes supplement the source
+commit. Human reviews remain outstanding; this repository is not yet formally closed.
 Further development continues in [Agentic Ops Lab](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-lab).
 Current security hardening postdates the campaign and is not validated by its
 historical Azure evidence.
