@@ -40,6 +40,17 @@ flowchart LR
     V -->|yes| OK["Recovered"]
 ```
 
+## Project series
+
+**Start here:** final results are in [Eval](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval); new work happens in [Lab](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-lab).
+
+| Stage | Repository | Role | Status |
+| --- | --- | --- | --- |
+| 1 | [azure-kubernetes-agentic-ops](https://github.com/JeanneBM/azure-kubernetes-agentic-ops) | First implementation slice: infrastructure-agnostic incident orchestrator core | Historical, not developed further |
+| 2 | [azure-kubernetes-agentic-ops-poc](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-poc) | Two-agent AKS prototype with demo recording | Superseded by Eval |
+| 3 | **azure-kubernetes-agentic-ops-eval** (this repository) | Live evaluation against a deterministic baseline; **final results** | Closed on 29 October 2026 (v0.2.0) |
+| 4 | [azure-kubernetes-agentic-ops-lab](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-lab) | Automated experiments, adversarial scenarios and decision replay | Active development |
+
 ## Final result
 
 The [26 October 2026 report](eval/evidence/final/trials/evaluation-report-2026-10-26.md)
