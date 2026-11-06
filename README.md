@@ -30,7 +30,7 @@ flowchart LR
         D --> M["Proposal: Azure OpenAI (C)<br/>or registry enumeration (A)"]
     end
     subgraph rem["Remediation workload · patch identity"]
-        P{"Deterministic policy<br/>same registry · one container<br/>image exists in ACR"}
+        P{"Deterministic policy<br/>same registry · one container<br/>image exists in ACR<br/>trusted intended-image mapping"}
         P -->|allow| X["Patch image reference"]
         X --> V{"Rollout healthy?"}
     end
