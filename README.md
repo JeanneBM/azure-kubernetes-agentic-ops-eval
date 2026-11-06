@@ -4,13 +4,41 @@
 
 [![Security](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/actions/workflows/security.yml)
 
-> **Test workload:** `test-app` is a disposable nginx placeholder used only for fault injection and recovery checks. It has no business logic, payment processing, business data or extra backend. `tset-app` is the deliberately misspelled image alias used in the recovery scenario.
-
-A two-agent AKS proof of concept for LLM-assisted diagnosis and policy-controlled
-remediation of container image-reference errors. This repository contains the
-application, scenario checks and evidence from live evaluation runs.
-
 **The model proposes; deterministic policy authorizes; execution is verified.**
+
+## TL;DR
+
+A two-agent system on AKS repairs one narrow failure class: a mistyped container
+image reference. It was evaluated live against a deterministic baseline that uses
+no LLM. Excluding S04 setup failures, the deterministic baseline recovered
+**35/35** runs and the LLM-assisted agent **31/35**. The model did not improve
+outcomes for this task. Code, protocol, sanitized evidence and limitations are
+published, including what did not work.
+
+| | |
+| --- | --- |
+| **Question** | Does LLM-assisted diagnosis recover AKS image-pull failures better than a deterministic script, without unsafe cluster writes? |
+| **Built** | Diagnostic and remediation agents as separate workloads with separate Workload Identities and RBAC, a deterministic policy gate, rollout verification and a live scenario harness (S01–S10). |
+| **Result** | Deterministic baseline (A) 35/35 PASS; LLM-assisted agent (C, gpt-4.1-nano) 31/35 PASS. Stale-action (S06) and injected-Event (S07) checks passed in every repetition for both variants. |
+| **Takeaway** | For a bounded fix with enumerable candidates, the deterministic baseline is the bar the model must beat. Safety comes from the policy gate and verification, not from the model. |
+| **Status** | Closed on 29 October 2026 ([v0.2.0](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/releases/tag/v0.2.0)) without human review. Development continues in [Agentic Ops Lab](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-lab). |
+
+```mermaid
+flowchart LR
+    subgraph diag["Diagnostic workload · read-only identity"]
+        W["Watcher detects<br/>image-pull failure"] --> D["Collect Kubernetes evidence"]
+        D --> M["Proposal: Azure OpenAI (C)<br/>or registry enumeration (A)"]
+    end
+    subgraph rem["Remediation workload · patch identity"]
+        P{"Deterministic policy<br/>same registry · one container<br/>image exists in ACR"}
+        P -->|allow| X["Patch image reference"]
+        X --> V{"Rollout healthy?"}
+    end
+    M -->|"token-authenticated handoff"| P
+    P -->|deny| H["Escalate for human review"]
+    V -->|no| H
+    V -->|yes| OK["Recovered"]
+```
 
 ## Final result
 
@@ -67,6 +95,8 @@ No combined report across repositories is produced.
 | --- | --- |
 | Diagnostic | Observe image-pull failures, collect Kubernetes evidence and request a structured model proposal. |
 | Remediation | Check the proposal against a fixed policy and ACR, update the affected container image and verify rollout health. |
+
+> **Test workload:** `test-app` is a disposable nginx placeholder used only for fault injection and recovery checks. It has no business logic, payment processing, business data or extra backend. `tset-app` is the deliberately misspelled image alias used in the recovery scenario.
 
 The agents run as separate workloads with separate Kubernetes permissions and
 Azure Workload Identities. Python code coordinates the workflow; Azure OpenAI
