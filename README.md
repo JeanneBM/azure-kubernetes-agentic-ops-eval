@@ -24,20 +24,29 @@ published, including what did not work.
 | **Status** | Closed on 29 October 2026 ([v0.2.0](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-eval/releases/tag/v0.2.0)) without human review. Development continues in [Agentic Ops Lab](https://github.com/JeanneBM/azure-kubernetes-agentic-ops-lab). |
 
 ```mermaid
-flowchart LR
-    subgraph diag["Diagnostic workload · read-only identity"]
-        W["Watcher detects<br/>image-pull failure"] --> D["Collect Kubernetes evidence"]
-        D --> M["Proposal: Azure OpenAI (C)<br/>or registry enumeration (A)"]
+flowchart TD
+  subgraph AZ["Azure lab"]
+    subgraph AKS["AKS"]
+      APP["test-app: nginx placeholder"]
+      subgraph DIAG["Diagnostic workload: read-only identity"]
+        WATCH["Failure watcher"] --> D["Collect evidence and propose image correction"]
+      end
+      subgraph REM["Remediation workload: scoped patch identity"]
+        P{"Deterministic policy and fresh evidence"}
+        P -->|"allow"| X["Patch image and verify rollout"]
+      end
+      APP -->|"state and events"| WATCH
+      D -->|"token-authenticated handoff"| P
+      X --> APP
     end
-    subgraph rem["Remediation workload · patch identity"]
-        P{"Deterministic policy<br/>same registry · one container<br/>image exists in ACR<br/>trusted intended-image mapping"}
-        P -->|allow| X["Patch image reference"]
-        X --> V{"Rollout healthy?"}
-    end
-    M -->|"token-authenticated handoff"| P
-    P -->|deny| H["Escalate for human review"]
-    V -->|no| H
-    V -->|yes| OK["Recovered"]
+    MODEL["Azure OpenAI: structured proposal"]
+    ACR[("ACR: image existence and allowed registry")]
+    D -->|"LLM mode"| MODEL
+    MODEL --> D
+    ACR --> P
+  end
+  P -->|"deny or insufficient evidence"| H["Human escalation"]
+  X -->|"rollout fails"| H
 ```
 
 ## Project series
@@ -100,7 +109,9 @@ Each run writes its own JSON/Markdown report under `.local/reports/`.
 Verdicts and exit codes: PASS (0), FAIL (1), INCONCLUSIVE (2).
 No combined report across repositories is produced.
 
-## How it works
+## Architecture
+
+Separate Kubernetes ServiceAccounts and Azure Workload Identities bound diagnosis and mutation. Policy or rollout failures escalate to a human. The test workload is a disposable nginx placeholder.
 
 | Agent | Responsibility |
 | --- | --- |
